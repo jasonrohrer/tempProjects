@@ -62,18 +62,22 @@ $mapping = array( "a" => "i",
                   "y" => "e",
                   "z" => "t" );
 
-/*
-foreach( $mapping as $letter ) {
-    echo "checking $letter:  ";
 
-    if( $mapping[ $mapping[$letter] ] == $letter ) {
-        echo "okay<br>";
-        }
-    else {
-        echo "failed<br>";
+echo "<center><table border=1 cellpadding=10><tr>";
+$i = 0;
+foreach( $mapping as $letterA => $letterB ) {
+    echo "<td align=center><table border=1>".
+        "<tr><td align=center><font size=5>$letterA</font></td></tr>".
+        "<tr><td align=center>:</td></tr>".
+        "<tr><td align=center><font size=5>$letterB</font></td></tr>".
+        "</table></td>";
+    $i++;
+    if( $i == 13 ) {
+        echo "</tr><tr><td colspan=13></td></tr></tr>";
         }
     }
-*/
+echo "</tr></table></center><hr>";
+
 
 
 function encodeMessage( $inMessage ) {
@@ -97,8 +101,6 @@ function encodeMessage( $inMessage ) {
         }
     return $encodedMessage;
     }
-
-$message = "Test this";
 
 
 
