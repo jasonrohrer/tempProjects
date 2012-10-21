@@ -5,6 +5,33 @@
 error_reporting( E_ALL );
 
 
+// ensure that magic quotes are OFF
+if( get_magic_quotes_gpc() ) {
+    // force magic quotes to be removed
+    $_GET     = array_map( 'em_stripslashes_deep', $_GET );
+    $_POST    = array_map( 'em_stripslashes_deep', $_POST );
+    $_REQUEST = array_map( 'em_stripslashes_deep', $_REQUEST );
+    $_COOKIE  = array_map( 'em_stripslashes_deep', $_COOKIE );
+    }
+
+
+/**
+ * Recursively applies the stripslashes function to arrays of arrays.
+ * This effectively disables magic_quote escaping behavior. 
+ *
+ * @inValue the value or array to stripslashes from.
+ *
+ * @return the value or array with slashes removed.
+ */
+function em_stripslashes_deep( $inValue ) {
+    return
+        ( is_array( $inValue )
+          ? array_map( 'em_stripslashes_deep', $inValue )
+          : stripslashes( $inValue ) );
+    }
+
+
+
 $rowSize = 20;
 
 
@@ -88,69 +115,29 @@ $encoded = encodeMessage( $message );
 ?>
 
 <center>
-
-<table width=75% border=1>
-<tr>
+<font size=6>
 
 <?php
 
-$words = preg_split( "/\s+/", $encoded );
-
-$rowLetterCount = 0;
-
-$blankRowContents = array();
 
 
-foreach( $words as $word ) {
+$messages = preg_split( "/-+/", $encoded );
 
-    $rowLetterCount += strlen( $word ) + 1;
+$numMessages = count( $messages );
 
-    if( $rowLetterCount > $rowSize ) {
-        // word too long for this line
-
-        $rowLetterCount -= strlen( $word ) + 1;
-
-        while( $rowLetterCount < $rowSize ) {
-            // pad it
-            echo "<td></td>";
-            $rowLetterCount ++;
-            }
-        echo "</tr>\n";
-
-        echo "<tr>";
-        foreach( $blankRowContents as $blank ) {
-            echo "<td align=center>$blank</td>";
-            }
-        echo "</tr>";
-        
-        $rowLetterCount = 0;
-        $blankRowContents = "";
-        echo "<tr>";
+$i = 0;
+foreach( $messages as $nextMessage ) {
+    echo "<br>$nextMessage<br><br>\n";
+    if( $i < $numMessages - 1 ) {
+        echo "<hr>\n";
         }
-    
-    $wordArray = str_split( $word );
-
-    foreach( $wordArray as $letter ) {
-        echo "<td align=center>$letter</td>";
-        $blankRowContents[] = "_";
-        }
-    echo "<td> </td>";
-    $blankRowContents[] = " ";
+    $i++;
     }
 
 ?>
-
-</tr>
-
-<?php
-echo "<tr>";
-foreach( $blankRowContents as $blank ) {
-    echo "<td align=center>$blank</td>";
-    }
-echo "</tr>";
-?>
-</table>
+</font>
 </center>
+
 
 <?php
 

@@ -1,6 +1,7 @@
 <body bgcolor="#aaaaaa">
 
-English message:<br>
+English messages:<br>
+(Separate messages with "----")
 <FORM ACTION="encodeMessage.php" METHOD="post">
     <TEXTAREA NAME="message" COLS=90
           ROWS=20></TEXTAREA>
