@@ -270,6 +270,89 @@ int main() {
 
     delete [] deck;
 
+
+    int total = 5000;
+
+    int numHitFlopOnlyA = 0;
+    int numHitFlopOnlyB = 0;
+    int numHitFlopBoth = 0;
+    int numHitFlopNeither = 0;
+    
+
+    for( int t=0; t<total; t++ ) {
+        
+        card *deck;
+        
+        deck = buildFreshDeck();
+        
+        shuffleDeck( deck, &bitStream );
+
+
+        char bothHavePlayable = false;
+        
+        while( !bothHavePlayable ) {
+            delete [] deck;
+            deck = buildFreshDeck();
+            
+            shuffleDeck( deck, &bitStream );
+
+            if( ( deck[0].r > 10 || deck[1].r > 10 )
+                &&
+                ( deck[2].r > 10 || deck[3].r > 10 ) ) {
+                
+                bothHavePlayable = true;
+                }
+            }
+        
+        // both have playable hands, look at flop
+
+        int aHit = false;
+        int bHit = false;
+        
+        for( int i=4; i<=6; i++ ) {
+            
+            if( deck[0].r == deck[i].r ||
+                deck[1].r == deck[i].r ) {
+                aHit = true;
+                }
+            if( deck[2].r == deck[i].r ||
+                deck[3].r == deck[i].r ) {
+                bHit = true;
+                }
+            }
+        
+        if( aHit && bHit ) {
+            numHitFlopBoth ++;
+            }
+        else if( aHit ) {
+            numHitFlopOnlyA ++;
+            }
+        else if( bHit ) {
+            numHitFlopOnlyB ++;
+            }
+        else {
+            numHitFlopNeither ++;
+            }
+        
+        //total++;
+
+        delete [] deck;
+        }
+    
+
+    printf( "Total both playable: %d\n"
+            "Flop hit neither: %d (%d%%)\n"
+            "Flop hit both: %d (%d%%)\n"
+            "Flop hit A: %d (%d%%)\n"
+            "Flop hit B: %d (%d%%)\n\n"
+            "Chance that B hit if A sees flop hit: %d%%\n\n",
+            total,
+            numHitFlopNeither, (numHitFlopNeither * 100 ) / total,
+            numHitFlopBoth, (numHitFlopBoth * 100 ) / total,
+            numHitFlopOnlyA, (numHitFlopOnlyA * 100 ) / total,
+            numHitFlopOnlyB, (numHitFlopOnlyB * 100 ) / total,
+            (numHitFlopBoth * 100 ) / (numHitFlopBoth + numHitFlopOnlyA ) );
+            
     
 
     /*    
