@@ -17,6 +17,7 @@ mu_checkPassword( "eventHosts" );
         // form for searching houses
 ?>
     <FORM ACTION="eventHosts.php" METHOD="get">
+    [<a href="mainMenu.php">Menu</a>]<br><br>
     Search for events hosted in the past 
     <INPUT TYPE="text" MAXLENGTH=5 SIZE=5 NAME="months_past"
              VALUE="<?php echo $monthsPast;?>"> months<br>
@@ -61,7 +62,7 @@ if( $monthsPast != 0 ) {
     
     $url ="$apiURL".
         "events.xml?group_urlname=homespun&".
-        "status=past,upcoming&".
+        "status=past&".
         "time=-$monthsPast"."m,&fields=event_hosts&key=$apiKey";
     
     $result = trim( file_get_contents( $url ) );
