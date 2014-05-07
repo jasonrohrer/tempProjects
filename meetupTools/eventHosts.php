@@ -60,39 +60,60 @@ if( $monthsPast != 0 ) {
 
     
     
-    $url ="$apiURL".
+    $nextUrl ="$apiURL".
         "events.xml?group_urlname=homespun&".
         "status=past&".
         "time=-$monthsPast"."m,&fields=event_hosts&key=$apiKey";
+
+    $totalEventCount = 0;
+    $hostedEventCount = 0;
     
-    $result = trim( file_get_contents( $url ) );
+    while( strlen( $nextUrl ) > 5 ) {
+        
+    
+        $result = trim( file_get_contents( $nextUrl ) );
+        
+        
+        $xml = simplexml_load_string( $result );
+
+        if( $xml === FALSE ) {
+            echo "Parsing Meetup data failed<br>";
+            }
 
 
-    $xml = simplexml_load_string( $result );
-
-    if( $xml === FALSE ) {
-        echo "Parsing Meetup data failed<br>";
-        }
-
-
-    foreach( $xml->items->item as $item ) {
-        if( (bool)$item->event_hosts->event_hosts_item ) {
+        foreach( $xml->items->item as $item ) {
+            $totalEventCount ++;
             
-            foreach( $item->event_hosts->event_hosts_item as $host ) {
+            if( (bool)$item->event_hosts->event_hosts_item ) {
+
+                $hostedEventCount++;
                 
-                $id = $host->member_id;
+                foreach( $item->event_hosts->event_hosts_item as $host ) {
                 
-                //echo "$id\n";
+                    $id = $host->member_id;
                 
-                $oldHostCount = $memberList["$id"]["host_count"];
+                    //echo "$id\n";
                 
-                $memberList["$id"]["host_count"] = $oldHostCount + 1;
-                //echo $memberList["$id"]["name"] . "<br>";
-                //echo "   ".$memberList["$id"]["host_count"] . "<br>";
+                    $oldHostCount = $memberList["$id"]["host_count"];
+                
+                    $memberList["$id"]["host_count"] = $oldHostCount + 1;
+                    //echo $memberList["$id"]["name"] . "<br>";
+                    //echo "   ".$memberList["$id"]["host_count"] . "<br>";
+                    }
                 }
             }
+
+
+        // another page of results?
+        $nextUrl = $xml->head->next;
         }
     
+
+
+    echo "Counted <b>$totalEventCount</b> events.<br>";
+    echo "(<b>$hostedEventCount</b> of them had hosts assigned)<br><br>";
+
+           
     
     
     //echo "Result = $result<br><br>";
