@@ -69,12 +69,55 @@ char checkMagic( int inArray[6][6] ) {
 
 
 
-char fillMagic( int inArray[6][6], int inNextPosToFill ) {
+char checkMagicRow( int inArray[6][6], int inRowNumber ) {
+    
+    int rowSum = 0;
+        
+    for( int j=0; j<6; j++ ) {
+        rowSum += inArray[inRowNumber][j];
+        }
+
+    return ( rowSum == 111 );
+    }
+
+
+char checkMagicColumnUnder( int inArray[6][6], int inColumnNumber ) {
+    
+    int colSum = 0;
+        
+    for( int j=0; j<6; j++ ) {
+        colSum += inArray[j][inColumnNumber];
+        }
+
+    return ( colSum <= 111 );
+    }
+
+
+
+
+
+int stepCount = 0;
+
+char fillMagic( int inArray[6][6], int inNextPosToFill, 
+                char inUnusedNumberMap[36] ) {
+
+    if( stepCount >= 10000000 ) {
+        return false;
+        }
+    stepCount ++;
+    
+    /*
+      printSquare( inArray );
+      printf( "\n\n" );
+    */
     
     if( inNextPosToFill == 36 ) {
+        //printSquare( inArray );
+        //printf( "\n\n" );
+
         return checkMagic( inArray );
         }
-    
+    /*
     // walk through remaining available numbers and try each one
     // in next pos
     int remainingNumbers[36];
@@ -95,12 +138,63 @@ char fillMagic( int inArray[6][6], int inNextPosToFill ) {
             remainingCount++;
             }
         }
-    
-    for( int i=0; i<remainingCount; i++ ) {
-        inArray[inNextPosToFill/6][inNextPosToFill%6] = remainingNumbers[i];
+    */
+
+    int posToFillY = inNextPosToFill/6;
+    int posToFillX = inNextPosToFill%6;
+
+    /*
+    printf( "Unused map:\n" );
+    for( int i=0; i<36; i++ ) {
+        printf( "%d ", inUnusedNumberMap[i] );
+        }
+    printf( "\n\n" );
+    */
+    for( int i=0; i<36; i++ ) {
         
-        if( fillMagic( inArray, inNextPosToFill+1 ) ) {
-            return true;
+        if( inUnusedNumberMap[i] ) {
+            inUnusedNumberMap[i] = false;
+            
+            inArray[posToFillY][posToFillX] = i+1;
+            
+            /*
+            printf( "%d: Attempting to fill pos %d,%d with %d\n",
+                    inNextPosToFill, posToFillX, posToFillY, i+1 );
+            */
+            
+            char shouldRecurse = true;
+
+            if( posToFillX == 5 ) {
+                // completing a row
+                // don't bother recursing if this row is not a valid
+                // magic row
+                if( ! checkMagicRow( inArray, posToFillY ) ) {
+                    shouldRecurse = false;
+                    }
+                }
+            
+            if( shouldRecurse && 
+                // at least three cells full, otherwise, never have
+                // sum overflow
+                posToFillY > 3 &&
+                ! checkMagicColumnUnder( inArray, posToFillX ) ) {
+                // column overflow
+                shouldRecurse = false;
+                }
+            
+
+                
+            if( shouldRecurse ) {    
+                if( fillMagic( inArray, 
+                               inNextPosToFill+1, inUnusedNumberMap ) ) {
+                    return true;
+                    }            
+                }
+            
+            inArray[posToFillY][posToFillX] = 0;
+
+            // using this number in this position didn't work
+            inUnusedNumberMap[i] = true;
             }
         }
     }
@@ -235,7 +329,20 @@ int main() {
     printf( "Test\n" );
 
     // too slow.... hmmm...
-    //char result = fillMagic( square, 25 );
+    
+    char unusedMap[36];
+    for( int i=0; i<36; i++ ) {
+        unusedMap[i] = true;
+        }
+
+    for( int y=0; y<6; y++ ) {
+        for( int x=0; x<6; x++ ) {
+            square[y][x] = 0;
+            }
+        }
+    
+
+    char result = fillMagic( square, 0, unusedMap );
 
     printf( "Result of fillMagic = %d\n", result );
 
