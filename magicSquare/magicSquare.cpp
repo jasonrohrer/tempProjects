@@ -13,6 +13,51 @@ int square[6][6] = {
     };
 
 
+/*
+int square[6][6] = {
+    { 28, 21, 1, 14, 17, 30 },
+    { 22, 3, 26, 33, 12, 15 },
+    { 6, 35, 10, 5, 24, 31 },
+    { 29, 4, 25, 34, 11, 8 },
+    { 19, 32, 13, 2, 27, 18 },
+    { 7, 16, 36, 23, 20, 9 }
+    };
+*/  
+
+
+char checkMagic( int inArray[6][6] ) {
+    int magicSum = 111;
+
+    for( int i=0; i<6; i++ ) {
+        int colSum = 0;
+        int rowSum = 0;
+        
+        for( int j=0; j<6; j++ ) {
+            colSum += inArray[j][i];
+            rowSum += inArray[i][j];
+            }
+        
+        if( colSum != magicSum || rowSum != magicSum ) {
+            return false;
+            }
+        }
+    
+    int diagASum = 0;
+    int diagBSum = 0;
+    
+    for( int i=0; i<6; i++ ) {
+        diagASum += inArray[i][i];
+        diagBSum += inArray[6 - i - 1][i];
+        }
+    if( diagASum != magicSum || diagBSum != magicSum ) {
+        return false;
+        }
+
+    return true;
+    }
+
+
+
 int count = 0;
 
 void printValues( int *inValues, int inNumValues, void *inUnused ) {
@@ -138,6 +183,10 @@ int main() {
 
     printf( "Test\n" );
     
+    char magic = checkMagic( square );
+    
+    printf( "Magic test:  %d\n", magic );
+
     /*
     for( int x=0; x<6; x++ ) {
         int sum = 0;
