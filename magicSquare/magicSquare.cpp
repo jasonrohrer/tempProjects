@@ -25,6 +25,17 @@ int square[6][6] = {
 */  
 
 
+char printSquare( int inArray[6][6] ) {
+    for( int y=0; y<6; y++ ) {
+        for( int x=0; x<6; x++ ) {
+            printf( "%3d ", inArray[y][x] );
+            }
+        printf("\n" );
+        }
+    }
+
+
+
 char checkMagic( int inArray[6][6] ) {
     int magicSum = 111;
 
@@ -55,6 +66,46 @@ char checkMagic( int inArray[6][6] ) {
 
     return true;
     }
+
+
+
+char fillMagic( int inArray[6][6], int inNextPosToFill ) {
+    
+    if( inNextPosToFill == 36 ) {
+        return checkMagic( inArray );
+        }
+    
+    // walk through remaining available numbers and try each one
+    // in next pos
+    int remainingNumbers[36];
+    
+    int remainingCount = 0;
+    for( int i=1; i<=36; i++ ) {
+        
+        char alreadyUsed = false;
+        for( int j=0; j<inNextPosToFill; j++ ) {
+            if( inArray[j/6][j%6] == i ) {
+                alreadyUsed = true;
+                break;
+                }
+            }
+        
+        if( !alreadyUsed ) {
+            remainingNumbers[ remainingCount ] = i;
+            remainingCount++;
+            }
+        }
+    
+    for( int i=0; i<remainingCount; i++ ) {
+        inArray[inNextPosToFill/6][inNextPosToFill%6] = remainingNumbers[i];
+        
+        if( fillMagic( inArray, inNextPosToFill+1 ) ) {
+            return true;
+            }
+        }
+    }
+
+
 
 
 
@@ -182,6 +233,14 @@ void checkFixedPlayerAMove( int *inValues, int inNumValues, void *inUnused ) {
 int main() {
 
     printf( "Test\n" );
+
+    // too slow.... hmmm...
+    //char result = fillMagic( square, 25 );
+
+    printf( "Result of fillMagic = %d\n", result );
+
+    printSquare( square );
+    
     
     char magic = checkMagic( square );
     
