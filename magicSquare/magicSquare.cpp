@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-
+/*
 int square[6][6] = {
     { 6, 32, 3, 34, 35, 1 },
     { 7, 11, 27, 28, 8, 30 },
@@ -11,7 +11,16 @@ int square[6][6] = {
     { 25, 29, 10, 9, 26, 12 },
     { 36, 5, 33, 4, 2, 31 }
     };
+*/
 
+int square[36] = {
+    6, 32, 3, 34, 35, 1,
+    7, 11, 27, 28, 8, 30,
+    19, 14, 16, 15, 23, 24,
+    18, 20, 22, 21, 17, 13,
+    25, 29, 10, 9, 26, 12,
+    36, 5, 33, 4, 2, 31
+    };
 
 /*
 int square[6][6] = {
@@ -25,10 +34,10 @@ int square[6][6] = {
 */  
 
 
-char printSquare( int inArray[6][6] ) {
-    for( int y=0; y<6; y++ ) {
-        for( int x=0; x<6; x++ ) {
-            printf( "%3d ", inArray[y][x] );
+char printSquare( int *inArray, int inD ) {
+    for( int y=0; y<inD; y++ ) {
+        for( int x=0; x<inD; x++ ) {
+            printf( "%3d ", inArray[y * inD + x] );
             }
         printf("\n" );
         }
@@ -36,16 +45,16 @@ char printSquare( int inArray[6][6] ) {
 
 
 
-char checkMagic( int inArray[6][6] ) {
-    int magicSum = 111;
+char checkMagic( int *inArray, int inD ) {
+    int magicSum = ( inD * ( inD * inD + 1 ) ) / 2;
 
-    for( int i=0; i<6; i++ ) {
+    for( int i=0; i<inD; i++ ) {
         int colSum = 0;
         int rowSum = 0;
         
-        for( int j=0; j<6; j++ ) {
-            colSum += inArray[j][i];
-            rowSum += inArray[i][j];
+        for( int j=0; j<inD; j++ ) {
+            colSum += inArray[j * inD + i];
+            rowSum += inArray[i * inD + j];
             }
         
         if( colSum != magicSum || rowSum != magicSum ) {
@@ -56,9 +65,9 @@ char checkMagic( int inArray[6][6] ) {
     int diagASum = 0;
     int diagBSum = 0;
     
-    for( int i=0; i<6; i++ ) {
-        diagASum += inArray[i][i];
-        diagBSum += inArray[6 - i - 1][i];
+    for( int i=0; i<inD; i++ ) {
+        diagASum += inArray[i * inD + i];
+        diagBSum += inArray[(inD - i - 1) * inD + i];
         }
     if( diagASum != magicSum || diagBSum != magicSum ) {
         return false;
@@ -69,24 +78,26 @@ char checkMagic( int inArray[6][6] ) {
 
 
 
-char checkMagicRow( int inArray[6][6], int inRowNumber ) {
-    
+char checkMagicRow( int *inArray, int inD, int inRowNumber ) {
+    int magicSum = ( inD * ( inD * inD + 1 ) ) / 2;
+
     int rowSum = 0;
         
-    for( int j=0; j<6; j++ ) {
-        rowSum += inArray[inRowNumber][j];
+    for( int j=0; j<inD; j++ ) {
+        rowSum += inArray[inRowNumber * inD + j];
         }
 
-    return ( rowSum == 111 );
+    return ( rowSum == magicSum );
     }
 
 
-char checkMagicColumnUnder( int inArray[6][6], int inColumnNumber ) {
-    
+char checkMagicColumnUnder( int *inArray, int inD, int inColumnNumber ) {
+    int magicSum = ( inD * ( inD * inD + 1 ) ) / 2;
+
     int colSum = 0;
         
     for( int j=0; j<6; j++ ) {
-        colSum += inArray[j][inColumnNumber];
+        colSum += inArray[j * inD + inColumnNumber];
         }
 
     return ( colSum <= 111 );
@@ -98,24 +109,26 @@ char checkMagicColumnUnder( int inArray[6][6], int inColumnNumber ) {
 
 int stepCount = 0;
 
-char fillMagic( int inArray[6][6], int inNextPosToFill, 
-                char inUnusedNumberMap[36] ) {
-
+char fillMagic( int *inArray, int inD, int inNextPosToFill, 
+                char *inUnusedNumberMap ) {
+    /*
     if( stepCount >= 10000000 ) {
         return false;
         }
     stepCount ++;
-    
+    */
     /*
       printSquare( inArray );
       printf( "\n\n" );
     */
     
-    if( inNextPosToFill == 36 ) {
+    int numCells = inD * inD;
+
+    if( inNextPosToFill == numCells ) {
         //printSquare( inArray );
         //printf( "\n\n" );
 
-        return checkMagic( inArray );
+        return checkMagic( inArray, inD );
         }
     /*
     // walk through remaining available numbers and try each one
@@ -140,8 +153,8 @@ char fillMagic( int inArray[6][6], int inNextPosToFill,
         }
     */
 
-    int posToFillY = inNextPosToFill/6;
-    int posToFillX = inNextPosToFill%6;
+    int posToFillY = inNextPosToFill / inD;
+    int posToFillX = inNextPosToFill % inD;
 
     /*
     printf( "Unused map:\n" );
@@ -150,12 +163,12 @@ char fillMagic( int inArray[6][6], int inNextPosToFill,
         }
     printf( "\n\n" );
     */
-    for( int i=0; i<36; i++ ) {
+    for( int i=0; i<numCells; i++ ) {
         
         if( inUnusedNumberMap[i] ) {
             inUnusedNumberMap[i] = false;
             
-            inArray[posToFillY][posToFillX] = i+1;
+            inArray[inNextPosToFill] = i+1;
             
             /*
             printf( "%d: Attempting to fill pos %d,%d with %d\n",
@@ -168,30 +181,31 @@ char fillMagic( int inArray[6][6], int inNextPosToFill,
                 // completing a row
                 // don't bother recursing if this row is not a valid
                 // magic row
-                if( ! checkMagicRow( inArray, posToFillY ) ) {
+                if( ! checkMagicRow( inArray, inD, posToFillY ) ) {
                     shouldRecurse = false;
                     }
                 }
             
+            /*
             if( shouldRecurse && 
                 // at least three cells full, otherwise, never have
                 // sum overflow
                 posToFillY > 3 &&
-                ! checkMagicColumnUnder( inArray, posToFillX ) ) {
+                ! checkMagicColumnUnder( inArray, inD, posToFillX ) ) {
                 // column overflow
                 shouldRecurse = false;
                 }
-            
+            */
 
                 
             if( shouldRecurse ) {    
-                if( fillMagic( inArray, 
+                if( fillMagic( inArray, inD, 
                                inNextPosToFill+1, inUnusedNumberMap ) ) {
                     return true;
                     }            
                 }
             
-            inArray[posToFillY][posToFillX] = 0;
+            inArray[inNextPosToFill] = 0;
 
             // using this number in this position didn't work
             inUnusedNumberMap[i] = true;
@@ -266,8 +280,7 @@ void checkBothPlayerMovesForTie( int *inValues, int inNumValues,
     int playerBScore = 0;
     
     for( int i=0; i<inNumValues; i++ ) {
-        int turnScore = square[ m->indices[i] ]
-                              [ inValues[i] ];
+        int turnScore = square[ m->indices[i] *  inNumValues + inValues[i] ];
         if( i%2 == 0 ) {
             playerAScore += turnScore;
             }
@@ -329,29 +342,32 @@ int main() {
     printf( "Test\n" );
 
     // too slow.... hmmm...
+
+    #define testD 3
+    #define testNumCells 9
+
+    char unusedMap[ testNumCells ];
+    int testSquare[ testNumCells ];
     
-    char unusedMap[36];
-    for( int i=0; i<36; i++ ) {
+    for( int i=0; i<testNumCells; i++ ) {
         unusedMap[i] = true;
-        }
+        testSquare[i] = 0;
+        }    
 
-    for( int y=0; y<6; y++ ) {
-        for( int x=0; x<6; x++ ) {
-            square[y][x] = 0;
-            }
-        }
-    
-
-    char result = fillMagic( square, 0, unusedMap );
+    char result = fillMagic( testSquare, testD, 0, unusedMap );
 
     printf( "Result of fillMagic = %d\n", result );
 
-    printSquare( square );
-    
-    
-    char magic = checkMagic( square );
+    printSquare( testSquare, testD );
+
+    char magic = checkMagic( testSquare, testD );
     
     printf( "Magic test:  %d\n", magic );
+
+    
+    //return 0;
+    
+
 
     /*
     for( int x=0; x<6; x++ ) {
