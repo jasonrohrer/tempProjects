@@ -219,7 +219,7 @@ char fillMagic( int *inArray, int inD, int inNextPosToFill,
 #include "minorGems/util/SimpleVector.h"
 
 
-CustomRandomSource randSource( 19 );
+CustomRandomSource randSource( 25 );
 
 
 char fillMagicRandom( int *inArray, int inD ) {
@@ -299,7 +299,8 @@ int measureMagicDeviation( int *inArray, int inD ) {
     }
 
 // pick two cells and swap
-void swapRandom( int *inArray, int inNumCells ) {
+// returns true, because swap always done
+char swapRandom( int *inArray, int inNumCells ) {
     int swapPosA = randSource.getRandomBoundedInt( 0, inNumCells - 1 );
     
     int swapPosB = randSource.getRandomBoundedInt( 0, inNumCells - 1 );
@@ -308,6 +309,8 @@ void swapRandom( int *inArray, int inNumCells ) {
     
     inArray[ swapPosA ] = inArray[ swapPosB ];
     inArray[ swapPosB ] = temp;
+    
+    return true;
     }
 
 
@@ -421,6 +424,61 @@ void swapSmart( int *inArray, int inD ) {
 
 
 
+typedef struct swap {
+        int indexA;
+        int indexB;
+    } swap;
+
+
+// make swap that makes the biggest improvement to deviation score
+// steepest descent
+// returns true if improving swap possible
+char bestSwap( int *inArray, int inD, int inNumCells ) {
+    
+    swap bestSwap = { -1, -1 };
+    int bestSwapDeviation = measureMagicDeviation( inArray, inD );
+    
+    for( int i=0; i<inNumCells; i++ ) {
+        for( int j=i+1; j<inNumCells; j++ ) {
+            
+            int temp = inArray[i];
+            inArray[i] = inArray[j];
+            inArray[j] = temp;
+            
+            int deviation = measureMagicDeviation( inArray, inD );
+            if( deviation < bestSwapDeviation ) {
+                bestSwapDeviation = deviation;
+                bestSwap.indexA = i;
+                bestSwap.indexB = j;
+                }
+
+            // swap back
+            temp = inArray[i];
+            inArray[i] = inArray[j];
+            inArray[j] = temp;
+            }
+        }
+    
+
+    if( bestSwap.indexA != -1 ) {
+        // found best improving swap
+        
+        // swap it
+        int i = bestSwap.indexA;
+        int j = bestSwap.indexB;
+
+        int temp = inArray[i];
+        inArray[i] = inArray[j];
+        inArray[j] = temp;
+        return true;
+        }
+    else {
+        return false;
+        }
+    }
+
+
+
 
 // returns new square
 int *improveMutateSquare( int *inArray, int inD ) {
@@ -446,6 +504,8 @@ int *improveMutateSquare( int *inArray, int inD ) {
         // random swaps are better
         //swapSmart( newSquare, inD );
         
+        //bestSwap( newSquare, inD, numCells );
+
         
         newDeviation = measureMagicDeviation( newSquare, inD );
         
@@ -624,6 +684,48 @@ int main() {
     int mutationCount = 0;
     int totalMutationCount = 0;
 
+    int oldDeviation = measureMagicDeviation( testSquare, testD );
+    
+
+    int numRandomSwaps = 3;
+    while( ! checkMagic( testSquare, testD ) ) {
+        
+        //swapRandom( testSquare, testNumCells );
+
+
+        /*
+        if( !bestSwap( testSquare, testD, testNumCells ) ) {
+            // no improving swap possible
+    
+            // do some random swaps
+            for( int i=0; i<numRandomSwaps; i++ ) {
+                swapRandom( testSquare, testNumCells );
+                }
+            // do more random swaps next time
+            numRandomSwaps = 
+                randSource.getRandomBoundedInt( 3, numRandomSwaps * 2 );
+            printf( "numRandomSwaps = %d\n", numRandomSwaps );
+            }
+        */
+
+        if( !bestSwap( testSquare, testD, testNumCells ) ) {
+            fillMagicRandom( testSquare, testD );
+            }
+        
+                                
+        int newDeviation = measureMagicDeviation( testSquare, testD );
+        //printf( "Deviation old, new = %d, %d \n", oldDeviation, newDeviation );
+        oldDeviation = measureMagicDeviation( testSquare, testD );
+        mutationCount ++;
+        totalMutationCount ++;
+
+        if( mutationCount > 3000 ) {
+            printf( "Too many mutations tried, starting over\n" );
+            fillMagicRandom( testSquare, testD );
+            mutationCount = 0;
+            }
+        }
+    
     while( ! checkMagic( testSquare, testD ) ) {
         
         int *betterSquare = improveMutateSquare( testSquare, testD );
