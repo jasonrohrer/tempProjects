@@ -215,6 +215,156 @@ char fillMagic( int *inArray, int inD, int inNextPosToFill,
 
 
 
+#include "minorGems/util/random/CustomRandomSource.h"
+#include "minorGems/util/SimpleVector.h"
+
+
+CustomRandomSource randSource( 15 );
+
+
+char fillMagicRandom( int *inArray, int inD ) {
+    int maxNumber = inD * inD;
+        
+    for( int i=0; i<maxNumber; i++ ) {
+        inArray[i] = i + 1;
+        }
+    
+    // Knuth/Durstenfeld/Fisher/Yates shuffle
+    
+    for( int i=0; i<maxNumber; i++ ) {
+        
+        int swapPos = randSource.getRandomBoundedInt( i, maxNumber - 1 );
+        
+        int temp = inArray[i];
+        inArray[i] = inArray[swapPos];
+        inArray[swapPos] = temp;
+        }
+    }
+
+
+
+int measureMagicDeviation( int *inArray, int inD ) {
+    int magicSum = ( inD * ( inD * inD + 1 ) ) / 2;
+    
+    int totalDeviation = 0;
+    
+    for( int i=0; i<inD; i++ ) {
+        int colSum = 0;
+        int rowSum = 0;
+        
+        for( int j=0; j<inD; j++ ) {
+            colSum += inArray[j * inD + i];
+            rowSum += inArray[i * inD + j];
+            }
+        
+        if( colSum > magicSum ) {
+            totalDeviation += ( colSum - magicSum );
+            }
+        else {
+            totalDeviation += ( magicSum - colSum );
+            }
+
+        if( rowSum > magicSum ) {
+            totalDeviation += ( rowSum - magicSum );
+            }
+        else {
+            totalDeviation += ( magicSum - rowSum );
+            }
+        }
+    
+    int diagASum = 0;
+    int diagBSum = 0;
+    
+    for( int i=0; i<inD; i++ ) {
+        diagASum += inArray[i * inD + i];
+        diagBSum += inArray[(inD - i - 1) * inD + i];
+        }
+
+    
+    if( diagASum > magicSum ) {
+        totalDeviation += ( diagASum - magicSum );
+        }
+    else {
+        totalDeviation += ( magicSum - diagASum );
+        }
+    
+    if( diagBSum > magicSum ) {
+        totalDeviation += ( diagBSum - magicSum );
+        }
+    else {
+        totalDeviation += ( magicSum - diagBSum );
+        }
+    
+    return totalDeviation;
+    }
+
+// pick two cells and swap
+void swapRandom( int *inArray, int inNumCells ) {
+    int swapPosA = randSource.getRandomBoundedInt( 0, inNumCells - 1 );
+    
+    int swapPosB = randSource.getRandomBoundedInt( 0, inNumCells - 1 );
+    
+    int temp = inArray[ swapPosA ];
+    
+    inArray[ swapPosA ] = inArray[ swapPosB ];
+    inArray[ swapPosB ] = temp;
+    }
+
+
+
+
+// returns new square
+int *improveMutateSquare( int *inArray, int inD ) {
+    int numCells = inD * inD;
+    
+    int *newSquare = new int[ numCells ];
+    
+    memcpy( newSquare, inArray, sizeof(int) * numCells );
+    
+    int oldDeviation = measureMagicDeviation( inArray, inD );
+    int newDeviation = oldDeviation;
+
+    int numTries = 0;
+    
+    while( numTries < 1000 &&
+           newDeviation >= oldDeviation ) {
+        
+
+        swapRandom( newSquare, numCells );
+        
+        
+        newDeviation = measureMagicDeviation( newSquare, inD );
+        
+        if( newDeviation > oldDeviation ) {
+            // unswap
+            memcpy( newSquare, inArray, sizeof(int) * numCells );
+            }
+        
+        numTries ++;
+        }
+        
+
+    return newSquare;
+    }
+
+
+
+
+
+int *anyMutateSquare( int *inArray, int inD ) {
+
+    int numCells = inD * inD;
+    
+    int *newSquare = new int[ numCells ];
+    
+    memcpy( newSquare, inArray, sizeof(int) * numCells );
+    
+    swapRandom( newSquare, numCells );
+    
+    return newSquare;
+    }
+
+
 
 
 int count = 0;
@@ -343,8 +493,8 @@ int main() {
 
     // too slow.... hmmm...
 
-    #define testD 3
-    #define testNumCells 9
+    #define testD 6
+    #define testNumCells 36
 
     char unusedMap[ testNumCells ];
     int testSquare[ testNumCells ];
@@ -354,9 +504,38 @@ int main() {
         testSquare[i] = 0;
         }    
 
-    char result = fillMagic( testSquare, testD, 0, unusedMap );
+    //char result = fillMagic( testSquare, testD, 0, unusedMap );
+    fillMagicRandom( testSquare, testD );
 
-    printf( "Result of fillMagic = %d\n", result );
+    char hitBottom = false;
+    
+    int mutationCount = 0;
+
+    while( ! checkMagic( testSquare, testD ) && ! hitBottom ) {
+        
+        int *betterSquare = improveMutateSquare( testSquare, testD );
+
+        mutationCount ++;
+        
+        int newDeviation = measureMagicDeviation( betterSquare, testD );
+        int oldDeviation = measureMagicDeviation( testSquare, testD );
+    
+        printf( "Deviation old, new = %d, %d \n", oldDeviation, newDeviation );
+        
+        if( newDeviation != 0 && newDeviation == oldDeviation ) {
+            printf( "Hit bottom, jumping out\n" );
+            delete [] betterSquare;
+            betterSquare = anyMutateSquare( testSquare, testD );
+            }
+        memcpy( testSquare, betterSquare, testNumCells * sizeof( int ) );
+        
+        delete [] betterSquare;
+        }
+    
+
+    printf( "%d mutations done\n", mutationCount );
+    
+    //printf( "Result of fillMagic = %d\n", result );
 
     printSquare( testSquare, testD );
 
@@ -365,7 +544,7 @@ int main() {
     printf( "Magic test:  %d\n", magic );
 
     
-    //return 0;
+    return 0;
     
 
 
