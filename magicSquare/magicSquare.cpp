@@ -312,6 +312,116 @@ void swapRandom( int *inArray, int inNumCells ) {
 
 
 
+// find worst pair of rows or columns and swap their elements
+void swapSmart( int *inArray, int inD ) {
+    int overMax = inD * inD * inD;
+    
+    int highestColumnIndex = -1;
+    int lowestColumnIndex = -1;
+    int highestColumnSum = 0;
+    int lowestColumnSum = overMax;
+    
+    int highestRowIndex = -1;
+    int lowestRowIndex = -1;
+    int highestRowSum = 0;
+    int lowestRowSum = overMax;
+    
+    for( int i=0; i<inD; i++ ) {
+        int colSum = 0;
+        int rowSum = 0;
+        
+        for( int j=0; j<inD; j++ ) {
+            colSum += inArray[j * inD + i];
+            rowSum += inArray[i * inD + j];
+            }
+        
+        if( colSum > highestColumnSum ) {
+            highestColumnSum = colSum;
+            highestColumnIndex = i;
+            }
+        if( colSum < lowestColumnSum ) {
+            lowestColumnSum = colSum;
+            lowestColumnIndex = i;
+            }
+
+        if( rowSum > highestRowSum ) {
+            highestRowSum = rowSum;
+            highestRowIndex = i;
+            }
+        if( rowSum < lowestRowSum ) {
+            lowestRowSum = rowSum;
+            lowestRowIndex = i;
+            }
+        }
+    
+    if( highestRowSum > highestColumnSum ) {
+        // improve these rows
+        
+        int bestDiffAfterSwap = overMax;
+        int bestColumnToSwap = -1;
+        
+        int rH = highestRowIndex;
+        int rL = lowestRowIndex;
+
+        for( int i=0; i<inD; i++ ) {
+            int colHighValue = inArray[ rH * inD + i ];
+            int colLowValue = inArray[ rL * inD + i ];
+            
+            int diffIfSwap = 
+                ( ( highestRowSum - colHighValue + colLowValue ) - 
+                  ( lowestRowSum + colHighValue - colLowValue ) );
+            
+            if( diffIfSwap < 0 ) {
+                diffIfSwap = -diffIfSwap;
+                }
+            if( diffIfSwap < bestDiffAfterSwap ) {
+                bestDiffAfterSwap = diffIfSwap;
+                bestColumnToSwap = i;
+                }
+            }
+        
+        int temp = inArray[ rH * inD + bestColumnToSwap ];
+        inArray[ rH * inD + bestColumnToSwap ] = 
+            inArray[ rL * inD + bestColumnToSwap ];
+        inArray[ rL * inD + bestColumnToSwap ] = temp;
+        }
+    else {
+        // improve these columns
+        
+        int bestDiffAfterSwap = overMax;
+        int bestRowToSwap = -1;
+        
+        int cH = highestColumnIndex;
+        int cL = lowestColumnIndex;
+
+        for( int i=0; i<inD; i++ ) {
+            int rowHighValue = inArray[ i * inD + cH ];
+            int rowLowValue = inArray[ i * inD + cL ];
+            
+            int diffIfSwap = 
+                ( ( highestColumnSum - rowHighValue + rowLowValue ) - 
+                  ( lowestColumnSum + rowHighValue - rowLowValue ) );
+            
+            if( diffIfSwap < 0 ) {
+                diffIfSwap = -diffIfSwap;
+                }
+            if( diffIfSwap < bestDiffAfterSwap ) {
+                bestDiffAfterSwap = diffIfSwap;
+                bestRowToSwap = i;
+                }
+            }
+        
+        int temp = inArray[ bestRowToSwap * inD + cH ];
+        inArray[ bestRowToSwap * inD + cH ] = 
+            inArray[ bestRowToSwap * inD + cL ];
+        inArray[ bestRowToSwap * inD + cL ] = temp;
+        }
+    
+    }
+
+
+
+
 // returns new square
 int *improveMutateSquare( int *inArray, int inD ) {
     int numCells = inD * inD;
@@ -325,11 +435,16 @@ int *improveMutateSquare( int *inArray, int inD ) {
 
     int numTries = 0;
     
-    while( numTries < 4999 &&
+    while( numTries < 10000 &&
            newDeviation >= oldDeviation ) {
         
 
         swapRandom( newSquare, numCells );
+        
+        // this doesn't seem to work to find magic squares
+        // even if only used for 1% of swaps.
+        // random swaps are better
+        //swapSmart( newSquare, inD );
         
         
         newDeviation = measureMagicDeviation( newSquare, inD );
