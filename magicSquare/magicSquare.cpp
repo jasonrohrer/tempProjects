@@ -219,7 +219,7 @@ char fillMagic( int *inArray, int inD, int inNextPosToFill,
 #include "minorGems/util/SimpleVector.h"
 
 
-CustomRandomSource randSource( 15 );
+CustomRandomSource randSource( 19 );
 
 
 char fillMagicRandom( int *inArray, int inD ) {
@@ -312,7 +312,6 @@ void swapRandom( int *inArray, int inNumCells ) {
 
 
 
-
 // returns new square
 int *improveMutateSquare( int *inArray, int inD ) {
     int numCells = inD * inD;
@@ -326,7 +325,7 @@ int *improveMutateSquare( int *inArray, int inD ) {
 
     int numTries = 0;
     
-    while( numTries < 1000 &&
+    while( numTries < 4999 &&
            newDeviation >= oldDeviation ) {
         
 
@@ -507,33 +506,43 @@ int main() {
     //char result = fillMagic( testSquare, testD, 0, unusedMap );
     fillMagicRandom( testSquare, testD );
 
-    char hitBottom = false;
-    
     int mutationCount = 0;
+    int totalMutationCount = 0;
 
-    while( ! checkMagic( testSquare, testD ) && ! hitBottom ) {
+    while( ! checkMagic( testSquare, testD ) ) {
         
         int *betterSquare = improveMutateSquare( testSquare, testD );
 
         mutationCount ++;
+        totalMutationCount ++;
         
         int newDeviation = measureMagicDeviation( betterSquare, testD );
         int oldDeviation = measureMagicDeviation( testSquare, testD );
     
-        printf( "Deviation old, new = %d, %d \n", oldDeviation, newDeviation );
+        //printf( "Deviation old, new = %d, %d \n", oldDeviation, newDeviation );
         
         if( newDeviation != 0 && newDeviation == oldDeviation ) {
-            printf( "Hit bottom, jumping out\n" );
+            //printf( "Hit bottom, jumping out\n" );
             delete [] betterSquare;
             betterSquare = anyMutateSquare( testSquare, testD );
+            memcpy( testSquare, betterSquare, 
+                    testNumCells * sizeof( int ) );
             }
         memcpy( testSquare, betterSquare, testNumCells * sizeof( int ) );
         
         delete [] betterSquare;
+
+        
+        if( mutationCount > 400 ) {
+            printf( "Too many mutations tried, starting over\n" );
+            fillMagicRandom( testSquare, testD );
+            mutationCount = 0;
+            }
         }
     
 
-    printf( "%d mutations done\n", mutationCount );
+    printf( "%d mutations done (%d total)\n", 
+            mutationCount, totalMutationCount );
     
     //printf( "Result of fillMagic = %d\n", result );
 
@@ -544,9 +553,13 @@ int main() {
     printf( "Magic test:  %d\n", magic );
 
     
-    return 0;
+    //return 0;
     
-
+    if( testNumCells == 36 ) {
+        // replace main square for rest of tests below
+        memcpy( square, testSquare, sizeof( int ) * testNumCells );
+        }
+    
 
     /*
     for( int x=0; x<6; x++ ) {
