@@ -554,13 +554,22 @@ void findBottomAnyImprovementThenSteepest( int *inArray, int inD ) {
 
 
 
-
-
-void findMagicSquareSteepestBounce( int *inArray, int inD, int inNumBounces ) {
+// try limit:  how many hit-bottom bounces before we give
+// up and start from a new random starting state
+void findMagicSquareSteepestBounce( int *inArray, int inD, int inNumBounces,
+                                    int inTryLimit = -1 ) {
     int numCells = inD * inD;
     
+    int numBounces = 0;
     while( ! checkMagic( inArray, inD ) ) {
         
+        if( inTryLimit > 0 && numBounces > inTryLimit ) {
+            fillMagicRandom( inArray, inD );
+            numBounces = 0;
+            }
+
+        numBounces++;        
+
         for( int i=0; i<inNumBounces; i++ ) {
             swapRandom( inArray, numCells );
             }
@@ -774,8 +783,63 @@ int main() {
         unusedMap[i] = true;
         testSquare[i] = 0;
         }    
+    
 
 
+    #define MAX_LIMITS 8
+    int limitValues[MAX_LIMITS];
+    
+    for( int i=0; i<MAX_LIMITS; i++ ) {
+        limitValues[i] = 25 * ( i+1 );
+        }
+
+    double limitTimeTotal[MAX_LIMITS];
+    double limitWorstTime[MAX_LIMITS];
+    
+    for( int i=0; i<MAX_LIMITS; i++ ) {
+        limitValues[i] = 25 * ( i+1 );
+        
+        limitTimeTotal[i] = 0;
+        limitWorstTime[i] = 0;
+        }
+    
+    int numRuns = 3;
+   
+    for( int r=0; r<numRuns; r++ ) {
+        printf( "Run %d\n", r );
+        
+        int seed = r + 103;
+        
+        randSource.reseed( seed );
+        fillMagicRandom( testSquare, testD );        
+
+        for( int b=0; b<MAX_LIMITS; b++ ) {
+            printf( "   Limit %d\n", limitValues[b] );
+            
+            randSource.reseed( seed );
+            fillMagicRandom( testSquare, testD );        
+
+            double startTime = Time::getCurrentTime();
+            findMagicSquareSteepestBounce( testSquare, 
+                                           testD, 7, limitValues[b] );
+            double netTime = Time::getCurrentTime() - startTime;
+            limitTimeTotal[b] += netTime;
+
+            if( netTime > limitWorstTime[b] ) {
+                limitWorstTime[b] = netTime;
+                }
+            }
+        }
+    for( int b=0; b<MAX_LIMITS; b++ ) {
+        printf( "%d limit average time = %f, worst time = %f\n",
+                limitValues[b], limitTimeTotal[b] / numRuns, 
+                limitWorstTime[b] );
+        }
+
+    return 0;
+
+    
+    
     
 
 
@@ -785,10 +849,10 @@ int main() {
     double timeASum = 0;
     double timeBSum = 0;
 
-    int numRuns = 3;
+    numRuns = 3;
     int numTimingRuns = 10;
     
-    #define MAX_BOUNCES 5
+    #define MAX_BOUNCES 8
     int maxNumBounces = MAX_BOUNCES;
     int minNumBounces = 2;
     
@@ -815,7 +879,7 @@ int main() {
             fillMagicRandom( testSquare, testD );        
 
             double startTime = Time::getCurrentTime();
-            findMagicSquareSteepestBounce( testSquare, testD, b );
+            findMagicSquareSteepestBounce( testSquare, testD, b, 25 );
             double netTime = Time::getCurrentTime() - startTime;
             bounceTimeTotal[b] += netTime;
 
