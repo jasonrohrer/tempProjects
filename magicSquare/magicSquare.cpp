@@ -219,7 +219,7 @@ char fillMagic( int *inArray, int inD, int inNextPosToFill,
 #include "minorGems/util/SimpleVector.h"
 
 
-CustomRandomSource randSource( 25 );
+CustomRandomSource randSource( time( NULL ) );
 
 
 char fillMagicRandom( int *inArray, int inD ) {
@@ -311,6 +311,39 @@ char swapRandom( int *inArray, int inNumCells ) {
     inArray[ swapPosB ] = temp;
     
     return true;
+    }
+
+
+
+// tries random swap, undoes it if no improvement
+// returns true if swap happened
+char swapRandomOnlyImprove( int *inArray, int inD, int inNumCells ) {
+    int oldDeviation = measureMagicDeviation( inArray, inD );
+
+    int swapPosA = randSource.getRandomBoundedInt( 0, inNumCells - 1 );
+    
+    int swapPosB = randSource.getRandomBoundedInt( 0, inNumCells - 1 );
+    
+    int temp = inArray[ swapPosA ];
+    
+    inArray[ swapPosA ] = inArray[ swapPosB ];
+    inArray[ swapPosB ] = temp;
+    
+
+    int newDeviation = measureMagicDeviation( inArray, inD );
+    
+    if( newDeviation < oldDeviation ) {
+        return true;
+        }
+    
+    // else swap back
+
+    temp = inArray[ swapPosA ];
+    
+    inArray[ swapPosA ] = inArray[ swapPosB ];
+    inArray[ swapPosB ] = temp;
+
+    return false;
     }
 
 
@@ -433,7 +466,7 @@ typedef struct swap {
 // make swap that makes the biggest improvement to deviation score
 // steepest descent
 // returns true if improving swap possible
-char bestSwap( int *inArray, int inD, int inNumCells ) {
+char swapBest( int *inArray, int inD, int inNumCells ) {
     
     swap bestSwap = { -1, -1 };
     int bestSwapDeviation = measureMagicDeviation( inArray, inD );
@@ -479,6 +512,48 @@ char bestSwap( int *inArray, int inD, int inNumCells ) {
 
 
 
+// uses a series of best swaps from this point until bottom hit
+void findBottomSteepest( int *inArray, int inD ) {
+    int numCells = inD * inD;
+    
+    while( ! checkMagic( inArray, inD ) ) {
+
+        char swapMade = swapBest( inArray, inD, numCells );
+        
+        if( !swapMade ) {
+            // hit bottom
+            break;
+            }
+        }
+    }
+
+
+
+// uses a series of random improving moves until stuck, then
+// steepest descent from there
+void findBottomAnyImprovementThenSteepest( int *inArray, int inD ) {
+    int numCells = inD * inD;
+    
+
+    int numTries = 0;
+    
+    while( numTries < 10000 ) {
+        
+        char found = swapRandomOnlyImprove( inArray, inD, numCells );
+        numTries++;
+        
+        if( found ) {
+            // start over, looking for another improving move
+            numTries = 0;
+            }
+        }
+
+    // finish up with steepest descent from give-up point
+    findBottomSteepest( inArray, inD );
+    }
+
+
+
 
 // returns new square
 int *improveMutateSquare( int *inArray, int inD ) {
@@ -504,7 +579,7 @@ int *improveMutateSquare( int *inArray, int inD ) {
         // random swaps are better
         //swapSmart( newSquare, inD );
         
-        //bestSwap( newSquare, inD, numCells );
+        //swapBest( newSquare, inD, numCells );
 
         
         newDeviation = measureMagicDeviation( newSquare, inD );
@@ -661,6 +736,10 @@ void checkFixedPlayerAMove( int *inValues, int inNumValues, void *inUnused ) {
 
 
 
+#include "minorGems/system/Time.h"
+
+
+
 int main() {
 
     printf( "Test\n" );
@@ -679,7 +758,68 @@ int main() {
         }    
 
     //char result = fillMagic( testSquare, testD, 0, unusedMap );
-    fillMagicRandom( testSquare, testD );
+
+    double timeFractionSum = 0;
+    double timeASum = 0;
+    double timeBSum = 0;
+
+    int numRuns = 30;
+    int numTimingRuns = 10;
+    
+    for( int r=0; r<numRuns; r++ ) {
+        
+        fillMagicRandom( testSquare, testD );
+
+
+        
+        int testSquareCopy[ testNumCells ];
+        memcpy( testSquareCopy, testSquare, testNumCells * sizeof( int ) );
+
+        double startTime = Time::getCurrentTime();
+
+        for( int t=0; t<numTimingRuns; t++ ) {
+            memcpy( testSquare, testSquareCopy, testNumCells * sizeof( int ) );
+            findBottomSteepest( testSquare, testD );
+            }
+        double timeA = Time::getCurrentTime() - startTime;
+
+
+        startTime = Time::getCurrentTime();
+
+        for( int t=0; t<numTimingRuns; t++ ) {
+            memcpy( testSquare, testSquareCopy, testNumCells * sizeof( int ) );
+            findBottomAnyImprovementThenSteepest( testSquare, testD );
+            }
+        double timeB = Time::getCurrentTime() - startTime;
+
+        timeFractionSum += ( timeA / timeB );
+        
+
+        /*/
+        printf( "Pure steepest found:\n" );
+        printSquare( testSquare, testD );
+        printf( "\nDeviation = %d\n", 
+                measureMagicDeviation( testSquare, testD ) );
+        */
+        //findBottomAnyImprovementThenSteepest( testSquareCopy, testD );
+        
+        /*
+        printf( "\n\nAny-improve, then steepest found:\n" );
+        printSquare( testSquareCopy, testD );
+        printf( "\nDeviation = %d\n", 
+                measureMagicDeviation( testSquareCopy, testD ) );
+        */
+        /*
+        diffSum += ( measureMagicDeviation( testSquare, testD ) - 
+                     measureMagicDeviation( testSquareCopy, testD ) );
+
+        */
+        }
+    
+    printf( "Best-only descent takes %f of the time, on average\n",
+            timeFractionSum / numRuns );
+    
+    return 0;
 
     int mutationCount = 0;
     int totalMutationCount = 0;
@@ -694,7 +834,7 @@ int main() {
 
 
         /*
-        if( !bestSwap( testSquare, testD, testNumCells ) ) {
+        if( !swapBest( testSquare, testD, testNumCells ) ) {
             // no improving swap possible
     
             // do some random swaps
@@ -708,7 +848,7 @@ int main() {
             }
         */
 
-        if( !bestSwap( testSquare, testD, testNumCells ) ) {
+        if( !swapBest( testSquare, testD, testNumCells ) ) {
             fillMagicRandom( testSquare, testD );
             }
         
