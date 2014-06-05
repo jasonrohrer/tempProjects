@@ -555,6 +555,24 @@ void findBottomAnyImprovementThenSteepest( int *inArray, int inD ) {
 
 
 
+
+void findMagicSquareSteepestBounce( int *inArray, int inD, int inNumBounces ) {
+    int numCells = inD * inD;
+    
+    while( ! checkMagic( inArray, inD ) ) {
+        
+        for( int i=0; i<inNumBounces; i++ ) {
+            swapRandom( inArray, numCells );
+            }
+        
+        findBottomSteepest( inArray, inD );
+        }
+    }
+
+    
+    
+
+
 // returns new square
 int *improveMutateSquare( int *inArray, int inD ) {
     int numCells = inD * inD;
@@ -757,67 +775,60 @@ int main() {
         testSquare[i] = 0;
         }    
 
+
+    
+
+
     //char result = fillMagic( testSquare, testD, 0, unusedMap );
 
-    double timeFractionSum = 0;
+    double timeDiffSum = 0;
     double timeASum = 0;
     double timeBSum = 0;
 
-    int numRuns = 30;
+    int numRuns = 3;
     int numTimingRuns = 10;
     
-    for( int r=0; r<numRuns; r++ ) {
-        
-        fillMagicRandom( testSquare, testD );
-
-
-        
-        int testSquareCopy[ testNumCells ];
-        memcpy( testSquareCopy, testSquare, testNumCells * sizeof( int ) );
-
-        double startTime = Time::getCurrentTime();
-
-        for( int t=0; t<numTimingRuns; t++ ) {
-            memcpy( testSquare, testSquareCopy, testNumCells * sizeof( int ) );
-            findBottomSteepest( testSquare, testD );
-            }
-        double timeA = Time::getCurrentTime() - startTime;
-
-
-        startTime = Time::getCurrentTime();
-
-        for( int t=0; t<numTimingRuns; t++ ) {
-            memcpy( testSquare, testSquareCopy, testNumCells * sizeof( int ) );
-            findBottomAnyImprovementThenSteepest( testSquare, testD );
-            }
-        double timeB = Time::getCurrentTime() - startTime;
-
-        timeFractionSum += ( timeA / timeB );
-        
-
-        /*/
-        printf( "Pure steepest found:\n" );
-        printSquare( testSquare, testD );
-        printf( "\nDeviation = %d\n", 
-                measureMagicDeviation( testSquare, testD ) );
-        */
-        //findBottomAnyImprovementThenSteepest( testSquareCopy, testD );
-        
-        /*
-        printf( "\n\nAny-improve, then steepest found:\n" );
-        printSquare( testSquareCopy, testD );
-        printf( "\nDeviation = %d\n", 
-                measureMagicDeviation( testSquareCopy, testD ) );
-        */
-        /*
-        diffSum += ( measureMagicDeviation( testSquare, testD ) - 
-                     measureMagicDeviation( testSquareCopy, testD ) );
-
-        */
+    #define MAX_BOUNCES 5
+    int maxNumBounces = MAX_BOUNCES;
+    int minNumBounces = 2;
+    
+    double bounceTimeTotal[MAX_BOUNCES];
+    double bounceWorstTime[MAX_BOUNCES];
+    
+    for( int b=0; b<maxNumBounces; b++ ) {
+        bounceTimeTotal[b] = 0;
+        bounceWorstTime[b] = 0;
         }
     
-    printf( "Best-only descent takes %f of the time, on average\n",
-            timeFractionSum / numRuns );
+    for( int r=0; r<numRuns; r++ ) {
+        printf( "Run %d\n", r );
+        
+        int seed = r + 103;
+        
+        randSource.reseed( seed );
+        fillMagicRandom( testSquare, testD );        
+
+        for( int b=minNumBounces; b<maxNumBounces; b++ ) {
+            printf( "   Bounce %d\n", b );
+            
+            randSource.reseed( seed );
+            fillMagicRandom( testSquare, testD );        
+
+            double startTime = Time::getCurrentTime();
+            findMagicSquareSteepestBounce( testSquare, testD, b );
+            double netTime = Time::getCurrentTime() - startTime;
+            bounceTimeTotal[b] += netTime;
+
+            if( netTime > bounceWorstTime[b] ) {
+                bounceWorstTime[b] = netTime;
+                }
+            }
+        }
+    for( int b=minNumBounces; b<maxNumBounces; b++ ) {
+        printf( "%d bounces average time = %f, worst time = %f\n",
+                b, bounceTimeTotal[b] / numRuns, bounceWorstTime[b] );
+        }
+    
     
     return 0;
 
