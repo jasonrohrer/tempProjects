@@ -1652,7 +1652,7 @@ int main() {
         for( int i=0; i<tabuList.mTabuSquares.size(); i++ ) {
             TabuSquare *s = *( tabuList.mTabuSquares.getElement( i ) );
             
-            printf( "%3d:  $d\n", i, s->mHitCount );
+            printf( "%3d:  %d\n", i, s->mHitCount );
             }
         }
     
