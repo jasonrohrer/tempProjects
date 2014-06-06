@@ -789,7 +789,7 @@ class TabuSquare {
         // copies internally
         TabuSquare( int *inArray, int inD ) {
             mNumCells = inD * inD;
-            mNumberArray = new int[ inD ];
+            mNumberArray = new int[ mNumCells ];
             memcpy( mNumberArray, inArray, mNumCells * sizeof( int ) );
             }
 
@@ -826,7 +826,7 @@ class TabuList {
             TabuSquare *s = new TabuSquare( inArray, inD );
             mTabuSquares.push_back( s );
 
-            printf( "Tabu list contains %d squares\n", mTabuSquares.size() );
+            //printf( "Tabu list contains %d squares\n", mTabuSquares.size() );
             }
         
         char contains( int *inArray ) {
@@ -964,6 +964,8 @@ void findMagicSquareTabuSearchB( int *inArray, int inD ) {
                 while( tabuList.contains( inArray ) ) {
                     swapRandom( inArray, numCells );
                     }
+                
+                printf( "All swaps for the worst cell lead to tabu\n" );
                 }
             else {
                 if( bestSwapDeviation >= oldDeviation ) {
