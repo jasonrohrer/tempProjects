@@ -686,42 +686,44 @@ void findMagicSquareTabuSearch( int *inArray, int inD ) {
                     // cell on diag B
                     cellErrors[i] += diagErrors[1];
                     }
+                
+                if( cellErrors[i] < 0 ) {
+                    cellErrors[i] = -cellErrors[i];
+                    }
                 }
             }
         
-        char madeSwap = false;
+
+        // look for non-tabu cell with biggest error
         
-        while( ! madeSwap ) {
+        int biggestError = 0;
+        int biggestErrorCell = -1;
+        
+        for( int i=0; i<numCells; i++ ) {
             
-            // look for non-tabu cell with biggest error
+            if( !tabuFlags[i] ) {
+                if( cellErrors[i] > biggestError ) {
+                    biggestError = cellErrors[i];
+                    biggestErrorCell = i;
+                    }
+                }
+            }
         
-            int biggestError = 0;
-            int biggestErrorCell = -1;
+        if( biggestErrorCell != -1 ) {
+                
+            // look for best swap that at least makes some improvement
+            int bestSwapDeviation = inD * inD * inD;
+            int bestSwapIndex = -1;
             
             for( int i=0; i<numCells; i++ ) {
                 
-                if( !tabuFlags[i] ) {
-                    if( cellErrors[i] > biggestError ) {
-                        biggestError = cellErrors[i];
-                        biggestErrorCell = i;
-                        }
-                    }
-                }
-            
-            if( biggestErrorCell != -1 ) {
-                
-                // look for best swap that at least makes some improvement
-                int bestSwapDeviation = oldDeviation;
-                int bestSwapIndex = -1;
-                
-                for( int i=0; i<numCells; i++ ) {
-                    
+                if( i != biggestErrorCell && ! tabuFlags[i] ) {
                     int temp = inArray[biggestErrorCell];
                     inArray[biggestErrorCell] = inArray[i];
                     inArray[i] = temp;
-                    
+                
                     int deviation = measureMagicDeviation( inArray, inD );
-                    if( deviation < bestSwapDeviation ) {
+                    if( deviation <= bestSwapDeviation ) {
                         bestSwapDeviation = deviation;
                         bestSwapIndex = i;
                         }
@@ -731,29 +733,30 @@ void findMagicSquareTabuSearch( int *inArray, int inD ) {
                     inArray[biggestErrorCell] = inArray[i];
                     inArray[i] = temp;
                     }
-
-                if( bestSwapIndex == -1 ) {
-                    // found no improvement from this big-error cell
-                    // at this location
-                    
-                    // cell becomes tabu
-                    tabuFlags[ biggestErrorCell ] = true;
-                    tabuTenures[ biggestErrorCell ] = 0;
-                    }
-                else {
-                    // found an improving swap from this big error cell
-                    // make the swap
-                    int temp = inArray[biggestErrorCell];
-                    inArray[biggestErrorCell] = inArray[bestSwapIndex];
-                    inArray[bestSwapIndex] = temp;
-                    
-                    madeSwap = true;
-                    }
                 }
-            else {
-                // no cells left to try
-                madeSwap = true;
+            
+            if( bestSwapDeviation >= oldDeviation ) {
+                // found no improvement (or equal) from this big-error cell
+                // at this location
+                
+                // local minimum
+                
+                // cell becomes tabu (local minimum that we're
+                // taking the best possible step out of)
+                tabuFlags[ biggestErrorCell ] = true;
+                tabuTenures[ biggestErrorCell ] = 0;
+                
+                // mark swap partner as tabu too
+                tabuFlags[ bestSwapIndex ] = true;
+                tabuTenures[ bestSwapIndex ] = 0;
                 }
+            
+            // make the swap regardless
+            int temp = inArray[biggestErrorCell];
+            inArray[biggestErrorCell] = inArray[bestSwapIndex];
+            inArray[bestSwapIndex] = temp;
+            
+            printf( "Swapping %d with %d\n", biggestErrorCell, bestSwapIndex );
             }
         
 
