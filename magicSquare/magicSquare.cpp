@@ -620,6 +620,7 @@ void findMagicSquareTabuSearch( int *inArray, int inD,
     float tabuResetPercentage = 0.5;
     
     int numTries = 0;
+    int totalTries = 0;
     
     while( ! checkMagic( inArray, inD ) ) {
         int oldDeviation = measureMagicDeviation( inArray, inD );
@@ -629,9 +630,11 @@ void findMagicSquareTabuSearch( int *inArray, int inD,
         
         if( inTryLimit > 0 && numTries > inTryLimit ) {
             // too many tries, start over
-            if( inNumScramblesOnRetry == -1 ) {
+            if( inNumScramblesOnRetry == -1 ||
+                totalTries > inTryLimit * 10 ) {
                 // full random restart
                 fillMagicRandom( inArray, inD );
+                totalTries = 0;
                 }
             else {
                 // try scrambling instead
@@ -650,7 +653,7 @@ void findMagicSquareTabuSearch( int *inArray, int inD,
             }
         
         numTries++;
-        
+        totalTries++;
         
         // increment tabu tenures
         int tabuSize = 0;
@@ -1249,8 +1252,8 @@ int main() {
     #define NUM_TRY_LIMITS 3
     #define NUM_SCRAMBLES 3
     
-    int tryLimitSettings[ NUM_TRY_LIMITS ] = { 500, 750, 1000 };
-    int scrambleSettings[ NUM_SCRAMBLES ] = { -1, 10, 20 };
+    int tryLimitSettings[ NUM_TRY_LIMITS ] = { 650, 750, 1000 };
+    int scrambleSettings[ NUM_SCRAMBLES ] = { -1, 15, 30 };
     
     double tabuTotalTimes[NUM_TRY_LIMITS][NUM_SCRAMBLES];
     double tabuWorstTimes[NUM_TRY_LIMITS][NUM_SCRAMBLES];
@@ -1286,6 +1289,9 @@ int main() {
         
         for( int t=0; t<NUM_TRY_LIMITS; t++ ) {
             for( int s=0; s<NUM_SCRAMBLES; s++ ) {
+                printf( "  %d %d \n", tryLimitSettings[t],
+                        scrambleSettings[s] );
+
                 randSource.reseed( seed );
                 fillMagicRandom( testSquare, testD );
         
