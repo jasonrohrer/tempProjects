@@ -836,6 +836,7 @@ class TabuSquare {
             mNumCells = inD * inD;
             mNumberArray = new int[ mNumCells ];
             memcpy( mNumberArray, inArray, mNumCells * sizeof( int ) );
+            mHitCount = 0;
             }
 
         ~TabuSquare() {
@@ -853,6 +854,7 @@ class TabuSquare {
 
         int mNumCells;
         int *mNumberArray;
+        int mHitCount;
     };
 
 
@@ -879,6 +881,7 @@ class TabuList {
             for( int s=0; s<numSquares; s++ ) {
                 if( ( *( mTabuSquares.getElement( s ) ) )->equals( 
                         inArray ) ) {
+                    ( *( mTabuSquares.getElement( s ) ) )->mHitCount++;
                     return true;
                     }
                 }
@@ -1643,6 +1646,16 @@ int main() {
             lowestTieFraction, highestTieFraction );
 
     printf( "% d collisions\n", collisionCount );
+    
+    if( collisionCount > 0 ) {
+        
+        for( int i=0; i<tabuList.mTabuSquares.size(); i++ ) {
+            TabuSquare *s = *( tabuList.mTabuSquares.getElement( i ) );
+            
+            printf( "%3d:  $d\n", i, s->mHitCount );
+            }
+        }
+    
     
     return 1;
     }
