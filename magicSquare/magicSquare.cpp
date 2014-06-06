@@ -1044,6 +1044,24 @@ void findMagicSquareTabuSearchB( int *inArray, int inD ) {
 
 
 
+
+
+// returns a random 6x6 magic square in newly-allocated array
+// using best known parameters for tabu search
+int *findMagicSquare6Fast() {
+
+    int *result = new int[ 36 ];
+    
+    fillMagicRandom( result, 6 );
+
+    findMagicSquareTabuSearch( result, 6, 1000, 35 );
+    
+    return result;
+    }
+
+    
+
+
     
     
 
@@ -1251,7 +1269,7 @@ int main() {
         }    
     
 
-
+    /*
     int numRuns = 1;
    
     double steepestTotalTime = 0;
@@ -1332,10 +1350,10 @@ int main() {
     
     printf( "Best-first bounce average time = %f, worst time = %f\n\n",
             steepestTotalTime / numRuns, steepestWorstTime );
-    /*
-    printf( "Tabu average time = %f, worst time = %f\n",
-            tabuTotalTime / numRuns, tabuWorstTime );
-    */
+    
+    //printf( "Tabu average time = %f, worst time = %f\n",
+    //        tabuTotalTime / numRuns, tabuWorstTime );
+    
 
     for( int t=0; t<NUM_TRY_LIMITS; t++ ) {
         for( int s=0; s<NUM_SCRAMBLES; s++ ) {
@@ -1473,20 +1491,6 @@ int main() {
         //swapRandom( testSquare, testNumCells );
 
 
-        /*
-        if( !swapBest( testSquare, testD, testNumCells ) ) {
-            // no improving swap possible
-    
-            // do some random swaps
-            for( int i=0; i<numRandomSwaps; i++ ) {
-                swapRandom( testSquare, testNumCells );
-                }
-            // do more random swaps next time
-            numRandomSwaps = 
-                randSource.getRandomBoundedInt( 3, numRandomSwaps * 2 );
-            printf( "numRandomSwaps = %d\n", numRandomSwaps );
-            }
-        */
 
         if( !swapBest( testSquare, testD, testNumCells ) ) {
             fillMagicRandom( testSquare, testD );
@@ -1548,53 +1552,82 @@ int main() {
     char magic = checkMagic( testSquare, testD );
     
     printf( "Magic test:  %d\n", magic );
+    */
+    
+    randSource.reseed( 303 );
+    
+    double highestTieFraction = 0;
+    double lowestTieFraction = 100;
+    
+    for( int r=0; r<10; r++ ) {
+        printf( "Run %d\n", r );
+        
+        int *resultSquare = findMagicSquare6Fast();
+        
+    
 
+        //return 0;
     
-    //return 0;
-    
-    if( testNumCells == 36 ) {
         // replace main square for rest of tests below
-        memcpy( square, testSquare, sizeof( int ) * testNumCells );
-        }
-    
+        memcpy( square, resultSquare, sizeof( int ) * 36 );
+        delete [] resultSquare;
+        
 
-    /*
-    for( int x=0; x<6; x++ ) {
-        int sum = 0;
-        for( int y=0; y<6; y++ ) {
-            sum += square[y][x];
+        /*
+          for( int x=0; x<6; x++ ) {
+          int sum = 0;
+          for( int y=0; y<6; y++ ) {
+          sum += square[y][x];
+          }
+          printf( "Sum = %d\n", sum );
+          }
+
+          for( int y=0; y<6; y++ ) {
+          int sum = 0;
+          for( int x=0; x<6; x++ ) {
+          sum += square[y][x];
+          }
+          printf( "Sum = %d\n", sum );
+          }
+        */
+
+        int indices[6] = { 0, 1, 2, 3, 4, 5 };
+        /*
+          count = 0;
+          callOnAllPerm( indices, 6, 0, printValues, NULL );
+          
+          printf( "Count = %d\n", count );
+        */
+        
+        playerAWinCount = 0;
+        playerBWinCount = 0;
+        tieCount = 0;
+        callOnAllPerm( indices, 6, 0, checkFixedPlayerAMove, NULL );
+        
+        int total = playerAWinCount + playerBWinCount + tieCount;
+        
+        /*
+        printf( "PlayerA Wins %d (%f%%),"
+                "\nPlayer B Wins %d (%f%%),\n"
+                "Tied on %d (%f%%),\n"
+                "Total %d\n\n",
+                playerAWinCount, playerAWinCount * 100.0 / total,
+                playerBWinCount, playerBWinCount * 100.0 / total, 
+                tieCount, tieCount * 100.0 / total, total );
+        */
+
+        double tieFraction = tieCount * 100.0 / total;
+        
+        if( tieFraction > highestTieFraction ) {
+            highestTieFraction = tieFraction;
             }
-        printf( "Sum = %d\n", sum );
-        }
-
-    for( int y=0; y<6; y++ ) {
-        int sum = 0;
-        for( int x=0; x<6; x++ ) {
-            sum += square[y][x];
+        if( tieFraction < lowestTieFraction ) {
+            lowestTieFraction = tieFraction;
             }
-        printf( "Sum = %d\n", sum );
         }
-    */
-
-    int indices[6] = { 0, 1, 2, 3, 4, 5 };
-    /*
-    count = 0;
-    callOnAllPerm( indices, 6, 0, printValues, NULL );
-
-    printf( "Count = %d\n", count );
-    */
-
-    callOnAllPerm( indices, 6, 0, checkFixedPlayerAMove, NULL );
-
-    int total = playerAWinCount + playerBWinCount + tieCount;
     
-    printf( "PlayerA Wins %d (%f%%),"
-            "\nPlayer B Wins %d (%f%%),\n"
-            "Tied on %d (%f%%),\n"
-            "Total %d\n\n",
-            playerAWinCount, playerAWinCount * 100.0 / total,
-            playerBWinCount, playerBWinCount * 100.0 / total, 
-            tieCount, tieCount * 100.0 / total, total );
-    
+    printf( "Lowest tie fraction = %f%%, higest tie fraction = %f%%\n",
+            lowestTieFraction, highestTieFraction );
+
     return 1;
     }
