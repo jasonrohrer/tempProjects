@@ -237,3 +237,11 @@ Lowest tie fraction = 1.194444%, higest tie fraction = 1.819444%
 
 Seems like ties are always pretty rare (1-2%) and never common,
 and never totally absent.
+
+
+Run of 3000:
+Lowest tie fraction = 1.194444%, higest tie fraction = 1.819444%
+ 2895 collisions
+
+
+Oh man... loads of collisions!
