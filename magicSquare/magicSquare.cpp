@@ -629,6 +629,13 @@ void findMagicSquareTabuSearch( int *inArray, int inD,
         
         
         if( inTryLimit > 0 && numTries > inTryLimit ) {
+            
+            // to avoid ruts in PRNG that line up with phase of our
+            // algorithm and stick us in a "no magic squares" space
+            // do one extra try each time, to change our phase
+            inTryLimit++;
+
+
             // too many tries, start over
             if( inNumScramblesOnRetry == -1 ||
                 totalTries > inTryLimit * 10 ) {
@@ -1268,6 +1275,15 @@ int main() {
             tabuWorstTimes[t][s] = 0;
             }
         }
+
+    printf( "Degen case\n" );
+    randSource.reseed( 254 );
+    fillMagicRandom( testSquare, testD );
+    
+    findMagicSquareTabuSearch( testSquare, testD, 
+                               400,
+                               -1 );
+    
 
     
     for( int r=0; r<numRuns; r++ ) {
