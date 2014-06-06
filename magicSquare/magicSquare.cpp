@@ -585,7 +585,12 @@ void findMagicSquareSteepestBounce( int *inArray, int inD, int inNumBounces,
 // uses algorithm described in 
 // "Yet Another Local Search Method for Constraint Solving"
 // by Codognet and Diaz 
-void findMagicSquareTabuSearch( int *inArray, int inD ) {
+// Tries for inTryLimit attempts (or forever on -1)
+// After that, scrambles with inNumScramblesOnRetry random pair swaps, then
+// restarts (or fully-randomized square, if -1)
+void findMagicSquareTabuSearch( int *inArray, int inD, 
+                                int inTryLimit = -1, 
+                                int inNumScramblesOnRetry = -1 ) {
     int magicSum = ( inD * ( inD * inD + 1 ) ) / 2;
     
     int numCells = inD * inD;
@@ -609,16 +614,42 @@ void findMagicSquareTabuSearch( int *inArray, int inD ) {
     //int tabuTableListLimit = inD * inD / 6;
     //float tabuResetPercentage = .10;
     
-    // my own values
-    int tabuTenureLimit = 2 * inD;
-    int tabuTableListLimit = inD + inD / 2;
-    float tabuResetPercentage = .10;
+    // my own values, from experimentation
+    int tabuTenureLimit = (int)( 2 * inD );
+    int tabuTableListLimit = (int)( .1 * inD + 2 );
+    float tabuResetPercentage = 0.5;
     
+    int numTries = 0;
     
     while( ! checkMagic( inArray, inD ) ) {
         int oldDeviation = measureMagicDeviation( inArray, inD );
 
         //printf( "Deviation %d\n", oldDeviation );
+        
+        
+        if( inTryLimit > 0 && numTries > inTryLimit ) {
+            // too many tries, start over
+            if( inNumScramblesOnRetry == -1 ) {
+                // full random restart
+                fillMagicRandom( inArray, inD );
+                }
+            else {
+                // try scrambling instead
+                for( int i=0; i<inNumScramblesOnRetry; i++ ) {
+                    swapRandom( inArray, numCells );
+                    }
+                }
+            
+
+            numTries = 0;
+            
+            for( int i=0; i<numCells; i++ ) {
+                tabuFlags[i] = false;
+                tabuTenures[i] = 0;
+                }
+            }
+        
+        numTries++;
         
         
         // increment tabu tenures
@@ -1207,13 +1238,30 @@ int main() {
     
 
 
-    int numRuns = 10;
+    int numRuns = 3;
    
     double steepestTotalTime = 0;
     double steepestWorstTime = 0;
     
     double tabuTotalTime = 0;
     double tabuWorstTime = 0;
+
+    #define NUM_TRY_LIMITS 3
+    #define NUM_SCRAMBLES 3
+    
+    int tryLimitSettings[ NUM_TRY_LIMITS ] = { 500, 750, 1000 };
+    int scrambleSettings[ NUM_SCRAMBLES ] = { -1, 10, 20 };
+    
+    double tabuTotalTimes[NUM_TRY_LIMITS][NUM_SCRAMBLES];
+    double tabuWorstTimes[NUM_TRY_LIMITS][NUM_SCRAMBLES];
+    
+    for( int t=0; t<NUM_TRY_LIMITS; t++ ) {
+        for( int s=0; s<NUM_SCRAMBLES; s++ ) {
+            tabuTotalTimes[t][s] = 0;
+            tabuWorstTimes[t][s] = 0;
+            }
+        }
+    
     
     for( int r=0; r<numRuns; r++ ) {
         printf( "Run %d\n", r );
@@ -1221,40 +1269,58 @@ int main() {
 
         int seed = r + 103;
         
+        
         randSource.reseed( seed );
         fillMagicRandom( testSquare, testD );
     
         double startTime = Time::getCurrentTime();
-        findMagicSquareSteepestBounce( testSquare, testD, 7, 15 );
+        //findMagicSquareSteepestBounce( testSquare, testD, 7, 15 );
         double netTime = Time::getCurrentTime() - startTime;
         steepestTotalTime += netTime;
     
         if( netTime > steepestWorstTime ) {
             steepestWorstTime = netTime;
             }
+        
 
-
         
-        randSource.reseed( seed );
-        fillMagicRandom( testSquare, testD );
+        for( int t=0; t<NUM_TRY_LIMITS; t++ ) {
+            for( int s=0; s<NUM_SCRAMBLES; s++ ) {
+                randSource.reseed( seed );
+                fillMagicRandom( testSquare, testD );
         
-        startTime = Time::getCurrentTime();
-        findMagicSquareTabuSearchB( testSquare, testD );
-        netTime = Time::getCurrentTime() - startTime;
-        tabuTotalTime += netTime;
+                startTime = Time::getCurrentTime();
+                findMagicSquareTabuSearch( testSquare, testD, 
+                                           tryLimitSettings[t],
+                                           scrambleSettings[s] );
+                netTime = Time::getCurrentTime() - startTime;
+                tabuTotalTimes[t][s] += netTime;
         
-        if( netTime > tabuWorstTime ) {
-            tabuWorstTime = netTime;
+                if( netTime > tabuWorstTimes[t][s] ) {
+                    tabuWorstTimes[t][s] = netTime;
+                    }
+                }
             }
 
         }
-    
+    /*
     printf( "Best-first bounce average time = %f, worst time = %f\n",
             steepestTotalTime / numRuns, steepestWorstTime );
     
     printf( "Tabu average time = %f, worst time = %f\n",
             tabuTotalTime / numRuns, tabuWorstTime );
-    
+    */
+
+    for( int t=0; t<NUM_TRY_LIMITS; t++ ) {
+        for( int s=0; s<NUM_SCRAMBLES; s++ ) {
+            printf( 
+                "%d limit / %d scramble average time = %f, worst time = %f\n",
+                tryLimitSettings[t], scrambleSettings[s],
+                tabuTotalTimes[t][s] / numRuns,
+                tabuWorstTimes[t][s] );
+            }
+        
+        }
     return 0;
     
 
