@@ -245,3 +245,17 @@ Lowest tie fraction = 1.194444%, higest tie fraction = 1.819444%
 
 
 Oh man... loads of collisions!
+
+
+Found that the cycle starts after the 104th square generated, and cycles
+back to square 21, where the same squares are regenerated in order again.
+
+This seemed to be particular to the starting seed 303, though.  Something
+about it caused us to get into a rut that was in phase with our random
+number usage.
+
+Changing to incrementally reseed before each square generation fixes it:
+
+Run of 200:
+Lowest tie fraction = 1.166667%, higest tie fraction = 2.097222%
+ 0 collisions
