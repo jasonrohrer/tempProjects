@@ -775,6 +775,228 @@ void findMagicSquareTabuSearch( int *inArray, int inD ) {
 
 
 
+
+
+
+
+
+// my own version of tabu search for magic squares
+// keeps permanent tabu table of local minimum (stuck) squares
+// that we can NEVER return to
+
+class TabuSquare {
+    public:
+        // copies internally
+        TabuSquare( int *inArray, int inD ) {
+            mNumCells = inD * inD;
+            mNumberArray = new int[ inD ];
+            memcpy( mNumberArray, inArray, mNumCells * sizeof( int ) );
+            }
+
+        ~TabuSquare() {
+            delete [] mNumberArray;
+            }
+
+        char equals( int *inArray ) {
+            for( int i=0; i<mNumCells; i++ ) {
+                if( inArray[i] != mNumberArray[i] ) {
+                    return false;
+                    }
+                }
+            return true;
+            }
+
+        int mNumCells;
+        int *mNumberArray;
+    };
+
+
+
+class TabuList {
+    public:
+
+        ~TabuList() {
+            int numSquares = mTabuSquares.size();
+            for( int s=0; s<numSquares; s++ ) {
+                delete *( mTabuSquares.getElement(s) );
+                }
+            }
+        
+        void insert( int *inArray, int inD ) {
+            TabuSquare *s = new TabuSquare( inArray, inD );
+            mTabuSquares.push_back( s );
+
+            printf( "Tabu list contains %d squares\n", mTabuSquares.size() );
+            }
+        
+        char contains( int *inArray ) {
+            int numSquares = mTabuSquares.size();
+            for( int s=0; s<numSquares; s++ ) {
+                if( ( *( mTabuSquares.getElement( s ) ) )->equals( 
+                        inArray ) ) {
+                    return true;
+                    }
+                }
+            return false;
+            }
+        
+        SimpleVector<TabuSquare*> mTabuSquares;
+    };
+        
+
+
+void findMagicSquareTabuSearchB( int *inArray, int inD ) {
+    int magicSum = ( inD * ( inD * inD + 1 ) ) / 2;
+    
+    int numCells = inD * inD;
+    
+    int *rowErrors = new int[ inD ];
+    int *columnErrors = new int[ inD ];
+    int diagErrors[2];
+
+    int *cellErrors = new int[ numCells ];
+
+    
+    TabuList tabuList;
+        
+    
+    while( ! checkMagic( inArray, inD ) ) {
+        int oldDeviation = measureMagicDeviation( inArray, inD );
+
+        //printf( "Deviation %d\n", oldDeviation );        
+
+        int diagASum = 0;
+        int diagBSum = 0;
+
+        for( int i=0; i<inD; i++ ) {
+            int colSum = 0;
+            int rowSum = 0;
+            
+            for( int j=0; j<inD; j++ ) {
+                colSum += inArray[j * inD + i];
+                rowSum += inArray[i * inD + j];
+                }
+            
+            rowErrors[i] = rowSum - magicSum;
+            columnErrors[i] = colSum - magicSum;
+        
+            diagASum += inArray[i * inD + i];
+            diagBSum += inArray[(inD - i - 1) * inD + i];
+            }
+        
+        
+        diagErrors[0] = diagASum - magicSum;
+        diagErrors[1] = diagBSum - magicSum;
+
+        
+        for( int y=0; y<inD; y++ ) {
+            for( int x=0; x<inD; x++ ) {
+                int i = y * inD + x;
+                
+                cellErrors[i] = rowErrors[y] + columnErrors[x];
+                
+                if( y == x ) {
+                    // cell on diag A
+                    cellErrors[i] += diagErrors[0];
+                    }
+                else if( y == x - inD + 1 ) {
+                    // cell on diag B
+                    cellErrors[i] += diagErrors[1];
+                    }
+                
+                if( cellErrors[i] < 0 ) {
+                    cellErrors[i] = -cellErrors[i];
+                    }
+                }
+            }
+        
+
+        // look for cell with biggest error
+        
+        int biggestError = 0;
+        int biggestErrorCell = -1;
+        
+        for( int i=0; i<numCells; i++ ) {
+            if( cellErrors[i] > biggestError ) {
+                biggestError = cellErrors[i];
+                biggestErrorCell = i;
+                }
+            }
+        
+        if( biggestErrorCell != -1 ) {
+                
+            // look for best non-tabu swap that at least makes some improvement
+            int bestSwapDeviation = inD * inD * inD;
+            int bestSwapIndex = -1;
+            
+            for( int i=0; i<numCells; i++ ) {
+                
+                if( i != biggestErrorCell ) {
+                    int temp = inArray[biggestErrorCell];
+                    inArray[biggestErrorCell] = inArray[i];
+                    inArray[i] = temp;
+                
+                    if( ! tabuList.contains( inArray ) ) {
+
+                        int deviation = measureMagicDeviation( inArray, inD );
+                        if( deviation <= bestSwapDeviation ) {
+                            bestSwapDeviation = deviation;
+                            bestSwapIndex = i;
+                            }
+                        }
+                    
+                    
+                    // swap back
+                    temp = inArray[biggestErrorCell];
+                    inArray[biggestErrorCell] = inArray[i];
+                    inArray[i] = temp;
+                    }
+                }
+            
+            if( bestSwapIndex == -1 ) {
+                // every possible swap for this cell leads to a tabu
+                // state... hmmm
+                
+                // obviously, mark this state as tabu
+                tabuList.insert( inArray, inD );
+                
+                // make a random jump out of it to a non tabu state
+                while( tabuList.contains( inArray ) ) {
+                    swapRandom( inArray, numCells );
+                    }
+                }
+            else {
+                if( bestSwapDeviation >= oldDeviation ) {
+                    // found no improvement (or equal) from this big-error cell
+                    // at this location
+                
+                    // local minimum
+                    
+                    // never return here again
+                    tabuList.insert( inArray, inD );
+                    }
+            
+                // make the swap regardless
+                int temp = inArray[biggestErrorCell];
+                inArray[biggestErrorCell] = inArray[bestSwapIndex];
+                inArray[bestSwapIndex] = temp;
+            
+                //printf( "Swapping %d with %d\n", 
+                // biggestErrorCell, bestSwapIndex );
+                }
+            
+            }
+
+        }
+    
+    
+    delete [] columnErrors;
+    delete [] rowErrors;
+    delete [] cellErrors;
+    }
+
+
+
     
     
 
@@ -1015,7 +1237,7 @@ int main() {
         fillMagicRandom( testSquare, testD );
         
         startTime = Time::getCurrentTime();
-        findMagicSquareTabuSearch( testSquare, testD );
+        findMagicSquareTabuSearchB( testSquare, testD );
         netTime = Time::getCurrentTime() - startTime;
         tabuTotalTime += netTime;
         
