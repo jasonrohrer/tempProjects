@@ -1238,7 +1238,7 @@ int main() {
     
 
 
-    int numRuns = 3;
+    int numRuns = 1;
    
     double steepestTotalTime = 0;
     double steepestWorstTime = 0;
@@ -1274,7 +1274,7 @@ int main() {
         fillMagicRandom( testSquare, testD );
     
         double startTime = Time::getCurrentTime();
-        //findMagicSquareSteepestBounce( testSquare, testD, 7, 15 );
+        findMagicSquareSteepestBounce( testSquare, testD, 7, 15 );
         double netTime = Time::getCurrentTime() - startTime;
         steepestTotalTime += netTime;
     
@@ -1303,10 +1303,10 @@ int main() {
             }
 
         }
-    /*
-    printf( "Best-first bounce average time = %f, worst time = %f\n",
-            steepestTotalTime / numRuns, steepestWorstTime );
     
+    printf( "Best-first bounce average time = %f, worst time = %f\n\n",
+            steepestTotalTime / numRuns, steepestWorstTime );
+    /*
     printf( "Tabu average time = %f, worst time = %f\n",
             tabuTotalTime / numRuns, tabuWorstTime );
     */
