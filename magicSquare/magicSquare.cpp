@@ -1572,6 +1572,8 @@ int main() {
     for( int r=0; r<10; r++ ) {
         printf( "Run %d\n", r );
         
+        randSource.reseed( r + 20 );
+        
         int *resultSquare = findMagicSquare6Fast();
         
         if( tabuList.contains( resultSquare ) ) {
