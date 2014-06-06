@@ -805,6 +805,10 @@ void findMagicSquareTabuSearch( int *inArray, int inD,
     delete [] columnErrors;
     delete [] rowErrors;
     delete [] cellErrors;
+
+    
+    delete [] tabuFlags;
+    delete [] tabuTenures;
     }
 
 
@@ -1266,6 +1270,16 @@ int main() {
         }
     
     
+    // test degen case
+    randSource.reseed( 430 );
+    fillMagicRandom( testSquare, testD );
+
+    findMagicSquareTabuSearch( testSquare, testD, 400, -1 );
+    
+    printSquare( testSquare, testD );
+    
+
+
     for( int r=0; r<numRuns; r++ ) {
         printf( "Run %d\n", r );
 
