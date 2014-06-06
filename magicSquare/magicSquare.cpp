@@ -751,7 +751,7 @@ void findMagicSquareTabuSearch( int *inArray, int inD,
         if( biggestErrorCell != -1 ) {
                 
             // look for best swap that at least makes some improvement
-            int bestSwapDeviation = inD * inD * inD;
+            int bestSwapDeviation = inD * magicSum;
             int bestSwapIndex = -1;
             
             for( int i=0; i<numCells; i++ ) {
@@ -964,7 +964,7 @@ void findMagicSquareTabuSearchB( int *inArray, int inD ) {
         if( biggestErrorCell != -1 ) {
                 
             // look for best non-tabu swap that at least makes some improvement
-            int bestSwapDeviation = inD * inD * inD;
+            int bestSwapDeviation = inD * magicSum;
             int bestSwapIndex = -1;
             
             for( int i=0; i<numCells; i++ ) {
@@ -1254,10 +1254,10 @@ int main() {
     double tabuWorstTime = 0;
 
     #define NUM_TRY_LIMITS 3
-    #define NUM_SCRAMBLES 3
+    #define NUM_SCRAMBLES 1
     
-    int tryLimitSettings[ NUM_TRY_LIMITS ] = { 650, 750, 1000 };
-    int scrambleSettings[ NUM_SCRAMBLES ] = { -1, 15, 30 };
+    int tryLimitSettings[ NUM_TRY_LIMITS ] = { 400, 600, 800 };
+    int scrambleSettings[ NUM_SCRAMBLES ] = { -1 };
     
     double tabuTotalTimes[NUM_TRY_LIMITS][NUM_SCRAMBLES];
     double tabuWorstTimes[NUM_TRY_LIMITS][NUM_SCRAMBLES];
@@ -1268,23 +1268,13 @@ int main() {
             tabuWorstTimes[t][s] = 0;
             }
         }
-    
-    
-    // test degen case
-    randSource.reseed( 430 );
-    fillMagicRandom( testSquare, testD );
 
-    findMagicSquareTabuSearch( testSquare, testD, 400, -1 );
     
-    printSquare( testSquare, testD );
-    
-
-
     for( int r=0; r<numRuns; r++ ) {
         printf( "Run %d\n", r );
 
 
-        int seed = r + 103;
+        int seed = r + 203;
         
         
         randSource.reseed( seed );
