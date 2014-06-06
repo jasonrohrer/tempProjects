@@ -605,15 +605,20 @@ void findMagicSquareTabuSearch( int *inArray, int inD ) {
         }
     
     // values suggested from paper
-    int tabuTenureLimit = inD - 1;
-    int tabuTableListLimit = inD * inD / 6;
+    //int tabuTenureLimit = inD - 1;
+    //int tabuTableListLimit = inD * inD / 6;
+    //float tabuResetPercentage = .10;
+    
+    // my own values
+    int tabuTenureLimit = 2 * inD;
+    int tabuTableListLimit = inD + inD / 2;
     float tabuResetPercentage = .10;
     
     
     while( ! checkMagic( inArray, inD ) ) {
         int oldDeviation = measureMagicDeviation( inArray, inD );
 
-        printf( "Deviation %d\n", oldDeviation );
+        //printf( "Deviation %d\n", oldDeviation );
         
         
         // increment tabu tenures
@@ -747,8 +752,8 @@ void findMagicSquareTabuSearch( int *inArray, int inD ) {
                 tabuTenures[ biggestErrorCell ] = 0;
                 
                 // mark swap partner as tabu too
-                tabuFlags[ bestSwapIndex ] = true;
-                tabuTenures[ bestSwapIndex ] = 0;
+                //tabuFlags[ bestSwapIndex ] = true;
+                //tabuTenures[ bestSwapIndex ] = 0;
                 }
             
             // make the swap regardless
@@ -756,7 +761,7 @@ void findMagicSquareTabuSearch( int *inArray, int inD ) {
             inArray[biggestErrorCell] = inArray[bestSwapIndex];
             inArray[bestSwapIndex] = temp;
             
-            printf( "Swapping %d with %d\n", biggestErrorCell, bestSwapIndex );
+            //printf( "Swapping %d with %d\n", biggestErrorCell, bestSwapIndex );
             }
         
 
@@ -978,7 +983,7 @@ int main() {
     
 
 
-    int numRuns = 3;
+    int numRuns = 10;
    
     double steepestTotalTime = 0;
     double steepestWorstTime = 0;
@@ -1019,6 +1024,12 @@ int main() {
             }
 
         }
+    
+    printf( "Best-first bounce average time = %f, worst time = %f\n",
+            steepestTotalTime / numRuns, steepestWorstTime );
+    
+    printf( "Tabu average time = %f, worst time = %f\n",
+            tabuTotalTime / numRuns, tabuWorstTime );
     
     return 0;
     
