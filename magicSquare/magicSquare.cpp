@@ -578,6 +578,170 @@ void findMagicSquareSteepestBounce( int *inArray, int inD, int inNumBounces,
         }
     }
 
+
+
+
+
+// uses algorithm described in 
+// "Yet Another Local Search Method for Constraint Solving"
+// by Codognet and Diaz 
+void findMagicSquareTabuSearch( int *inArray, int inD ) {
+    int magicSum = ( inD * ( inD * inD + 1 ) ) / 2;
+    
+    int numCells = inD * inD;
+    
+    int *rowErrors = new int[ inD ];
+    int *columnErrors = new int[ inD ];
+    int diagErrors[2];
+
+    int *cellErrors = new int[ numCells ];
+
+    
+    char *tabuFlags = new char[ numCells ];
+    int *tabuTenures = new int[ numCells ];
+    for( int i=0; i<numCells; i++ ) {
+        tabuFlags[i] = false;
+        tabuTenures[i] = 0;
+        }
+    
+    int tabuTenureLimit = inD - 1;
+    
+    
+    while( ! checkMagic( inArray, inD ) ) {
+        int oldDeviation = measureMagicDeviation( inArray, inD );
+
+        
+        // increment tabu tenures
+        for( int i=0; i<numCells; i++ ) {
+            if( tabuFlags[i] ) {
+                tabuTenures[i] ++;
+                
+                if( tabuTenures[i] > tabuTenureLimit ) {
+                    // been on tabu list too long
+                    tabuFlags[i] = 0;
+                    tabuTenures[i] = 0;
+                    }
+                }
+            }
+
+
+        int diagASum = 0;
+        int diagBSum = 0;
+
+        for( int i=0; i<inD; i++ ) {
+            int colSum = 0;
+            int rowSum = 0;
+            
+            for( int j=0; j<inD; j++ ) {
+                colSum += inArray[j * inD + i];
+                rowSum += inArray[i * inD + j];
+                }
+            
+            rowErrors[i] = rowSum - magicSum;
+            columnErrors[i] = colSum - magicSum;
+        
+            diagASum += inArray[i * inD + i];
+            diagBSum += inArray[(inD - i - 1) * inD + i];
+            }
+        
+        
+        diagErrors[0] = diagASum - magicSum;
+        diagErrors[1] = diagBSum - magicSum;
+
+        
+        for( int y=0; y<inD; y++ ) {
+            for( int x=0; x<inD; x++ ) {
+                int i = y * inD + x;
+                
+                cellErrors[i] = rowErrors[y] + columnErrors[x];
+                
+                if( y == x ) {
+                    // cell on diag A
+                    cellErrors[i] += diagErrors[0];
+                    }
+                else if( y == x - inD + 1 ) {
+                    // cell on diag B
+                    cellErrors[i] += diagErrors[1];
+                    }
+                }
+            }
+        
+        char madeSwap = false;
+        
+        while( ! madeSwap ) {
+            
+            // look for non-tabu cell with biggest error
+        
+            int biggestError = 0;
+            int biggestErrorCell = -1;
+            
+            for( int i=0; i<numCells; i++ ) {
+                
+                if( !tabuFlags[i] ) {
+                    if( cellErrors[i] > biggestError ) {
+                        biggestError = cellErrors[i];
+                        biggestErrorCell = i;
+                        }
+                    }
+                }
+            
+            if( biggestErrorCell != -1 ) {
+                
+                // look for best swap that at least makes some improvement
+                int bestSwapDeviation = oldDeviation;
+                int bestSwapIndex = -1;
+                
+                for( int i=0; i<numCells; i++ ) {
+                    
+                    int temp = inArray[biggestErrorCell];
+                    inArray[biggestErrorCell] = inArray[i];
+                    inArray[i] = temp;
+                    
+                    int deviation = measureMagicDeviation( inArray, inD );
+                    if( deviation < bestSwapDeviation ) {
+                        bestSwapDeviation = deviation;
+                        bestSwapIndex = i;
+                        }
+                    
+                    // swap back
+                    temp = inArray[biggestErrorCell];
+                    inArray[biggestErrorCell] = inArray[i];
+                    inArray[i] = temp;
+                    }
+
+                if( bestSwapIndex == -1 ) {
+                    // found no improvement from this big-error cell
+                    // at this location
+                    
+                    // cell becomes tabu
+                    tabuFlags[ biggestErrorCell ] = true;
+                    tabuTenures[ biggestErrorCell ] = 0;
+                    }
+                else {
+                    // found an improving swap from this big error cell
+                    // make the swap
+                    int temp = inArray[biggestErrorCell];
+                    inArray[biggestErrorCell] = inArray[bestSwapIndex];
+                    inArray[bestSwapIndex] = temp;
+                    }
+                }
+            else {
+                // no cells left to try
+                madeSwap = true;
+                }
+            }
+        
+
+        }
+    
+    
+    delete [] columnErrors;
+    delete [] rowErrors;
+    delete [] cellErrors;
+    }
+
+
+
     
     
 
@@ -785,7 +949,7 @@ int main() {
         }    
     
 
-
+    
     #define MAX_LIMITS 8
     int limitValues[MAX_LIMITS];
     
