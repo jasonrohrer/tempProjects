@@ -604,14 +604,20 @@ void findMagicSquareTabuSearch( int *inArray, int inD ) {
         tabuTenures[i] = 0;
         }
     
+    // values suggested from paper
     int tabuTenureLimit = inD - 1;
+    int tabuTableListLimit = inD * inD / 6;
+    float tabuResetPercentage = .10;
     
     
     while( ! checkMagic( inArray, inD ) ) {
         int oldDeviation = measureMagicDeviation( inArray, inD );
 
+        printf( "Deviation %d\n", oldDeviation );
+        
         
         // increment tabu tenures
+        int tabuSize = 0;
         for( int i=0; i<numCells; i++ ) {
             if( tabuFlags[i] ) {
                 tabuTenures[i] ++;
@@ -621,9 +627,26 @@ void findMagicSquareTabuSearch( int *inArray, int inD ) {
                     tabuFlags[i] = 0;
                     tabuTenures[i] = 0;
                     }
+                else {
+                    tabuSize ++;
+                    }
                 }
             }
-
+        
+        if( tabuSize > tabuTableListLimit ) {
+            for( int i=0; i<numCells; i++ ) {
+                // reset some at random
+                if( tabuFlags[i] ) {
+                    if( randSource.getRandomFloat() <= tabuResetPercentage ) {
+                        
+                        tabuFlags[i] = 0;
+                        tabuTenures[i] = 0;
+                        }
+                    }
+                }
+            
+            }
+        
 
         int diagASum = 0;
         int diagBSum = 0;
@@ -723,6 +746,8 @@ void findMagicSquareTabuSearch( int *inArray, int inD ) {
                     int temp = inArray[biggestErrorCell];
                     inArray[biggestErrorCell] = inArray[bestSwapIndex];
                     inArray[bestSwapIndex] = temp;
+                    
+                    madeSwap = true;
                     }
                 }
             else {
@@ -949,7 +974,53 @@ int main() {
         }    
     
 
+
+    int numRuns = 3;
+   
+    double steepestTotalTime = 0;
+    double steepestWorstTime = 0;
     
+    double tabuTotalTime = 0;
+    double tabuWorstTime = 0;
+    
+    for( int r=0; r<numRuns; r++ ) {
+        printf( "Run %d\n", r );
+
+
+        int seed = r + 103;
+        
+        randSource.reseed( seed );
+        fillMagicRandom( testSquare, testD );
+    
+        double startTime = Time::getCurrentTime();
+        findMagicSquareSteepestBounce( testSquare, testD, 7, 15 );
+        double netTime = Time::getCurrentTime() - startTime;
+        steepestTotalTime += netTime;
+    
+        if( netTime > steepestWorstTime ) {
+            steepestWorstTime = netTime;
+            }
+
+
+        
+        randSource.reseed( seed );
+        fillMagicRandom( testSquare, testD );
+        
+        startTime = Time::getCurrentTime();
+        findMagicSquareTabuSearch( testSquare, testD );
+        netTime = Time::getCurrentTime() - startTime;
+        tabuTotalTime += netTime;
+        
+        if( netTime > tabuWorstTime ) {
+            tabuWorstTime = netTime;
+            }
+
+        }
+    
+    return 0;
+    
+
+
     #define MAX_LIMITS 8
     int limitValues[MAX_LIMITS];
     
@@ -967,7 +1038,7 @@ int main() {
         limitWorstTime[i] = 0;
         }
     
-    int numRuns = 3;
+    numRuns = 3;
    
     for( int r=0; r<numRuns; r++ ) {
         printf( "Run %d\n", r );
