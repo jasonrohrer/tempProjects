@@ -1,0 +1,225 @@
+30 runs, seed 103:
+
+2 bounces average time = 1.848333, worst time = 5.488000
+3 bounces average time = 0.726967, worst time = 2.371000
+4 bounces average time = 0.714667, worst time = 4.295000
+5 bounces average time = 0.489800, worst time = 1.943000
+6 bounces average time = 0.799100, worst time = 3.263000
+7 bounces average time = 0.638933, worst time = 2.838000
+8 bounces average time = 0.605167, worst time = 2.378000
+9 bounces average time = 0.571667, worst time = 2.547000
+
+
+30 runs, seed 203:
+
+2 bounces average time = 1.155467, worst time = 3.382000
+3 bounces average time = 1.015467, worst time = 4.353000
+4 bounces average time = 0.951967, worst time = 3.712000
+5 bounces average time = 0.661500, worst time = 2.062000
+6 bounces average time = 0.516367, worst time = 2.584000
+7 bounces average time = 0.468033, worst time = 2.245000
+8 bounces average time = 0.713467, worst time = 3.169000
+9 bounces average time = 0.607367, worst time = 2.358000
+
+
+100 runs:
+2 bounces average time = 1.215720, worst time = 5.669000
+3 bounces average time = 0.980340, worst time = 8.809000
+4 bounces average time = 0.783480, worst time = 4.635000
+5 bounces average time = 0.676080, worst time = 2.466000
+6 bounces average time = 0.528620, worst time = 4.062000
+7 bounces average time = 0.496730, worst time = 2.576000
+8 bounces average time = 0.696770, worst time = 3.838000
+9 bounces average time = 0.558680, worst time = 3.023000
+
+
+
+Testing bounce limits:
+
+Limit 50:
+2 bounces average time = 8.847000, worst time = 14.375000
+3 bounces average time = 6.166667, worst time = 11.095000
+4 bounces average time = 3.904000, worst time = 5.951000
+5 bounces average time = 0.235333, worst time = 0.387000
+6 bounces average time = 3.191667, worst time = 8.379000
+7 bounces average time = 1.183333, worst time = 1.522000
+
+Limit 100:
+2 bounces average time = 3.555667, worst time = 6.979000
+3 bounces average time = 2.083667, worst time = 4.490000
+4 bounces average time = 1.056667, worst time = 2.002000
+5 bounces average time = 0.538667, worst time = 1.293000
+6 bounces average time = 1.211000, worst time = 2.612000
+7 bounces average time = 1.382000, worst time = 1.533000
+
+Limit 25:
+2 bounces average time = 2.675667, worst time = 3.218000
+3 bounces average time = 2.746667, worst time = 3.237000
+4 bounces average time = 3.639000, worst time = 9.040000
+5 bounces average time = 3.168000, worst time = 7.695000
+6 bounces average time = 0.878667, worst time = 1.472000
+7 bounces average time = 3.072667, worst time = 5.564000
+
+
+
+100 runs:
+
+25 limit average time = 0.548470, worst time = 2.985000
+50 limit average time = 0.573870, worst time = 3.566000
+75 limit average time = 0.548460, worst time = 2.169000
+100 limit average time = 0.554180, worst time = 2.513000
+125 limit average time = 0.604400, worst time = 5.641000
+150 limit average time = 0.619210, worst time = 1.967000
+175 limit average time = 0.569680, worst time = 3.070000
+200 limit average time = 0.569220, worst time = 2.383000
+
+
+5 limit average time = 0.520690, worst time = 2.734000
+10 limit average time = 0.575460, worst time = 5.180000
+15 limit average time = 0.504780, worst time = 2.767000
+20 limit average time = 0.570910, worst time = 2.957000
+25 limit average time = 0.561360, worst time = 2.908000
+30 limit average time = 0.534340, worst time = 2.478000
+35 limit average time = 0.557630, worst time = 3.258000
+40 limit average time = 0.486860, worst time = 1.803000
+
+
+300 runs:
+10 limit average time = 0.586523, worst time = 3.000000
+15 limit average time = 0.489380, worst time = 3.021000
+20 limit average time = 0.585070, worst time = 3.391000
+
+14 limit average time = 0.505317, worst time = 2.934000
+15 limit average time = 0.487990, worst time = 3.357000
+16 limit average time = 0.596640, worst time = 3.913000
+
+
+Testing 15 limit:
+
+300 runs:
+
+4 bounces average time = 0.582590, worst time = 4.061000
+5 bounces average time = 0.596327, worst time = 3.562000
+6 bounces average time = 0.501577, worst time = 3.222000
+7 bounces average time = 0.494453, worst time = 3.003000
+8 bounces average time = 0.623567, worst time = 3.715000
+9 bounces average time = 0.614170, worst time = 3.574000
+
+
+Seems like 7 bounces and 15 limit on retries are best for this method.
+
+Trying a Tabu-based search as alternative.
+
+
+
+Got Tabu, with full rescramble after too many failed tries,
+working for a great improvement:
+
+
+300 runs:
+
+Best-first bounce average time = 0.566607, worst time = 3.804000
+
+400 limit / -1 scramble average time = 0.100303, worst time = 0.572000
+600 limit / -1 scramble average time = 0.099320, worst time = 0.898000
+800 limit / -1 scramble average time = 0.088250, worst time = 0.699000
+
+That's 6x faster.
+
+
+700 limit / -1 scramble average time = 0.085660, worst time = 0.548000
+800 limit / -1 scramble average time = 0.083203, worst time = 0.519000
+900 limit / -1 scramble average time = 0.085200, worst time = 0.686000
+
+
+700 limit / -1 scramble average time = 0.092990, worst time = 0.562000
+700 limit / 15 scramble average time = 0.086997, worst time = 0.537000
+700 limit / 30 scramble average time = 0.093307, worst time = 1.069000
+800 limit / -1 scramble average time = 0.089293, worst time = 0.512000
+800 limit / 15 scramble average time = 0.091273, worst time = 0.635000
+800 limit / 30 scramble average time = 0.093067, worst time = 0.726000
+900 limit / -1 scramble average time = 0.091607, worst time = 0.803000
+900 limit / 15 scramble average time = 0.085803, worst time = 0.492000
+900 limit / 30 scramble average time = 0.087337, worst time = 0.540000
+
+
+800 limit / -1 scramble average time = 0.083387, worst time = 0.509000
+800 limit / 15 scramble average time = 0.086627, worst time = 0.649000
+800 limit / 30 scramble average time = 0.087200, worst time = 0.500000
+900 limit / -1 scramble average time = 0.085707, worst time = 0.685000
+900 limit / 15 scramble average time = 0.082893, worst time = 0.518000
+900 limit / 30 scramble average time = 0.081270, worst time = 0.539000
+1000 limit / -1 scramble average time = 0.089503, worst time = 0.877000
+1000 limit / 15 scramble average time = 0.082930, worst time = 0.455000
+1000 limit / 30 scramble average time = 0.074437, worst time = 0.624000
+
+
+
+900 limit / -1 scramble average time = 0.090123, worst time = 0.837000
+900 limit / 15 scramble average time = 0.088660, worst time = 1.183000
+900 limit / 30 scramble average time = 0.086973, worst time = 1.189000
+1000 limit / -1 scramble average time = 0.095657, worst time = 0.972000
+1000 limit / 15 scramble average time = 0.090530, worst time = 1.153000
+1000 limit / 30 scramble average time = 0.081220, worst time = 1.556000
+1100 limit / -1 scramble average time = 0.094427, worst time = 1.798000
+1100 limit / 15 scramble average time = 0.090900, worst time = 0.662000
+1100 limit / 30 scramble average time = 0.085103, worst time = 0.509000
+
+
+1000 limit / -1 scramble average time = 0.088650, worst time = 0.857000
+1000 limit / 25 scramble average time = 0.084627, worst time = 0.539000
+1000 limit / 30 scramble average time = 0.073713, worst time = 0.618000
+1000 limit / 35 scramble average time = 0.082030, worst time = 0.365000
+
+1000 limit / -1 scramble average time = 0.088277, worst time = 0.863000
+1000 limit / 28 scramble average time = 0.078487, worst time = 0.631000
+1000 limit / 30 scramble average time = 0.073577, worst time = 0.622000
+1000 limit / 32 scramble average time = 0.075343, worst time = 0.412000
+
+Yes, 30 is the best average time, but look at the worst time...  hmm...
+
+
+1000 limit / -1 scramble average time = 0.088317, worst time = 0.862000
+1000 limit / 30 scramble average time = 0.073527, worst time = 0.621000
+1000 limit / 35 scramble average time = 0.081610, worst time = 0.368000
+1000 limit / 40 scramble average time = 0.086600, worst time = 0.769000
+
+
+1000 limit / -1 scramble average time = 0.089000, worst time = 0.863000
+1000 limit / 34 scramble average time = 0.084627, worst time = 0.435000
+1000 limit / 35 scramble average time = 0.082533, worst time = 0.390000
+1000 limit / 36 scramble average time = 0.084190, worst time = 0.733000
+
+I think we're just up against a peculiarity in the seed.
+
+Switching to r + 303 as the seed
+
+1000 limit / -1 scramble average time = 0.091240, worst time = 0.876000
+1000 limit / 34 scramble average time = 0.083483, worst time = 0.437000
+1000 limit / 35 scramble average time = 0.080267, worst time = 0.504000
+1000 limit / 36 scramble average time = 0.088560, worst time = 0.748000
+
+
+Okay, 1000, -1 still the best.
+
+
+
+Doing a run of 1000:
+
+990 limit / 35 scramble average time = 0.086504, worst time = 0.582000
+1000 limit / 35 scramble average time = 0.088482, worst time = 0.745000
+1100 limit / 35 scramble average time = 0.086144, worst time = 0.526000
+
+
+Back to 300 run:
+
+1000 limit / 35 scramble average time = 0.079310, worst time = 0.499000
+1100 limit / 35 scramble average time = 0.094103, worst time = 0.529000
+1200 limit / 35 scramble average time = 0.084810, worst time = 0.550000
+
+Okay, so it's a toss-up.  1000 good enough.
+
+
+Big run of 3000:
+
+1000 limit / 35 scramble average time = 0.088313, worst time = 0.907000
