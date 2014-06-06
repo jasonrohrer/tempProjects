@@ -414,31 +414,20 @@ static int *findMagicSquare6Fast() {
 
 
 
-static int *generateMagicSquare6NoReseed() {
+int *generateMagicSquare6( unsigned int inSeed ) {
+    randSource.reseed( inSeed );
+
     return findMagicSquare6Fast();
     }
 
 
 
-int *generateMagicSquare6() {
-    randSource.reseed( time( NULL ) );
 
-    return generateMagicSquare6NoReseed();
-    }
-
-
-
-
-int **generateMagicSquare6( int inNumSquares ) {
+int **generateMagicSquare6( unsigned int inSeed, int inNumSquares ) {
     int **results = new int*[ inNumSquares ];
     
-    if( inNumSquares > 0 ) {
-        
-        results[0] = generateMagicSquare6();
-        }
-    
     for( int i=0; i<inNumSquares; i++ ) {
-        results[i] = generateMagicSquare6NoReseed();
+        results[i] = generateMagicSquare6( inSeed + i );
         }
     
     return results;
