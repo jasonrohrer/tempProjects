@@ -223,3 +223,17 @@ Okay, so it's a toss-up.  1000 good enough.
 Big run of 3000:
 
 1000 limit / 35 scramble average time = 0.088313, worst time = 0.907000
+
+
+Searching for range of tie fractions.
+
+Run of 300:
+Lowest tie fraction = 1.194444%, higest tie fraction = 1.819444%
+
+
+Run of 3000:
+Lowest tie fraction = 1.194444%, higest tie fraction = 1.819444%
+
+
+Seems like ties are always pretty rare (1-2%) and never common,
+and never totally absent.

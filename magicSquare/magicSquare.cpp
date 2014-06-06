@@ -1558,13 +1558,26 @@ int main() {
     
     double highestTieFraction = 0;
     double lowestTieFraction = 100;
+
+    // reuse tabu table here to make sure we don't make the
+    // same square twice
+
+    TabuList tabuList;
+    
+    int collisionCount = 0;
     
     for( int r=0; r<10; r++ ) {
         printf( "Run %d\n", r );
         
         int *resultSquare = findMagicSquare6Fast();
         
-    
+        if( tabuList.contains( resultSquare ) ) {
+            collisionCount++;
+            }
+        else {
+            tabuList.insert( resultSquare, 6 );
+            }
+        
 
         //return 0;
     
@@ -1629,5 +1642,7 @@ int main() {
     printf( "Lowest tie fraction = %f%%, higest tie fraction = %f%%\n",
             lowestTieFraction, highestTieFraction );
 
+    printf( "% d collisions\n", collisionCount );
+    
     return 1;
     }
