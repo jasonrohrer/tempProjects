@@ -1267,7 +1267,7 @@ int main() {
     
     int numTrials = 100000000;
     
-    printf( "Testing Jenkins PRNG:\n" );
+    //printf( "Testing Jenkins PRNG:\n" );
     
     /*
     double startTime = Time::getCurrentTime();
@@ -1282,7 +1282,7 @@ int main() {
         }
     printf( "CustomRand time = %f\n", Time::getCurrentTime() - startTime );
     */
-
+    /*
     randSource.reseed( 293834 );
     randSourceOld.reseed( 293834 );
 
@@ -1381,10 +1381,10 @@ int main() {
             stepCountAtLastCycle = stepCount;
             }
         */
-        }
+    /*}
     
     return 0;
-    
+    */
 
     // too slow.... hmmm...
 
