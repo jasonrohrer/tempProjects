@@ -1254,6 +1254,9 @@ void checkFixedPlayerAMove( int *inValues, int inNumValues, void *inUnused ) {
 
 #include "minorGems/system/Time.h"
 
+#include "minorGems/graphics/converters/TGAImageConverter.h"
+#include "minorGems/io/file/File.h"
+
 
 
 int main() {
@@ -1282,6 +1285,37 @@ int main() {
 
     randSource.reseed( 293834 );
     randSourceOld.reseed( 293834 );
+
+
+    Image jenkinsImage( 300, 300, 3 );
+    Image oldImage( 300, 300, 3 );
+    
+    double *jenkinsChannel = jenkinsImage.getChannel( 0 );
+    double *oldChannel = oldImage.getChannel( 0 );
+    
+    for( int i=0; i<300*300; i++ ) {
+        jenkinsChannel[i] = randSource.getRandomFloat();
+        oldChannel[i] = randSourceOld.getRandomFloat();
+        }
+
+    jenkinsImage.pasteChannel( jenkinsChannel, 1 );
+    jenkinsImage.pasteChannel( jenkinsChannel, 2 );
+    
+    oldImage.pasteChannel( oldChannel, 1 );
+    oldImage.pasteChannel( oldChannel, 2 );
+    
+    
+    TGAImageConverter converter;
+
+    File jenkinsFile( NULL, "jenkins.tga" );
+    FileOutputStream jenkinsStream( &jenkinsFile );
+    converter.formatImage( &jenkinsImage, &jenkinsStream );
+    
+    File oldFile( NULL, "customRandom.tga" );
+    FileOutputStream oldStream( &oldFile );
+    converter.formatImage( &oldImage, &oldStream );
+    
+    return 0;
 
     unsigned int jenkinsStartA = randSource.getRandomInt();
     unsigned int jenkinsStartB = randSource.getRandomInt();;
