@@ -1280,19 +1280,73 @@ int main() {
     printf( "CustomRand time = %f\n", Time::getCurrentTime() - startTime );
     */
 
-    unsigned int jenkinsStart = randSource.getRandomInt();
-    unsigned int oldStart = randSourceOld.getRandomInt();
+    randSource.reseed( 293834 );
+    randSourceOld.reseed( 293834 );
+
+    unsigned int jenkinsStartA = randSource.getRandomInt();
+    unsigned int jenkinsStartB = randSource.getRandomInt();;
+    
+    unsigned int oldStartA = randSourceOld.getRandomInt();
+    unsigned int oldStartB = randSourceOld.getRandomInt();
+    
+    unsigned int oldMiddle = 0;
+
+    unsigned int jenkinsLast = jenkinsStartB;
+    unsigned int oldLast = oldStartB;
+    
+    unsigned int stepCount = 0;
+
+    char wrapAround = false;
+    int stepCountAtLastCycle = 0;
+    
+    char jenkinsStartSet = false;
+    int jenkinsRepeatCount = 0;
     
     while( true ) {
         unsigned int jenkinsNext = randSource.getRandomInt();
-        unsigned int oldNext = randSourceOld.getRandomInt();
+        //unsigned int oldNext = randSourceOld.getRandomInt();
    
-        if( jenkinsNext == jenkinsStart ) {
-            printf( "Jenkins hit cycle\n" );
+        stepCount++;
+        if( stepCount % 10000000 == 0 ) {
+            printf( "%d Step %u   (%u) (startSet=%d) (repeatCount=%d)\n", 
+                    wrapAround, stepCount, jenkinsNext, jenkinsStartSet,
+                    jenkinsRepeatCount );
             }
-        if( oldNext == oldStart ) {
+        if( stepCount == 0 ) {
+            wrapAround = true;
+            }
+        
+        
+        if( ! jenkinsStartSet ) {
+            
+            if( stepCount == 10000 && wrapAround ) {
+                jenkinsStartA = randSource.getRandomInt();
+                jenkinsStartB = randSource.getRandomInt();
+                jenkinsStartSet = true;
+                }
+            }
+        else {
+            if( jenkinsNext == jenkinsStartA && jenkinsLast == jenkinsStartB) {
+                printf( "Jenkins hit cycle\n" );
+                jenkinsRepeatCount++;
+                }
+            }
+        
+        jenkinsLast = jenkinsNext;
+            
+        /**
+        if( oldNext == oldStartA ) {
             printf( "CustomRand hit cycle\n" );
             }
+        if( stepCount == 10000 && wrapAround && oldMiddle == 0 ) {
+            oldMiddle = oldNext;
+            }
+        else if( oldMiddle == oldNext ) {
+            printf( "CustomRand hit middle cycle %d, cycle %d\n", 
+                    oldMiddle, stepCount - stepCountAtLastCycle );
+            stepCountAtLastCycle = stepCount;
+            }
+        */
         }
     
     return 0;
