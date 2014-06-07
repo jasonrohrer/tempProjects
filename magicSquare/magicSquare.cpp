@@ -216,10 +216,12 @@ char fillMagic( int *inArray, int inD, int inNextPosToFill,
 
 
 #include "minorGems/util/random/CustomRandomSource.h"
+#include "minorGems/util/random/JenkinsRandomSource.h"
 #include "minorGems/util/SimpleVector.h"
 
 
-CustomRandomSource randSource( time( NULL ) );
+JenkinsRandomSource randSource( time( NULL ) );
+CustomRandomSource randSourceOld( time( NULL ) );
 
 
 char fillMagicRandom( int *inArray, int inD ) {
@@ -1257,6 +1259,44 @@ void checkFixedPlayerAMove( int *inValues, int inNumValues, void *inUnused ) {
 int main() {
 
     printf( "Test\n" );
+
+    
+    
+    int numTrials = 100000000;
+    
+    printf( "Testing Jenkins PRNG:\n" );
+    
+    /*
+    double startTime = Time::getCurrentTime();
+    for( int s=0; s<numTrials; s++ ) {
+        int result = randSource.getRandomBoundedInt( 0, 5 );
+        }
+    printf( "Jenkins time = %f\n", Time::getCurrentTime() - startTime );
+    
+    startTime = Time::getCurrentTime();
+    for( int s=0; s<numTrials; s++ ) {
+        int result = randSourceOld.getRandomBoundedInt( 0, 5 );
+        }
+    printf( "CustomRand time = %f\n", Time::getCurrentTime() - startTime );
+    */
+
+    unsigned int jenkinsStart = randSource.getRandomInt();
+    unsigned int oldStart = randSourceOld.getRandomInt();
+    
+    while( true ) {
+        unsigned int jenkinsNext = randSource.getRandomInt();
+        unsigned int oldNext = randSourceOld.getRandomInt();
+   
+        if( jenkinsNext == jenkinsStart ) {
+            printf( "Jenkins hit cycle\n" );
+            }
+        if( oldNext == oldStart ) {
+            printf( "CustomRand hit cycle\n" );
+            }
+        }
+    
+    return 0;
+    
 
     // too slow.... hmmm...
 

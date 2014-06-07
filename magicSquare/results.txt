@@ -259,3 +259,14 @@ Changing to incrementally reseed before each square generation fixes it:
 Run of 200:
 Lowest tie fraction = 1.166667%, higest tie fraction = 2.097222%
  0 collisions
+
+
+
+
+With this fix, a run of 3000 has 4 collisions.  Less than 1%.  These can be
+handled on the database end (blocking magic squares that have the same hash as
+any recent ones).
+
+
+Other alternatives?  Better PRNG?  Collisions should be extremely rare if we
+are really exploring the space.
