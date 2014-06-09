@@ -7,7 +7,6 @@ int *generateMagicSquare6( unsigned int inSeed );
 
 // generates inNumSquares squares, using inSeed as
 // the random seed starting point for the first square
-// Subsequent squares use sequential seeds after inSeed
-// (inSeed+1, inSeed+2, etc.)
+// and continuing without reseeding for all subequent squares
 // returns a newly-allocated array of newly-allocated length-36 arrays
 int **generateMagicSquare6( unsigned int inSeed, int inNumSquares );

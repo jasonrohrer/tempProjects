@@ -1,9 +1,9 @@
 #include "magicSquare6.h"
 
 
-#include "minorGems/util/random/CustomRandomSource.h"
+#include "minorGems/util/random/JenkinsRandomSource.h"
 
-static CustomRandomSource randSource( time( NULL ) );
+static JenkinsRandomSource randSource( time( NULL ) );
 
 
 
@@ -426,8 +426,15 @@ int *generateMagicSquare6( unsigned int inSeed ) {
 int **generateMagicSquare6( unsigned int inSeed, int inNumSquares ) {
     int **results = new int*[ inNumSquares ];
     
-    for( int i=0; i<inNumSquares; i++ ) {
-        results[i] = generateMagicSquare6( inSeed + i );
+    // use seed for first only
+    if( inNumSquares > 0 ) {
+        results[0] = generateMagicSquare6( inSeed );
+        }
+
+    // rest continue using same seed progression
+    for( int i=1; i<inNumSquares; i++ ) {
+        
+        results[i] = findMagicSquare6Fast();
         }
     
     return results;
