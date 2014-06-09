@@ -76,10 +76,46 @@ int main() {
 
         GameState * temp = nextState;
         
-        nextState = minMaxPickMove( nextState, nextPlayer, -1 );
+        if( nextPlayer == min ) {
+            int pick = -1;
+            while( pick < 0 ) {
+                printf( "Pick a column (0 - 5):\n> " );
+                scanf( "%d", &pick );
+
+                if( pick > 5 || pick < 0 ) {
+                    pick = -1;
+                    }
+                else {
+                    MagicSquareGameState *magicSate = 
+                        (MagicSquareGameState*)nextState;
+                    
+                    for( int t=0; t<6; t++ ) {
+                        if( magicSate->mPlayerMoves[1][t] == pick ) {
+                            printf( "Column %d already picked\n", pick );
+                            pick = -1;
+                            break;
+                            }
+                        }
+                    }
+                }
+            // good pick
+            nextState = nextState->copy();
+            MagicSquareGameState *magicSate = 
+                (MagicSquareGameState*)nextState;
+            for( int t=0; t<6; t++ ) {
+                if( magicSate->mPlayerMoves[1][t] == -1 ) {
+                    magicSate->mPlayerMoves[1][t] = pick;
+                    break;
+                    }
+                }
+            }
+        else {
+            nextState = minMaxPickMove( nextState, nextPlayer, -1 );
+            }
+        
         delete temp;
         }
-
+ 
 
     switch( nextPlayer ) {
         case max:
