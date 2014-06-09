@@ -32,8 +32,8 @@ class MagicSquareGameState : public GameState {
         virtual void printState();
         
 
-    protected:
-        
+
+
         int mSquare[6][6];
         
         // -1 if not taken yet, otherwise show row or column that player
