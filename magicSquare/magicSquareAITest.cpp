@@ -40,6 +40,96 @@ void printSquare( int *inArray, int inD ) {
 
 
 
+
+class SquarePlayer {
+        
+    public:
+        virtual ~SquarePlayer() {
+            }
+        
+        virtual GameState *pickMove( 
+            MagicSquareGameState *inState ) = 0;
+    };
+
+
+class MinMaxSquarePlayer : public SquarePlayer {
+    public:
+        MinMaxSquarePlayer( MinOrMax inPlayerSide ) 
+                : mPlayerSide( inPlayerSide ) {}
+        
+        virtual GameState *pickMove( 
+            MagicSquareGameState *inState ) {
+            
+            return minMaxPickMove( inState, mPlayerSide, -1 );
+            }
+        
+    protected:
+        MinOrMax mPlayerSide;
+    };
+
+
+
+
+class HumanPlayer : public SquarePlayer {
+    public:
+        HumanPlayer( int inPlayerNumber )
+                : mPlayerNumber( inPlayerNumber ) {
+            switch( inPlayerNumber ) {
+                case 0:
+                    mMoveName = "row";
+                    break;
+                default:
+                    mMoveName = "column";
+                    break;
+                };
+            }
+        
+        virtual GameState *pickMove( 
+            MagicSquareGameState *inState ) {
+            
+
+            int pick = -1;
+            while( pick < 0 ) {
+                printf( "Pick a %s (0 - 5):\n> ", mMoveName );
+                scanf( "%d", &pick );
+
+                if( pick > 5 || pick < 0 ) {
+                    pick = -1;
+                    }
+                else {
+                    MagicSquareGameState *magicSate = 
+                        (MagicSquareGameState*)inState;
+                    
+                    for( int t=0; t<6; t++ ) {
+                        if( magicSate->mPlayerMoves[1][t] == pick ) {
+                            printf( "%s %d already picked\n", 
+                                    mMoveName, pick );
+                            pick = -1;
+                            break;
+                            }
+                        }
+                    }
+                }
+            // good pick
+            MagicSquareGameState *nextState
+                = (MagicSquareGameState *)inState->copy();
+            for( int t=0; t<6; t++ ) {
+                if( nextState->mPlayerMoves[mPlayerNumber][t] == -1 ) {
+                    nextState->mPlayerMoves[mPlayerNumber][t] = pick;
+                    break;
+                    }
+                }
+            return nextState;
+            }
+        
+    protected:
+        int mPlayerNumber;
+        const char *mMoveName;
+        
+    };
+
+
+
 int main() {
 
     printf( "Generating square\n" );
@@ -74,20 +164,33 @@ int main() {
     printf( "\n\n" );
     */
     
-
-
-    MinOrMax nextPlayer = max;
+    SquarePlayer *players[2];
     
-    GameState *nextState = minMaxPickMove( &startState, nextPlayer, -1 );
+
+    MinMaxSquarePlayer player1( max );
+    MinMaxSquarePlayer player2( min );
+
+    //HumanPlayer player1( 0 );
+    //HumanPlayer player2( 1 );
+    
+
+    players[0] = &player1;
+    players[1] = &player2;
+
+
+    int nextPlayer = 0;
+    
+    GameState *nextState = 
+        players[0]->pickMove( &startState );
 
     while( ! nextState->getGameOver() ) {
         switch( nextPlayer ) {
-            case max:
-                nextPlayer = min;
+            case 0:
+                nextPlayer = 1;
                 printf( "P1 move:\n" );
                 break;
-            case min:
-                nextPlayer = max;
+            case 1:
+                nextPlayer = 0;
                 printf( "P2 move:\n" );
                 break;
             }
@@ -97,61 +200,31 @@ int main() {
 
         GameState * temp = nextState;
         
-        if( nextPlayer == min ) {
-            int pick = -1;
-            while( pick < 0 ) {
-                printf( "Pick a column (0 - 5):\n> " );
-                scanf( "%d", &pick );
-
-                if( pick > 5 || pick < 0 ) {
-                    pick = -1;
-                    }
-                else {
-                    MagicSquareGameState *magicSate = 
-                        (MagicSquareGameState*)nextState;
-                    
-                    for( int t=0; t<6; t++ ) {
-                        if( magicSate->mPlayerMoves[1][t] == pick ) {
-                            printf( "Column %d already picked\n", pick );
-                            pick = -1;
-                            break;
-                            }
-                        }
-                    }
-                }
-            // good pick
-            nextState = nextState->copy();
-            MagicSquareGameState *magicSate = 
-                (MagicSquareGameState*)nextState;
-            for( int t=0; t<6; t++ ) {
-                if( magicSate->mPlayerMoves[1][t] == -1 ) {
-                    magicSate->mPlayerMoves[1][t] = pick;
-                    break;
-                    }
-                }
-            }
-        else {
-            nextState = minMaxPickMove( nextState, nextPlayer, -1 );
-            }
-        
+        nextState = 
+            players[nextPlayer]->pickMove( (MagicSquareGameState*)nextState );
+                
         delete temp;
         }
  
 
     switch( nextPlayer ) {
-        case max:
-            nextPlayer = min;
+        case 0:
+            nextPlayer = 1;
             printf( "P1 move:\n" );
             break;
-        case min:
-            nextPlayer = max;
+        case 1:
+            nextPlayer = 0;
             printf( "P2 move:\n" );
             break;
         }
-    
+        
     nextState->printState();
     
-    printf( "Final score = %d\n", nextState->getScore() );
+    printf( "Final minmax score = %d\n", nextState->getScore() );
+    
+    MagicSquareGameState *magicState = (MagicSquareGameState*)nextState;
+    printf( "Final score = P1: %d   P2: %d\n", 
+            magicState->getScore( 0 ), magicState->getScore( 1 ) );
     
 
     

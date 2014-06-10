@@ -13,6 +13,12 @@ class MagicSquareGameState : public GameState {
         // square copied internally
         // inits to no moves made yet
         MagicSquareGameState( int *inStartingState );
+
+
+        // get separate, positive score for each player
+        // (different than min-max score, where players push score positive
+        // or negative)
+        int getScore( int inPlayerNumber );
         
 
         // relative state score for purpose of minMax search
