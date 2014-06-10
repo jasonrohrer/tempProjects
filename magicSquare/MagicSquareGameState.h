@@ -20,6 +20,9 @@ class MagicSquareGameState : public GameState {
         // or negative)
         int getScore( int inPlayerNumber );
         
+        // total number of moves made by both players
+        int getNumMovesMade();
+        
 
         // relative state score for purpose of minMax search
         // (player 1 pushes score positively, player 2 negatively)

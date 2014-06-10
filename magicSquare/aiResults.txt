@@ -91,3 +91,23 @@ Player moves:  1    2
 Not at all clear that there is such a huge difference, or that picking a
 "worse" move, from a greedy perspective, will result in four more points
 later on.  A sign that deeply skillful play is possible.
+
+
+Me vs AI, me as P1 playing greedy:
+
+Player moves:  1    2
+               3    1
+               2    0
+               1    5
+               4    3
+               0    2
+               5    4
+Final minmax score = -43
+Final score = P1: 36   P2: 79
+
+AI creams me even worse than it beats min-max as p1.  So, min-max
+performs better than greedy for either p1 or p2.  Good stuff.
+
+
+Got auto-greedy player working that matches my scores as acheived
+by my manual greedy play.

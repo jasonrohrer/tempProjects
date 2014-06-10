@@ -47,6 +47,25 @@ int MagicSquareGameState::getScore( int inPlayerNumber ) {
 
 
 
+int MagicSquareGameState::getNumMovesMade() {
+    int numMovesMade = 0;
+    
+    // players score every other turn
+    for( int t=0; t<6; t++ ) {
+        
+        if( mPlayerMoves[0][t] != -1 ) {
+            numMovesMade++;
+            
+            if( mPlayerMoves[1][t] != -1 ) {
+                numMovesMade++;
+                }
+            }    
+        }
+    return numMovesMade;
+    }
+
+
+
 
 int MagicSquareGameState::getScore( char inDebug ) {
     
