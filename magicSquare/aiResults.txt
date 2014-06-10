@@ -111,3 +111,7 @@ performs better than greedy for either p1 or p2.  Good stuff.
 
 Got auto-greedy player working that matches my scores as acheived
 by my manual greedy play.
+
+
+MinMax as p1 beats random p2 most of the time (but occasionally loses).
+
