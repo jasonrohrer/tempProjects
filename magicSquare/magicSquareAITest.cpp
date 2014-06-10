@@ -234,11 +234,11 @@ class GreedySquarePlayer : public SquarePlayer {
 
 #include "minorGems/util/random/JenkinsRandomSource.h"
 
-// plays randomly, using time as a seed
+// plays randomly
 class RandomSquarePlayer : public SquarePlayer {
     public:
-        RandomSquarePlayer() 
-                : mRandSource( time(NULL) ) {
+        RandomSquarePlayer( int inSeed ) 
+                : mRandSource( inSeed ) {
             }
         
         virtual GameState *pickMove( 
@@ -313,7 +313,7 @@ int main() {
     //GreedySquarePlayer player2( 1 );
     
     //RandomSquarePlayer player1;
-    RandomSquarePlayer player2;
+    RandomSquarePlayer player2( 231345 );
 
     players[0] = &player1;
     players[1] = &player2;
