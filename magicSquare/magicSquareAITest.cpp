@@ -101,7 +101,9 @@ class HumanPlayer : public SquarePlayer {
                         (MagicSquareGameState*)inState;
                     
                     for( int t=0; t<6; t++ ) {
-                        if( magicSate->mPlayerMoves[1][t] == pick ) {
+                        if( magicSate->mPlayerMoves[mPlayerNumber][t] 
+                            == pick ) {
+                            
                             printf( "%s %d already picked\n", 
                                     mMoveName, pick );
                             pick = -1;
@@ -130,6 +132,106 @@ class HumanPlayer : public SquarePlayer {
 
 
 
+class GreedySquarePlayer : public SquarePlayer {
+    public:
+        GreedySquarePlayer( int inPlayerNumber ) 
+                : mPlayerNumber( inPlayerNumber ) {}
+        
+        virtual GameState *pickMove( 
+            MagicSquareGameState *inState ) {
+
+            int numMovesMade = inState->getNumMovesMade();
+            
+            if( mPlayerNumber == 0 && numMovesMade % 2 == 0 ) {
+                // we're p1, and it's our move, moving first
+                
+                // no score change until they move after us!
+
+                // need to test all possible two-branches 
+
+                GameState *bestMove = NULL;
+                int bestScore = INT_MIN;
+                
+                SimpleVector<GameState *> moves =
+                    inState->getPossibleMoves();
+                for( int i=0; i<moves.size(); i++ ) {
+                    GameState *move = *( moves.getElement( i ) );
+                    
+                    int worstScore = INT_MAX;
+                    
+                    // look for worst score p2 can give us
+                    // from here
+                    SimpleVector<GameState *> p2Moves =
+                        move->getPossibleMoves();
+                    for( int j=0; j<p2Moves.size(); j++ ) {
+                        GameState *p2Move = *( p2Moves.getElement( j ) );
+                        
+                        int score = p2Move->getScore();
+                        
+                        if( score < worstScore ) {
+                            worstScore = score;
+                            }
+                        delete p2Move;
+                        }
+                    
+                    if( worstScore > bestScore ) {
+                        bestScore = worstScore;
+                        if( bestMove != NULL ) {
+                            delete bestMove;
+                            }
+                        bestMove = move;
+                        }
+                    else {
+                        delete move;
+                        }
+                    }
+                return bestMove;
+                }
+            else if( mPlayerNumber == 1 && numMovesMade % 2 == 1 ) {
+                // we're p2, and it's our move, moving after
+                // they already picked
+                
+                // our move will result in a score change
+                
+                GameState *bestMove = NULL;
+                int worstScore = INT_MAX;
+                
+                SimpleVector<GameState *> moves =
+                    inState->getPossibleMoves();
+                for( int i=0; i<moves.size(); i++ ) {
+                    GameState *move = *( moves.getElement( i ) );
+                    
+                    int score = move->getScore();
+                    
+                    if( score < worstScore ) {
+                        worstScore = score;
+                        if( bestMove != NULL ) {
+                            delete bestMove;
+                            }
+                        bestMove = move;
+                        }
+                    else {
+                        delete move;
+                        }
+                    }
+                
+                return bestMove;
+                }
+            else {
+                // asking for our move, but it's not our turn?
+                printf( "ERROR:  Greedy player called for move "
+                        "but it's not our turn\n" );
+                return NULL;
+                }
+            }
+        
+    protected:
+        int mPlayerNumber;
+    };
+
+
+
+
 int main() {
 
     printf( "Generating square\n" );
@@ -145,7 +247,7 @@ int main() {
     startState.printState();
     
 
-    /*
+    /*    
     printf( "\n\nTest:\n\n" );
     
     SimpleVector<GameState *> possMoves = startState.getPossibleMoves();
@@ -167,11 +269,14 @@ int main() {
     SquarePlayer *players[2];
     
 
-    MinMaxSquarePlayer player1( max );
+    //MinMaxSquarePlayer player1( max );
     MinMaxSquarePlayer player2( min );
 
     //HumanPlayer player1( 0 );
     //HumanPlayer player2( 1 );
+
+    GreedySquarePlayer player1( 0 );
+    //GreedySquarePlayer player2( 1 );
     
 
     players[0] = &player1;
