@@ -232,6 +232,40 @@ class GreedySquarePlayer : public SquarePlayer {
 
 
 
+#include "minorGems/util/random/JenkinsRandomSource.h"
+
+// plays randomly, using time as a seed
+class RandomSquarePlayer : public SquarePlayer {
+    public:
+        RandomSquarePlayer() 
+                : mRandSource( time(NULL) ) {
+            }
+        
+        virtual GameState *pickMove( 
+            MagicSquareGameState *inState ) {
+            
+            SimpleVector<GameState *> moves =
+                    inState->getPossibleMoves();
+
+            int movePick = 
+                mRandSource.getRandomBoundedInt( 0, moves.size() - 1 );
+            
+
+            for( int i=0; i<moves.size(); i++ ) {
+                if( i != movePick ) {
+                    delete *( moves.getElement(i) );
+                    }
+                }
+            
+            return *( moves.getElement(movePick) );
+            }
+        
+    protected:
+        JenkinsRandomSource mRandSource;
+    };
+
+
+
 int main() {
 
     printf( "Generating square\n" );
@@ -269,15 +303,17 @@ int main() {
     SquarePlayer *players[2];
     
 
-    //MinMaxSquarePlayer player1( max );
-    MinMaxSquarePlayer player2( min );
+    MinMaxSquarePlayer player1( max );
+    //MinMaxSquarePlayer player2( min );
 
     //HumanPlayer player1( 0 );
     //HumanPlayer player2( 1 );
 
-    GreedySquarePlayer player1( 0 );
+    //GreedySquarePlayer player1( 0 );
     //GreedySquarePlayer player2( 1 );
     
+    //RandomSquarePlayer player1;
+    RandomSquarePlayer player2;
 
     players[0] = &player1;
     players[1] = &player2;
