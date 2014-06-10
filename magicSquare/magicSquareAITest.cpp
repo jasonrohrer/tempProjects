@@ -55,6 +55,27 @@ int main() {
     startState.printState();
     
 
+    /*
+    printf( "\n\nTest:\n\n" );
+    
+    SimpleVector<GameState *> possMoves = startState.getPossibleMoves();
+    
+    for( int i=0; i<possMoves.size(); i++ ) {
+        GameState *move = *( possMoves.getElement( i ) );
+
+        int score = minMax( move, min );
+        
+        printf( "Possible move with score %d:\n", score );
+        
+        move->printState();
+        delete move;
+        }
+    
+    printf( "\n\n" );
+    */
+    
+
+
     MinOrMax nextPlayer = max;
     
     GameState *nextState = minMaxPickMove( &startState, nextPlayer, -1 );

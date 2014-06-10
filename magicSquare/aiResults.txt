@@ -33,3 +33,61 @@ score -6
 ------------------------------
 5 |  30   9  10   3  33  26 
 ------------------------------
+
+
+
+MinMax ratings of six possible moves for p1:
+
+Possible move with score -40:
+Player moves:  1    2
+               0   -1
+              -1   -1
+              -1   -1
+              -1   -1
+              -1   -1
+              -1   -1
+Possible move with score -35:
+Player moves:  1    2
+               1   -1
+              -1   -1
+              -1   -1
+              -1   -1
+              -1   -1
+              -1   -1
+Possible move with score -27:
+Player moves:  1    2
+               2   -1
+              -1   -1
+              -1   -1
+              -1   -1
+              -1   -1
+              -1   -1
+Possible move with score -31:
+Player moves:  1    2
+               3   -1
+              -1   -1
+              -1   -1
+              -1   -1
+              -1   -1
+              -1   -1
+Possible move with score -32:
+Player moves:  1    2
+               4   -1
+              -1   -1
+              -1   -1
+              -1   -1
+              -1   -1
+              -1   -1
+Possible move with score -31:
+Player moves:  1    2
+               5   -1
+              -1   -1
+              -1   -1
+              -1   -1
+              -1   -1
+              -1   -1
+
+
+Not at all clear that there is such a huge difference, or that picking a
+"worse" move, from a greedy perspective, will result in four more points
+later on.  A sign that deeply skillful play is possible.
