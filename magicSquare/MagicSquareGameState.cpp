@@ -27,15 +27,11 @@ MagicSquareGameState::MagicSquareGameState( int *inStartingState ) {
 
 
 
-int MagicSquareGameState::getScore( char inDebug ) {
+int MagicSquareGameState::getScore( int inPlayerNumber ) {
+    int playerScore = 0;
     
-    // p1 pushes score up by scoring
-    // p2 pushes score down by scoring
-    int totalScore = 0;
-    
-
-    int scoringPlayer = 0;
-    for( int t=0; t<6; t++ ) {
+    // players score every other turn
+    for( int t=inPlayerNumber; t<6; t+=2 ) {
         
         int m1 = mPlayerMoves[0][t];
         int m2 = mPlayerMoves[1][t];
@@ -43,19 +39,20 @@ int MagicSquareGameState::getScore( char inDebug ) {
         
         if( m1 != -1 && m2 != -1 ) {
 
-            int score = mSquare[m1][m2];
-            
-            if( scoringPlayer == 1 ) {
-                // min player
-                score = -score;
-                }
-            totalScore += score;
+            playerScore += mSquare[m1][m2];
             }    
-        
-        // wrap around
-        scoringPlayer = ( scoringPlayer + 1 ) % 2;
         }
-    return totalScore;
+    return playerScore;
+    }
+
+
+
+
+int MagicSquareGameState::getScore( char inDebug ) {
+    
+    // p1 pushes score up by scoring
+    // p2 pushes score down by scoring
+    return getScore(0) - getScore(1);
     }
 
         
