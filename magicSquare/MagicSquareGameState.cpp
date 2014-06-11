@@ -22,7 +22,8 @@ MagicSquareGameState::MagicSquareGameState( int *inStartingState ) {
             mPlayerMoves[p][m] = -1;
             }
         }
-    
+
+    mScoringFlipped = false;    
     }
 
 
@@ -30,8 +31,14 @@ MagicSquareGameState::MagicSquareGameState( int *inStartingState ) {
 int MagicSquareGameState::getScore( int inPlayerNumber ) {
     int playerScore = 0;
     
+    int startScoringTurn = inPlayerNumber;
+    
+    if( mScoringFlipped ) {
+        startScoringTurn = ( startScoringTurn + 1 ) % 2;
+        }
+
     // players score every other turn
-    for( int t=inPlayerNumber; t<6; t+=2 ) {
+    for( int t=startScoringTurn; t<6; t+=2 ) {
         
         int m1 = mPlayerMoves[0][t];
         int m2 = mPlayerMoves[1][t];
@@ -63,6 +70,44 @@ int MagicSquareGameState::getNumMovesMade() {
         }
     return numMovesMade;
     }
+
+
+
+
+GameState *MagicSquareGameState::makeMove( int inPlayerNumber, 
+                                           int inColumnOrRow ) {
+    MagicSquareGameState *newState = (MagicSquareGameState*)copy();
+    
+    for( int t=0; t<6; t++ ) {
+        if( newState->mPlayerMoves[inPlayerNumber][t] == -1 ) {
+            newState->mPlayerMoves[inPlayerNumber][t] = inColumnOrRow;
+            break;
+            }
+        }
+    return newState;
+    }
+
+
+GameState *MagicSquareGameState::flipGame() {
+    
+    MagicSquareGameState *newState = (MagicSquareGameState*)copy();
+    
+    for( int y=0; y<6; y++ ) {
+        for( int x=0; x<6; x++ ) {
+            newState->mSquare[y][x] = mSquare[x][y];
+            }
+        }
+    
+    for( int p=0; p<2; p++ ) {
+        for( int m=0; m<6; m++ ) {
+            newState->mPlayerMoves[(p+1) % 2][m] = mPlayerMoves[p][m];
+            }
+        }
+
+    newState->mScoringFlipped = !mScoringFlipped;
+    return newState;
+    }
+
 
 
 
@@ -173,6 +218,8 @@ void MagicSquareGameState::copyFrom( GameState *inOther ) {
     for( int p=0; p<2; p++ ) {
         memcpy( mPlayerMoves[p], other->mPlayerMoves[p], 6 * sizeof( int ) );
         }
+    
+    mScoringFlipped = other->mScoringFlipped;
     }
 
 

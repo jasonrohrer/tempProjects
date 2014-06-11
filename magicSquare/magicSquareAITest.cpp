@@ -47,8 +47,36 @@ class SquarePlayer {
         virtual ~SquarePlayer() {
             }
         
+        virtual char needsFlipForP2ToPlayAsP1() = 0;
+
         virtual GameState *pickMove( 
             MagicSquareGameState *inState ) = 0;
+
+        int pickMoveColumnOrRow( MagicSquareGameState *inState ) {
+            
+            GameState *move = pickMove( inState );
+            MagicSquareGameState *magicMove = (MagicSquareGameState*)move;
+            
+            int columnOrRow = -1;
+            
+            for( int t=0; t<6; t++ ) {
+                for( int p=0; p<2; p++ ) {
+                    
+                    if( inState->mPlayerMoves[p][t] == -1 &&
+                        magicMove->mPlayerMoves[p][t] != -1 ) {
+                        
+                        // a move made that wasn't present in old state
+                        columnOrRow = magicMove->mPlayerMoves[p][t];
+                        break;
+                        }
+                    }
+                }
+            
+            
+            delete move;
+            return columnOrRow;
+            }
+        
     };
 
 
@@ -63,6 +91,10 @@ class MinMaxSquarePlayer : public SquarePlayer {
             return minMaxPickMove( inState, mPlayerSide, -1 );
             }
         
+        virtual char needsFlipForP2ToPlayAsP1() {
+            return true;
+            }
+
     protected:
         MinOrMax mPlayerSide;
     };
@@ -83,7 +115,13 @@ class HumanPlayer : public SquarePlayer {
                     break;
                 };
             }
+
         
+        virtual char needsFlipForP2ToPlayAsP1() {
+            return false;
+            }
+
+
         virtual GameState *pickMove( 
             MagicSquareGameState *inState ) {
             
@@ -134,9 +172,14 @@ class HumanPlayer : public SquarePlayer {
 
 class GreedySquarePlayer : public SquarePlayer {
     public:
+        
         GreedySquarePlayer( int inPlayerNumber ) 
                 : mPlayerNumber( inPlayerNumber ) {}
         
+        virtual char needsFlipForP2ToPlayAsP1() {
+            return true;
+            }
+
         virtual GameState *pickMove( 
             MagicSquareGameState *inState ) {
 
@@ -241,6 +284,10 @@ class RandomSquarePlayer : public SquarePlayer {
                 : mRandSource( inSeed ) {
             }
         
+        virtual char needsFlipForP2ToPlayAsP1() {
+            return false;
+            }
+
         virtual GameState *pickMove( 
             MagicSquareGameState *inState ) {
             
@@ -271,6 +318,7 @@ int main() {
     printf( "Generating square\n" );
     
     int *squareA = generateMagicSquare6( 10 );
+    //int *squareA = generateMagicSquare6( 16 );
     
     printf( "SquareA:\n" );
     printSquare( squareA, 6 );
@@ -279,6 +327,8 @@ int main() {
     MagicSquareGameState startState( squareA );
 
     startState.printState();
+    
+    //GameState *flipped = startState.flipGame();
     
 
     /*    
@@ -304,62 +354,64 @@ int main() {
     
 
     MinMaxSquarePlayer player1( max );
-    //MinMaxSquarePlayer player2( min );
+    MinMaxSquarePlayer player2( max );
 
     //HumanPlayer player1( 0 );
     //HumanPlayer player2( 1 );
 
     //GreedySquarePlayer player1( 0 );
-    //GreedySquarePlayer player2( 1 );
+    //GreedySquarePlayer player2( 0 );
     
     //RandomSquarePlayer player1;
-    RandomSquarePlayer player2( 231345 );
+    //RandomSquarePlayer player2( 231345 );
 
     players[0] = &player1;
     players[1] = &player2;
 
 
-    int nextPlayer = 0;
+    //int nextPlayer = 0;
     
-    GameState *nextState = 
-        players[0]->pickMove( &startState );
+    GameState *nextState = startState.copy();
+    
 
     while( ! nextState->getGameOver() ) {
-        switch( nextPlayer ) {
-            case 0:
-                nextPlayer = 1;
-                printf( "P1 move:\n" );
-                break;
-            case 1:
-                nextPlayer = 0;
-                printf( "P2 move:\n" );
-                break;
+
+        MagicSquareGameState *nextStateMagic = 
+            (MagicSquareGameState*)nextState;
+
+        int p1Move = 
+            players[0]->pickMoveColumnOrRow( nextStateMagic );
+        
+        int p2Move;
+        if( players[1]->needsFlipForP2ToPlayAsP1() ) {
+            
+            // flip game so that p2 can play from a blind, p1 perspective
+            MagicSquareGameState *nextStateFlipped =
+                (MagicSquareGameState*)( nextStateMagic->flipGame() );
+        
+            p2Move = players[1]->pickMoveColumnOrRow( nextStateFlipped );
+            
+            delete nextStateFlipped;
             }
-
-        nextState->printState();
+        else {
+            p2Move = players[1]->pickMoveColumnOrRow( nextStateMagic );
+            }
         
 
-        GameState * temp = nextState;
+        GameState *temp = nextState;
+
+        MagicSquareGameState *temp2 = 
+            (MagicSquareGameState*)nextStateMagic->makeMove( 0, p1Move );
+        nextState = temp2->makeMove( 1, p2Move );
         
-        nextState = 
-            players[nextPlayer]->pickMove( (MagicSquareGameState*)nextState );
-                
+
         delete temp;
-        }
- 
+        delete temp2;
 
-    switch( nextPlayer ) {
-        case 0:
-            nextPlayer = 1;
-            printf( "P1 move:\n" );
-            break;
-        case 1:
-            nextPlayer = 0;
-            printf( "P2 move:\n" );
-            break;
+        printf( "Player moves:\n" );
+        nextState->printState();
         }
         
-    nextState->printState();
     
     printf( "Final minmax score = %d\n", nextState->getScore() );
     

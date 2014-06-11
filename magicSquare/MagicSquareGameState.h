@@ -23,6 +23,14 @@ class MagicSquareGameState : public GameState {
         // total number of moves made by both players
         int getNumMovesMade();
         
+        
+        GameState *makeMove( int inPlayerNumber, int inColumnOrRow );
+
+        // flips square and player moves made so far, turning rows into columns
+        // p1 becomes p2, etc.
+        GameState *flipGame();
+        
+
 
         // relative state score for purpose of minMax search
         // (player 1 pushes score positively, player 2 negatively)
@@ -48,4 +56,6 @@ class MagicSquareGameState : public GameState {
         // -1 if not taken yet, otherwise show row or column that player
         // picked on that move
         int mPlayerMoves[2][6];
+
+        char mScoringFlipped;
     };
