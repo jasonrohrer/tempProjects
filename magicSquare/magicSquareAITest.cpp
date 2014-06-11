@@ -317,8 +317,8 @@ int main() {
 
     printf( "Generating square\n" );
     
-    int *squareA = generateMagicSquare6( 10 );
-    //int *squareA = generateMagicSquare6( 16 );
+    //int *squareA = generateMagicSquare6( 10 );
+    int *squareA = generateMagicSquare6( 19 );
     
     printf( "SquareA:\n" );
     printSquare( squareA, 6 );
@@ -353,7 +353,7 @@ int main() {
     SquarePlayer *players[2];
     
 
-    MinMaxSquarePlayer player1( max );
+    //MinMaxSquarePlayer player1( max );
     MinMaxSquarePlayer player2( max );
 
     //HumanPlayer player1( 0 );
@@ -362,7 +362,7 @@ int main() {
     //GreedySquarePlayer player1( 0 );
     //GreedySquarePlayer player2( 0 );
     
-    //RandomSquarePlayer player1;
+    RandomSquarePlayer player1( 342341 );
     //RandomSquarePlayer player2( 231345 );
 
     players[0] = &player1;
