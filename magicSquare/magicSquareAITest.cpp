@@ -47,6 +47,10 @@ class SquarePlayer {
         virtual ~SquarePlayer() {
             }
         
+        // default does nothing, since most players don't need a reset
+        virtual void reset() {
+            }
+        
         
         virtual const char *getName() = 0;
         
@@ -130,6 +134,9 @@ class HumanPlayer : public SquarePlayer {
 
         
         virtual char needsFlipForP2ToPlayAsP1() {
+            // this doesn't actually work, because we can't let
+            // p2 pick first from a no-move-this-round state... hmm
+            printf( "WARNING:  human player broken here...\n" );
             return false;
             }
 
@@ -298,15 +305,20 @@ class GreedySquarePlayer : public SquarePlayer {
 class RandomSquarePlayer : public SquarePlayer {
     public:
         RandomSquarePlayer( int inSeed ) 
-                : mRandSource( inSeed ) {
+                : mSeed( inSeed ), mRandSource( inSeed ) {
             }
+
+        virtual void reset() {
+            mRandSource.reseed( mSeed );
+            }
+        
         
         virtual const char *getName() {
             return "Random";
             }
 
         virtual char needsFlipForP2ToPlayAsP1() {
-            return false;
+            return true;
             }
 
         virtual GameState *pickMove( 
@@ -314,7 +326,10 @@ class RandomSquarePlayer : public SquarePlayer {
             
             SimpleVector<GameState *> moves =
                     inState->getPossibleMoves();
-
+            /*
+            printf( "Rand player has %d possible moves\n",
+                    moves.size() );
+            */
             int movePick = 
                 mRandSource.getRandomBoundedInt( 0, moves.size() - 1 );
             
@@ -329,6 +344,7 @@ class RandomSquarePlayer : public SquarePlayer {
             }
         
     protected:
+        int mSeed;
         JenkinsRandomSource mRandSource;
     };
 
@@ -338,6 +354,10 @@ class RandomSquarePlayer : public SquarePlayer {
 int runGame( int *inSquare, 
              SquarePlayer *inPlayer1, SquarePlayer *inPlayer2 ) {
     
+    inPlayer1->reset();
+    inPlayer2->reset();
+
+
     MagicSquareGameState *nextState = new MagicSquareGameState( inSquare );
 
     while( ! nextState->getGameOver() ) {
@@ -352,7 +372,7 @@ int runGame( int *inSquare,
             MagicSquareGameState *nextStateFlipped =
                 (MagicSquareGameState*)( nextState->flipGame() );
         
-            p2Move = inPlayer1->pickMoveColumnOrRow( nextStateFlipped );
+            p2Move = inPlayer2->pickMoveColumnOrRow( nextStateFlipped );
             
             delete nextStateFlipped;
             }
@@ -375,7 +395,15 @@ int runGame( int *inSquare,
         //nextState->printState();
         }
 
+    //printf( "Final moves:\n" );
+    //nextState->printState();
+    
+
     int minMaxScore = nextState->getScore();
+
+    printf( "%s vs %s:  %d\n", inPlayer1->getName(), inPlayer2->getName(),
+            minMaxScore );
+
     
     int result = 0;
     if( minMaxScore > 0 ) {
