@@ -115,3 +115,21 @@ by my manual greedy play.
 
 MinMax as p1 beats random p2 most of the time (but occasionally loses).
 
+
+
+
+Results of 100 rounds of batch testing, all vs all:
+
+p1:MinMax   p2:MinMax   64 p1 wins, 35 p2 wins, 1 ties
+p1:MinMax   p2:Greedy   68 p1 wins, 31 p2 wins, 1 ties
+p1:MinMax   p2:Random   79 p1 wins, 21 p2 wins, 0 ties
+p1:Greedy   p2:MinMax   41 p1 wins, 56 p2 wins, 3 ties
+p1:Greedy   p2:Greedy   45 p1 wins, 52 p2 wins, 3 ties
+p1:Greedy   p2:Random   73 p1 wins, 27 p2 wins, 0 ties
+p1:Random   p2:MinMax   14 p1 wins, 85 p2 wins, 1 ties
+p1:Random   p2:Greedy   15 p1 wins, 83 p2 wins, 2 ties
+p1:Random   p2:Random   53 p1 wins, 47 p2 wins, 0 ties
+
+
+GREAT.  MinMax creams random play, beats all other strategies as both p1 and
+p2 on average.
