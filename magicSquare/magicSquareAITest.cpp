@@ -47,6 +47,10 @@ class SquarePlayer {
         virtual ~SquarePlayer() {
             }
         
+        
+        virtual const char *getName() = 0;
+        
+
         virtual char needsFlipForP2ToPlayAsP1() = 0;
 
         virtual GameState *pickMove( 
@@ -85,6 +89,10 @@ class MinMaxSquarePlayer : public SquarePlayer {
         MinMaxSquarePlayer( MinOrMax inPlayerSide ) 
                 : mPlayerSide( inPlayerSide ) {}
         
+        virtual const char *getName() {
+            return "MinMax";
+            }
+
         virtual GameState *pickMove( 
             MagicSquareGameState *inState ) {
             
@@ -114,6 +122,10 @@ class HumanPlayer : public SquarePlayer {
                     mMoveName = "column";
                     break;
                 };
+            }
+        
+        virtual const char *getName() {
+            return "Human";
             }
 
         
@@ -176,6 +188,11 @@ class GreedySquarePlayer : public SquarePlayer {
         GreedySquarePlayer( int inPlayerNumber ) 
                 : mPlayerNumber( inPlayerNumber ) {}
         
+        virtual const char *getName() {
+            return "Greedy";
+            }
+
+
         virtual char needsFlipForP2ToPlayAsP1() {
             return true;
             }
@@ -284,6 +301,10 @@ class RandomSquarePlayer : public SquarePlayer {
                 : mRandSource( inSeed ) {
             }
         
+        virtual const char *getName() {
+            return "Random";
+            }
+
         virtual char needsFlipForP2ToPlayAsP1() {
             return false;
             }
@@ -313,20 +334,80 @@ class RandomSquarePlayer : public SquarePlayer {
 
 
 
+// result:  1, p1 win, 0 tie, -1 p2 win
+int runGame( int *inSquare, 
+             SquarePlayer *inPlayer1, SquarePlayer *inPlayer2 ) {
+    
+    MagicSquareGameState *nextState = new MagicSquareGameState( inSquare );
+
+    while( ! nextState->getGameOver() ) {
+
+        int p1Move = 
+            inPlayer1->pickMoveColumnOrRow( nextState );
+        
+        int p2Move;
+        if( inPlayer2->needsFlipForP2ToPlayAsP1() ) {
+            
+            // flip game so that p2 can play from a blind, p1 perspective
+            MagicSquareGameState *nextStateFlipped =
+                (MagicSquareGameState*)( nextState->flipGame() );
+        
+            p2Move = inPlayer1->pickMoveColumnOrRow( nextStateFlipped );
+            
+            delete nextStateFlipped;
+            }
+        else {
+            p2Move = inPlayer2->pickMoveColumnOrRow( nextState );
+            }
+        
+
+        MagicSquareGameState *temp = nextState;
+
+        MagicSquareGameState *temp2 = 
+            (MagicSquareGameState*)( nextState->makeMove( 0, p1Move ) );
+        nextState = (MagicSquareGameState*)( temp2->makeMove( 1, p2Move ) );
+        
+
+        delete temp;
+        delete temp2;
+
+        //printf( "Player moves:\n" );
+        //nextState->printState();
+        }
+
+    int minMaxScore = nextState->getScore();
+    
+    int result = 0;
+    if( minMaxScore > 0 ) {
+        result = 1;
+        }
+    else if( minMaxScore < 0 ) {
+        result = -1;
+        }
+    // else tie
+
+    delete nextState;
+    return result;
+    }
+
+
+
+
+
 int main() {
 
     printf( "Generating square\n" );
     
-    //int *squareA = generateMagicSquare6( 10 );
-    int *squareA = generateMagicSquare6( 19 );
+    int *squareA = generateMagicSquare6( 10 );
+    //int *squareA = generateMagicSquare6( 19 );
     
-    printf( "SquareA:\n" );
-    printSquare( squareA, 6 );
+    //printf( "SquareA:\n" );
+    //printSquare( squareA, 6 );
     
 
     MagicSquareGameState startState( squareA );
 
-    startState.printState();
+    //startState.printState();
     
     //GameState *flipped = startState.flipGame();
     
@@ -353,20 +434,99 @@ int main() {
     SquarePlayer *players[2];
     
 
-    //MinMaxSquarePlayer player1( max );
-    MinMaxSquarePlayer player2( max );
+    // we're going to flip the game state for p2 before asking for its moves
+    // so make it a max player also
+    MinMaxSquarePlayer minMaxPlayer1( max );
+    MinMaxSquarePlayer minMaxPlayer2( max );
 
+    // Human players don't need to be flipped before getting turn-blind moves
+    // from them
     //HumanPlayer player1( 0 );
     //HumanPlayer player2( 1 );
 
-    //GreedySquarePlayer player1( 0 );
-    //GreedySquarePlayer player2( 0 );
-    
-    RandomSquarePlayer player1( 342341 );
-    //RandomSquarePlayer player2( 231345 );
 
-    players[0] = &player1;
-    players[1] = &player2;
+    // we're going to flip the game state for p2 before asking for its moves
+    // so make it a 0 player also
+    GreedySquarePlayer greedyPlayer1( 0 );
+    GreedySquarePlayer greedyPlayer2( 0 );
+    
+    RandomSquarePlayer randomPlayer1( 231345 );
+    RandomSquarePlayer randomPlayer2( 231345 );
+
+
+
+    //runGame( squareA, &minMaxPlayer1, &minMaxPlayer2 );
+    
+
+    players[0] = &minMaxPlayer1;
+    players[1] = &minMaxPlayer2;
+    
+
+    SquarePlayer *player1[3] = 
+        { &minMaxPlayer1, &greedyPlayer1, &randomPlayer1 };
+
+    SquarePlayer *player2[3] = 
+        { &minMaxPlayer2, &greedyPlayer2, &randomPlayer2 };
+    
+
+    // for all combinations of p1 and p2
+    // third index is p1win, p2win, tie
+    int winAndTieCounts[3][3][3];
+
+    for( int p1=0; p1<3; p1++ ) {
+        for( int p2=0; p2<3; p2++ ) {
+            for( int w=0; w<3; w++ ) {
+                winAndTieCounts[p1][p2][w] = 0;
+                }
+            }
+        }
+    
+
+    int seed = 49;
+    
+    for( int r=0; r<2; r++ ) {
+        printf( "Round %d\n", r );
+        seed ++;
+        
+        int *square = generateMagicSquare6( seed );
+
+        printf( "Square:\n" );
+        printSquare( square, 6 );
+    
+
+        for( int p1=0; p1<3; p1++ ) {
+            for( int p2=0; p2<3; p2++ ) {
+                
+                int result = runGame( square, player1[p1], player2[p2] );
+                
+                if( result == 1 ) {
+                    winAndTieCounts[p1][p2][0]++;
+                    }
+                else if( result == -1 ) {
+                    winAndTieCounts[p1][p2][1]++;
+                    }
+                else {
+                    winAndTieCounts[p1][p2][2]++;
+                    }
+                }
+            }
+        delete [] square;
+        }
+    
+    printf( "Results:\n" );
+    
+    for( int p1=0; p1<3; p1++ ) {
+        for( int p2=0; p2<3; p2++ ) {
+            printf( "p1:%s   p2:%s   %d p1 wins, %d p2 wins, %d ties\n",
+                    player1[p1]->getName(),
+                    player2[p2]->getName(),                    
+                    winAndTieCounts[p1][p2][0],
+                    winAndTieCounts[p1][p2][1],
+                    winAndTieCounts[p1][p2][2] );
+            }
+        }
+    return 0;
+    
 
 
     //int nextPlayer = 0;
