@@ -218,6 +218,25 @@ static void runVsGreedyTreeSearch( int inSquareSeed ) {
 
 
 
+
+static void runMinMaxSearch( int inSquareSeed ) {
+    
+
+    int *squareA = generateMagicSquare6( 10 + inSquareSeed );
+
+    //printSquare( squareA, 6 );
+
+    MagicSquareGameStateTwoPick state( squareA );
+
+
+    int score = minMax( &state, max );
+    
+    printf( "Best worst-case score (minmax vs minmax) = %d\n", score );
+    
+    delete [] squareA;
+    }
+
+
 int main() {
 
     
@@ -225,5 +244,6 @@ int main() {
 
         //runMinMaxVsPeekingGreedy( r );
         runVsGreedyTreeSearch( r );
+        //runMinMaxSearch( r );
         }
     }
