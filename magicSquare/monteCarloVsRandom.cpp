@@ -43,6 +43,15 @@ typedef struct PickOrder {
     } PickOrder;
 
 
+PickOrder getEmptyPickOrder() {
+    PickOrder p;
+    for( int m=0; m<6; m++ ) {
+        p.picks[m] = -1;
+        }
+    return p;
+    }
+
+
 PickOrder allPickOrders[720];
 
 static void fillAllPickOrders() {
@@ -112,7 +121,89 @@ static void fillAllPickOrders() {
     }
 
 
+static void printPickOrder( PickOrder inPickOrder ) {
+    printf( "[ " );
+    for( int p=0; p<6; p++ ) {
+        printf( "%d ", inPickOrder.picks[p] );
+        }
+    printf( "]\n" );
+    }
+
+
 #include "minorGems/util/random/JenkinsRandomSource.h"
+
+static char arePicksCompatible( PickOrder inPartialPick, 
+                                PickOrder inFullPick ) {
+    for( int m=0; m<6; m++ ) {
+        if( inFullPick.picks[m] != inPartialPick.picks[m]
+            &&
+            inPartialPick.picks[m] != -1 ) {
+            return false;
+            }
+        }
+    return true;
+    }
+
+
+
+// make two picks
+// the so far picks and the return picks contain -1 to mark unknown (or as of
+//  yet unset) picks
+static PickOrder findBestMove( int *inSquare,
+                               PickOrder inOurPicksSoFar,
+                               PickOrder inTheirPicksSoFar ) {
+
+    int winCount[720];
+
+    int bestP;
+    int bestWinCount = 0;
+
+    for( int p=0; p<720; p++ ) {
+        winCount[p] = 0;
+        
+        PickOrder ourPickOrder = allPickOrders[p];
+        
+        if( arePicksCompatible( inOurPicksSoFar, ourPickOrder ) ) {
+            // pick p is a way to fill in and continue ourPicksSoFar
+
+            for( int r=0; r<720; r++ ) {
+                
+                PickOrder theirPickOrder = allPickOrders[ r ];
+                
+                if( arePicksCompatible( inTheirPicksSoFar, theirPickOrder ) ) {
+                    MagicSquareGameState state( inSquare );
+                    
+                    for( int m=0; m<6; m++ ) {
+                        state.makeMoveInternal( 0, ourPickOrder.picks[m] );
+                        state.makeMoveInternal( 1, theirPickOrder.picks[m] );
+                        }
+                    if( state.getScore( 0 ) > state.getScore( 1 ) ) {
+                        winCount[p]++;
+                        }
+                    }
+                }
+            
+            }
+        
+        if( winCount[p] > bestWinCount ) {
+            bestWinCount = winCount[p];
+            bestP = p;
+            }
+        }
+    
+    PickOrder bestPickOrder = allPickOrders[ bestP ];
+
+    // augment ourPicksSoFar until we've set next two moves
+    int setCount = 0;
+    for( int m=0; m<6 && setCount < 2; m++ ) {
+        
+        if( inOurPicksSoFar.picks[m] == -1 ) {
+            inOurPicksSoFar.picks[m] = bestPickOrder.picks[m];
+            setCount++;
+            }
+        }
+    return inOurPicksSoFar;
+    }
 
 
 static int runTest( int inSquareSeed ) {
@@ -190,6 +281,93 @@ static int runTest( int inSquareSeed ) {
     }
 
 
+
+
+// returns 1 if we won
+static int playGameVsRandom( JenkinsRandomSource *inRandSource,
+                             int *inSquare, char inFirstPickRandom ) {
+
+    PickOrder ourPicks;
+    
+    if( inFirstPickRandom ) {
+        ourPicks = 
+            allPickOrders[ inRandSource->getRandomBoundedInt( 0, 719 ) ];
+    
+        for( int m=2; m<6; m++ ) {
+            ourPicks.picks[m] = -1;
+            }
+        }
+    else {
+        ourPicks = getEmptyPickOrder();
+        }
+            
+
+    PickOrder theirPicks = 
+        allPickOrders[ inRandSource->getRandomBoundedInt( 0, 719 ) ];
+        
+    int mStart=0;
+    
+    if( inFirstPickRandom ) {
+        mStart = 1;
+        }
+    
+    for( int m=mStart; m<3; m++ ) {
+            
+        PickOrder theirPartialPicks = getEmptyPickOrder();
+            
+        for( int pp=0; pp < m; pp ++ ) {
+            theirPartialPicks.picks[ pp * 2 + 1 ] = 
+                theirPicks.picks[ pp * 2 + 1 ];
+            }
+        //printf( "Their picks = " );
+        //printPickOrder( theirPartialPicks );
+            
+        ourPicks = findBestMove( inSquare, ourPicks, theirPartialPicks );
+        }
+        
+    MagicSquareGameState state( inSquare );
+
+    for( int m=0; m<6; m++ ) {
+        state.makeMoveInternal( 0, ourPicks.picks[m] );
+        state.makeMoveInternal( 1, theirPicks.picks[m] );
+        }
+    if( state.getScore( 0 ) > state.getScore( 1 ) ) {
+        return 1;
+        }
+    else {
+        return 0;
+        }
+    }
+
+
+
+static int runTestB( int inSquareSeed ) {
+    JenkinsRandomSource randSource( inSquareSeed );
+
+    int *squareA = generateMagicSquare6( 10 + inSquareSeed );
+
+    int winCount = 0;
+    int numTries = 40;
+    for( int t=0; t<numTries; t++ ) {
+        winCount += playGameVsRandom( &randSource, squareA, false );
+        }
+    
+    printf( "Win rate = %f\n", (float)winCount / (float)numTries );
+
+    winCount = 0;
+    for( int t=0; t<numTries; t++ ) {
+        winCount += playGameVsRandom( &randSource, squareA, true );
+        }
+    
+    printf( "Win rate (first move random) = %f\n", 
+            (float)winCount / (float)numTries );
+    
+    delete [] squareA;
+
+    return winCount;
+    }
+
+
 int main() {
     
     fillAllPickOrders();
@@ -198,12 +376,8 @@ int main() {
     int bestWinCount = 0;
     
     for( int r=30; r<600; r++ ) {
-
-        int winCount = runTest( r );
         printf( "r=%d\n", r );
-        
-        if( winCount <= 360 ) {
-            printf( "Win count = %d for seed = ", winCount, r );
-            }
+
+        int winCount = runTestB( r );
         }
     }
