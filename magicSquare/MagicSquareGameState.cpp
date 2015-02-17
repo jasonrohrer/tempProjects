@@ -78,13 +78,20 @@ GameState *MagicSquareGameState::makeMove( int inPlayerNumber,
                                            int inColumnOrRow ) {
     MagicSquareGameState *newState = (MagicSquareGameState*)copy();
     
+    newState->makeMoveInternal( inPlayerNumber, inColumnOrRow );
+    
+    return newState;
+    }
+
+
+void MagicSquareGameState::makeMoveInternal( int inPlayerNumber, 
+                                             int inColumnOrRow ) {
     for( int t=0; t<6; t++ ) {
-        if( newState->mPlayerMoves[inPlayerNumber][t] == -1 ) {
-            newState->mPlayerMoves[inPlayerNumber][t] = inColumnOrRow;
+        if( mPlayerMoves[inPlayerNumber][t] == -1 ) {
+            mPlayerMoves[inPlayerNumber][t] = inColumnOrRow;
             break;
             }
         }
-    return newState;
     }
 
 
