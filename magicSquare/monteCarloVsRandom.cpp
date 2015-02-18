@@ -146,6 +146,7 @@ static char arePicksCompatible( PickOrder inPartialPick,
 
 
 
+
 // make two picks
 // the so far picks and the return picks contain -1 to mark unknown (or as of
 //  yet unset) picks
@@ -153,10 +154,26 @@ static PickOrder findBestMove( int *inSquare,
                                PickOrder inOurPicksSoFar,
                                PickOrder inTheirPicksSoFar ) {
 
+    MagicSquareGameState state( inSquare );
+
     int winCount[720];
 
     int bestP;
     int bestWinCount = 0;
+
+    char theirPicksCompatible[720];
+    
+    
+    for( int r=0; r<720; r++ ) {
+        theirPicksCompatible[r] = false;
+        
+        PickOrder theirPickOrder = allPickOrders[ r ];
+        
+        if( arePicksCompatible( inTheirPicksSoFar, theirPickOrder ) ) {
+            theirPicksCompatible[r] = true;
+            }
+        }
+    
 
     for( int p=0; p<720; p++ ) {
         winCount[p] = 0;
@@ -168,15 +185,13 @@ static PickOrder findBestMove( int *inSquare,
 
             for( int r=0; r<720; r++ ) {
                 
-                PickOrder theirPickOrder = allPickOrders[ r ];
                 
-                if( arePicksCompatible( inTheirPicksSoFar, theirPickOrder ) ) {
-                    MagicSquareGameState state( inSquare );
+                if( theirPicksCompatible[r] ) {
+                    PickOrder theirPickOrder = allPickOrders[ r ];
                     
-                    for( int m=0; m<6; m++ ) {
-                        state.makeMoveInternal( 0, ourPickOrder.picks[m] );
-                        state.makeMoveInternal( 1, theirPickOrder.picks[m] );
-                        }
+                    state.setMoves( 0, ourPickOrder.picks );
+                    state.setMoves( 1, theirPickOrder.picks );
+                    
                     if( state.getScore( 0 ) > state.getScore( 1 ) ) {
                         winCount[p]++;
                         }
@@ -190,11 +205,58 @@ static PickOrder findBestMove( int *inSquare,
             bestP = p;
             }
         }
+
+    // what moves in our move list are waiting to be filled?
+    int nextMovePlaces[2];
+    int setCount = 0;
+
+    for( int m=0; m<6 && setCount < 2; m++ ) {
+        if( inOurPicksSoFar.picks[m] == -1 ) {
+            nextMovePlaces[setCount] = m;
+            setCount++;
+            }
+        }
+
+    // win counts for each possible pair of moves that can fill the next
+    // two places
+    int nextMovePairWinCounts[6][6];
+    for( int m=0; m<6; m++ ) {
+        for( int n=0; n<6; n++ ) {
+            nextMovePairWinCounts[m][n] = 0;
+            }
+        }
     
+    for( int p=0; p<720; p++ ) {
+        
+        PickOrder ourPickOrder = allPickOrders[p];
+        
+        if( arePicksCompatible( inOurPicksSoFar, ourPickOrder ) ) {
+
+            nextMovePairWinCounts
+                [ ourPickOrder.picks[ nextMovePlaces[0] ] ]
+                [ ourPickOrder.picks[ nextMovePlaces[1] ] ]
+                += winCount[p];  
+            }
+        }
+             
+    int bestM, bestN;
+    bestWinCount = 0;
+    
+    for( int m=0; m<6; m++ ) {
+        for( int n=0; n<6; n++ ) {
+            if( nextMovePairWinCounts[m][n] > bestWinCount ) {
+                bestWinCount = nextMovePairWinCounts[m][n];
+                bestM = m;
+                bestN = n;
+                }
+            }
+        }
+    
+    /*     
     PickOrder bestPickOrder = allPickOrders[ bestP ];
 
     // augment ourPicksSoFar until we've set next two moves
-    int setCount = 0;
+    setCount = 0;
     for( int m=0; m<6 && setCount < 2; m++ ) {
         
         if( inOurPicksSoFar.picks[m] == -1 ) {
@@ -202,6 +264,11 @@ static PickOrder findBestMove( int *inSquare,
             setCount++;
             }
         }
+    */
+    inOurPicksSoFar.picks[ nextMovePlaces[0] ] = bestM;
+    inOurPicksSoFar.picks[ nextMovePlaces[1] ] = bestN;
+    
+
     return inOurPicksSoFar;
     }
 
@@ -354,6 +421,7 @@ static int runTestB( int inSquareSeed ) {
     
     printf( "Win rate = %f\n", (float)winCount / (float)numTries );
 
+    /*
     winCount = 0;
     for( int t=0; t<numTries; t++ ) {
         winCount += playGameVsRandom( &randSource, squareA, true );
@@ -361,7 +429,7 @@ static int runTestB( int inSquareSeed ) {
     
     printf( "Win rate (first move random) = %f\n", 
             (float)winCount / (float)numTries );
-    
+    */
     delete [] squareA;
 
     return winCount;
@@ -375,7 +443,7 @@ int main() {
     
     int bestWinCount = 0;
     
-    for( int r=30; r<600; r++ ) {
+    for( int r=0; r<10; r++ ) {
         printf( "r=%d\n", r );
 
         int winCount = runTestB( r );
