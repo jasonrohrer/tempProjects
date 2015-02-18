@@ -29,7 +29,8 @@ class MagicSquareGameState : public GameState {
         // make a move without returning a new game state as a result
         void makeMoveInternal( int inPlayerNumber, int inColumnOrRow );
         
-
+        void setMoves( int inPlayerNumber, int inMoves[6] );
+        
         // flips square and player moves made so far, turning rows into columns
         // p1 becomes p2, etc.
         GameState *flipGame();

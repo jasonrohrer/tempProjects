@@ -95,6 +95,12 @@ void MagicSquareGameState::makeMoveInternal( int inPlayerNumber,
     }
 
 
+void MagicSquareGameState::setMoves( int inPlayerNumber, int inMoves[6] ) {
+    memcpy( mPlayerMoves[inPlayerNumber], inMoves, 6 * sizeof( int ) );
+    }
+
+
+
 GameState *MagicSquareGameState::flipGame() {
     
     MagicSquareGameState *newState = (MagicSquareGameState*)copy();
