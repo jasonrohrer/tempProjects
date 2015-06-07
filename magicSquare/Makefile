@@ -9,7 +9,7 @@ PATH_MIN_MAX_CPP = ../../minorGems/ai/gameTree/minMax.cpp
 
 
 
-all: magicSquare magicSquare6Test magicSquareAITest greedyPeekingTest monteCarloVsRandom
+all: magicSquare magicSquare6Test magicSquareAITest greedyPeekingTest monteCarloVsRandom onePickVsRandom
 
 
 
@@ -43,3 +43,6 @@ greedyPeekingTest: magicSquare6.o MagicSquareGameStateTwoPick.o greedyPeekingTes
 
 monteCarloVsRandom: magicSquare6.o MagicSquareGameState.o monteCarloVsRandom.cpp
 	g++ -Wall -g -o monteCarloVsRandom -I../../ monteCarloVsRandom.cpp magicSquare6.o MagicSquareGameState.o
+
+onePickVsRandom: magicSquare6.o onePickVsRandom.cpp
+	g++ -Wall -g -o onePickVsRandom -I../../ onePickVsRandom.cpp magicSquare6.o
