@@ -52,6 +52,21 @@ PickOrder getEmptyPickOrder() {
     }
 
 
+PickOrder flipPickOrder( PickOrder inPickOrder ) {
+    PickOrder p;
+    for( int m=0; m<6; m++ ) {
+        if( m %2 == 0 ) {    
+            p.picks[m] = inPickOrder.picks[ m+1 ];
+            }
+        else {
+            p.picks[m] = inPickOrder.picks[ m-1 ];
+            }
+        }
+    return p;
+    }
+
+
+
 PickOrder allPickOrders[720];
 
 static void fillAllPickOrders() {
@@ -383,8 +398,11 @@ static int playGameVsRandom( JenkinsRandomSource *inRandSource,
         PickOrder theirPartialPicks = getEmptyPickOrder();
             
         for( int pp=0; pp < m; pp ++ ) {
-            theirPartialPicks.picks[ pp * 2 + 1 ] = 
-                theirPicks.picks[ pp * 2 + 1 ];
+            // reveal their slot-A pick
+            // (their pick order is reversed from ours for scoring,
+            //  with their even picks being the ones they give us)
+            theirPartialPicks.picks[ pp * 2 ] = 
+                theirPicks.picks[ pp * 2 ];
             }
         //printf( "Their picks = " );
         //printPickOrder( theirPartialPicks );
@@ -394,10 +412,28 @@ static int playGameVsRandom( JenkinsRandomSource *inRandSource,
         
     MagicSquareGameState state( inSquare );
 
+
+
     for( int m=0; m<6; m++ ) {
         state.makeMoveInternal( 0, ourPicks.picks[m] );
         state.makeMoveInternal( 1, theirPicks.picks[m] );
         }
+
+    
+    /*    
+    printf( "Square =\n" );
+    printSquare( inSquare, 6 );
+    
+    printf( "Our picks = \t" );
+    printPickOrder( ourPicks );
+
+    printf( "Their picks = \t" );
+    printPickOrder( theirPicks );
+
+
+    printf( "Our score = %d, Their score = %d\n", state.getScore( 0 ),
+            state.getScore( 1 ) );
+    */
     if( state.getScore( 0 ) > state.getScore( 1 ) ) {
         return 1;
         }
@@ -408,18 +444,139 @@ static int playGameVsRandom( JenkinsRandomSource *inRandSource,
 
 
 
+
+
+
+
+// returns 1 if we won
+static int playGameVsFirstPickRandom( JenkinsRandomSource *inRandSource,
+                                      int *inSquare, int *inSquareFlipped,
+                                      char inOurFirstPickRandom ) {
+
+    PickOrder ourPicks;
+
+    if( inOurFirstPickRandom ) {
+        ourPicks = 
+            allPickOrders[ inRandSource->getRandomBoundedInt( 0, 719 ) ];
+    
+        for( int m=2; m<6; m++ ) {
+            ourPicks.picks[m] = -1;
+            }
+        }
+    else {
+        ourPicks = getEmptyPickOrder();
+        }
+
+
+
+    PickOrder theirPicks = 
+        allPickOrders[ inRandSource->getRandomBoundedInt( 0, 719 ) ];
+    
+    // only their first pick is random
+    for( int m=2; m<6; m++ ) {
+        theirPicks.picks[m] = -1;
+        }
+
+
+
+    int mStart=0;
+
+    if( inOurFirstPickRandom ) {
+        mStart = 1;
+        }
+        
+    for( int m=mStart; m<3; m++ ) {
+            
+        PickOrder theirPartialPicks = getEmptyPickOrder();
+        PickOrder ourPartialPicks = getEmptyPickOrder();
+            
+        for( int pp=0; pp < m; pp ++ ) {
+            theirPartialPicks.picks[ pp * 2 ] = 
+                theirPicks.picks[ pp * 2 ];
+            ourPartialPicks.picks[ pp * 2 + 1 ] = 
+                ourPicks.picks[ pp * 2 + 1 ];
+            }
+        
+        ourPicks = findBestMove( inSquare, ourPicks, theirPartialPicks );
+        
+        // do this for move 1 and 2 only (their first pick is random)
+        if( m>0 ) {
+            // run findBestMove from their perspective, then flip their
+            // picks back to our perspective
+            theirPicks = 
+                flipPickOrder( 
+                    findBestMove( inSquareFlipped, 
+                                  flipPickOrder( theirPicks ), 
+                                  flipPickOrder( ourPartialPicks ) ) );
+            }
+        }
+        
+    MagicSquareGameState state( inSquare );
+    
+    
+    for( int m=0; m<6; m++ ) {
+        state.makeMoveInternal( 0, ourPicks.picks[m] );
+        state.makeMoveInternal( 1, theirPicks.picks[m] );
+        }
+    
+    /*
+    printf( "Square =\n" );
+    printSquare( inSquare, 6 );
+    
+    printf( "Our picks = \t" );
+    printPickOrder( ourPicks );
+
+    printf( "Their picks = \t" );
+    printPickOrder( theirPicks );
+
+    printf( "Our score = %d, Their score = %d\n", state.getScore( 0 ),
+            state.getScore( 1 ) );
+    */
+    if( state.getScore( 0 ) > state.getScore( 1 ) ) {
+        return 1;
+        }
+    else {
+        return 0;
+        }
+    }
+
+
+
+
+
+
 static int runTestB( int inSquareSeed ) {
     JenkinsRandomSource randSource( inSquareSeed );
 
     int *squareA = generateMagicSquare6( 10 + inSquareSeed );
 
+    int squareFlipped[36];
+    
+    for( int y=0; y<6; y++ ) {
+        for( int x=0; x<6; x++ ) {
+            squareFlipped[y*6 + x] = squareA[x*6 +y];
+            }
+        }
+
     int winCount = 0;
-    int numTries = 40;
+    int winCountFlipped = 0;
+    int numTries = 100;
     for( int t=0; t<numTries; t++ ) {
         winCount += playGameVsRandom( &randSource, squareA, false );
+        /*
+        winCount += playGameVsFirstPickRandom( &randSource, squareA, 
+                                               squareFlipped, false );
+        
+        //printf( "FLIPPED:\n" );
+        winCountFlipped += playGameVsFirstPickRandom( &randSource, 
+                                                      squareFlipped, 
+                                                    squareA, false );
+        */
         }
     
     printf( "Win rate = %f\n", (float)winCount / (float)numTries );
+    //printf( "Win rate flipped = %f\n", 
+    //       (float)winCountFlipped / (float)numTries );
 
     /*
     winCount = 0;
