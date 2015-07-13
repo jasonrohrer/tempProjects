@@ -545,7 +545,7 @@ static int playGameVsFirstPickRandom( JenkinsRandomSource *inRandSource,
 
 
 
-static int runTestB( int inSquareSeed ) {
+static int runTestB( int inSquareSeed, int inNumTries ) {
     JenkinsRandomSource randSource( inSquareSeed );
 
     int *squareA = generateMagicSquare6( 10 + inSquareSeed );
@@ -560,13 +560,13 @@ static int runTestB( int inSquareSeed ) {
 
     int winCount = 0;
     int winCountFlipped = 0;
-    int numTries = 100;
+    int numTries = inNumTries;
     for( int t=0; t<numTries; t++ ) {
-        winCount += playGameVsRandom( &randSource, squareA, false );
-        /*
+        // winCount += playGameVsRandom( &randSource, squareA, false );
+        
         winCount += playGameVsFirstPickRandom( &randSource, squareA, 
                                                squareFlipped, false );
-        
+        /*
         //printf( "FLIPPED:\n" );
         winCountFlipped += playGameVsFirstPickRandom( &randSource, 
                                                       squareFlipped, 
@@ -599,10 +599,26 @@ int main() {
     
     
     int bestWinCount = 0;
+    int totalWinCount = 0;
+    int numRuns = 300;
+    int numTries = 100;
+
+    int numRunsOver60 = 0;
     
-    for( int r=0; r<10; r++ ) {
+    for( int r=0; r<numRuns; r++ ) {
         printf( "r=%d\n", r );
 
-        int winCount = runTestB( r );
+        int winCount = runTestB( r, numTries );
+        totalWinCount += winCount;
+
+        float winRate = (float)winCount / (float)numTries;
+        if( winRate >= 0.6 ) {
+            numRunsOver60 ++;
+            }
         }
+    printf( "Total win rate = %f\n", 
+            (float)totalWinCount / (float)( numRuns * numTries ) );
+
+    printf( "Percentage of runs with >= 60% win rate = %f\n", 
+            (float)numRunsOver60 / (float)( numRuns ) );
     }
