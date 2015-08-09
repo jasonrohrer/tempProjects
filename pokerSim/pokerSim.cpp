@@ -252,7 +252,7 @@ void shuffleDeck( card *inDeck, BitStream *inStream ) {
 
 
 
-int main() {
+void flopHittingTest() {
 
     card *deck = buildFreshDeck();
     
@@ -448,5 +448,170 @@ int main() {
 
 
 
+    }
+
+
+char isPremium( card inCA, card inCB ) {
+    
+    if( inCA.r == inCB.r ) {
+        // pocket pair
+        return true;
+        }
+    
+    if( inCA.r >= 11 && inCB.r >= 11 ) {
+        
+        if( inCA.r == 14 || inCB.r == 14 ) {
+            // big ace
+            return true;
+            }
+        
+        if( ( inCA.r == 13 && inCB.r == 12 )
+            ||
+            ( inCA.r == 12 && inCB.r == 13 ) ) {
+            
+            // KQ
+            return true;
+            }
+        }
+    
+    return false;
+    }
+
+
+
+void pocketPairTest() {
+    
+    int currentNoPairRun = 0;
+    int longestNoPairRun = 0;
+
+    int runCount = 0;
+    int runSum = 0;
+    
+    int runCounts[100];
+    
+    for( int r=0; r<100; r++ ) {
+        runCounts[r] = 0;
+        }
+    
+    card *deck;
+    
+    deck = buildFreshDeck();
+
+    CryptoRandBitStream bitStream;
+    
+    int numHands = 90;
+        
+    for( int t=0; t<numHands; t++ ) {
+        shuffleDeck( deck, &bitStream );
+        currentNoPairRun ++;
+
+        if( isPremium( deck[0], deck[1] ) ) {
+            runCount ++;
+            runSum += currentNoPairRun;
+            
+            if( currentNoPairRun < 100 ) {
+                runCounts[ currentNoPairRun ] ++;
+                }
+            
+            currentNoPairRun = 0;
+            }
+        else {
+
+            if( currentNoPairRun > longestNoPairRun ) {
+                longestNoPairRun = currentNoPairRun;
+                }
+            }
+        }
+    
+    delete [] deck;
+
+    printf( "%d hands:\n"
+            "%d pairs or premium, %f average run between pairs, "
+            "%d longest run\n",
+            numHands,
+            runCount, runSum / (float)runCount, longestNoPairRun );
+
+    /*
+    printf( "Histogram:\n" );
+    for( int r=0; r<100; r++ ) {
+        printf( "%d: ", r );
+        
+        for( int t = 0; t<runCounts[r]; t++ ) {
+            printf( "+" );
+            }
+        printf( "\n" );
+        }
+    */
+    }
+
+
+
+
+int countPremium( int numHands, CryptoRandBitStream *inBitStream, 
+                  card *inDeck ) {
+    
+    int count = 0;
+    
+    for( int t=0; t<numHands; t++ ) {
+        shuffleDeck( inDeck, inBitStream );
+        
+        if( isPremium( inDeck[0], inDeck[1] ) ) {
+            count++;
+            }
+        }
+    return count;
+    }
+
+
+void premiumsPerVisit() {
+    
+    int premiumCountBins[100];
+    
+    for( int r=0; r<100; r++ ) {
+        premiumCountBins[r] = 0;
+        }
+    
+
+    int numVisits = 2000;
+    
+    card *deck;
+    
+    deck = buildFreshDeck();
+
+    CryptoRandBitStream bitStream;
+
+
+    for( int v=0; v<numVisits; v++ ) {
+        int numPremimus = countPremium( 90, &bitStream, deck );
+    
+        premiumCountBins[numPremimus] ++;
+        }
+    
+    delete [] deck;
+
+    printf( "%d visits (90 per visit):\n", numVisits );
+
+    
+    printf( "Histogram:\n" );
+    for( int r=0; r<100; r++ ) {
+        printf( "%2d: ", r );
+        
+        for( int t = 0; t<premiumCountBins[r]/5; t++ ) {
+            printf( "+" );
+            }
+        printf( "  %d", premiumCountBins[r] );
+        printf( "\n" );
+        }
+    
+    }
+
+
+
+
+int main() {
+    //pocketPairTest();
+
+    premiumsPerVisit();
+    
     return 0;
     }
