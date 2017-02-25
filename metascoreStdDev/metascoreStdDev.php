@@ -6,13 +6,18 @@
    font-weight: bold;
    font-size: 25px;
    }
-.title_font {
+.title_font{
    color: #000;
    font-family: Arial,Helvetica,sans-serif;
    font-style: normal;
    font-weight: bold;
    font-size: 18px;
+   text-decoration: none;	 
    }
+.title_font:hover{
+   color: #FC3;
+    }
+
 .row_table {
     border-bottom-width: 1px;
     border-bottom-style: solid;
@@ -24,6 +29,7 @@
 
 
 class Film {
+    public $url;
     public $title;
     public $metaScore;
     public $dev;
@@ -108,7 +114,7 @@ for( $i=0; $i<count( $lines ) && $numPrinted < $maxToPrint; $i++ ) {
         else {
             
             $film = printReportForFilmURL( $filmURL );
-
+            
             if( $film->title != "" ) {
                 $films[] = $film;
                 $numPrinted ++;
@@ -136,13 +142,13 @@ echo "<table border=0>";
 
 foreach( $films as $film ) {
     echo "<tr><td class=row_table>";
-    printFilmLine( $film->title, $film->metaScore, $film->dev );
+    printFilmLine( $film->url, $film->title, $film->metaScore, $film->dev );
     echo "</td></tr>";
     }
 echo "</table><br>";
 
 
-function printFilmLine( $inTitle, $inMetaScore, $inDev ) {
+function printFilmLine( $inURL, $inTitle, $inMetaScore, $inDev ) {
     echo "<table border=0 cellpadding=10><tr>";
 
     $color = "#f00";
@@ -157,7 +163,7 @@ function printFilmLine( $inTitle, $inMetaScore, $inDev ) {
         "<tr><td bgcolor=$color align=center class=metascore_font width=30>".
         "$inMetaScore</td></tr></table></td>";
     
-    echo "<td width=250><font class=title_font>$inTitle</font></td>";
+    echo "<td width=250><a class=title_font href=$inURL>$inTitle</a></td>";
 
     
     echo "<td>(&sigma;:$inDev)</td>";
@@ -169,7 +175,8 @@ echo "<br><br>";
 $date = date('m/d/Y h:i:s a T', time());
 
 echo "Data fetched $date.<br><br>";
-echo "Code by <a href=http://hcsoftware.sf.net/jason-rohrer>Jason Rohrer</a>.";
+echo "Code by <a href=http://hcsoftware.sf.net/jason-rohrer>Jason Rohrer</a>".
+" (Source is <a href=https://sourceforge.net/p/hcsoftware/tempProjects/ci/default/tree/metascoreStdDev/>here</a>).";
 echo "<br><br><br><br>";
 
 ?>
@@ -235,12 +242,13 @@ function printReportForFilmURL( $inURL ) {
     $devText = round( $stdDev, 2 );
 
 
-    //printFilmLine( $title, $metaScore, $devText );
+    //printFilmLine( $inURL, $title, $metaScore, $devText );
     
     //echo "<br>";
 
     
     $returnObj = new Film();
+    $returnObj->url = $inURL;
     $returnObj->title = $title;
     $returnObj->metaScore = $metaScore;
     $returnObj->dev = $devText;
