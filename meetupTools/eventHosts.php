@@ -101,6 +101,8 @@ if( $monthsPast != 0 ) {
             $eventID = $item->id;
             
             $eventListing = " attended <a href=$item->event_url>$item->name</a> on $date";
+
+            $noHost = false;
             
             
             if( (bool)$item->event_hosts->event_hosts_item ) {
@@ -177,9 +179,9 @@ if( $monthsPast != 0 ) {
 
                     
                     $id = $earliestMemberID;
-                
-                    //echo "$id\n";
-                
+
+                    // don't give credit for events with no official host
+                    /*
                     $oldHostCount = $memberList["$id"]["host_count"];
                     $oldHostedRSVPCount =
                         $memberList["$id"]["hosted_rsvp_count"];
@@ -190,7 +192,12 @@ if( $monthsPast != 0 ) {
 
                     $memberList["$id"]["hosted_events"]["$item->event_url"] =
                         $rsvpCount;
+                    */
 
+                    // but flag them for special listing
+
+                    $noHost = true;
+                    
                     $hostName = $memberList["$id"]["name"];
                     $eventListing = $eventListing .
                         " ( <b>no official host</b>, earliest RSVP by <a href=https://www.meetup.com/Homespun/members/$id>$hostName</a> )</b>";
@@ -203,7 +210,10 @@ if( $monthsPast != 0 ) {
             $eventListing = $rsvpCount . $eventListing;
             
             $eventList[] = $eventListing;
-            
+
+            if( $noHost ) {
+                $noHostList[] = $eventListing;
+                }
 
             $totalRSVPCount += $rsvpCount;
             }
@@ -340,6 +350,14 @@ if( $monthsPast != 0 ) {
         }
 
     echo "</table>";
+
+    echo "<br><br><br><br>";
+
+    echo "List of events with no official host:<br><br>\n";
+    
+    foreach( $noHostList as $event ) {
+        echo "$event<br><br>\n";
+        }
 
     echo "<br><br><br><br>";
 
