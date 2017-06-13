@@ -93,7 +93,7 @@ if( $monthsPast != 0 ) {
         foreach( $xml->items->item as $item ) {
             $totalEventCount ++;
             
-            $rsvpCount = $item->yes_rsvp_count;
+            $rsvpCount = (int)( $item->yes_rsvp_count );
 
             $name = $item->name;
             $date = gmdate("Y-m-d", $item->time / 1000);
@@ -140,88 +140,29 @@ if( $monthsPast != 0 ) {
                     //echo "   ".$memberList["$id"]["host_count"] . "<br>";
                     }
                 }
-            else if( $rsvpCount > 0 ) {
-
-                // manually find the host for this event
-                // (the first to RSVP for it)
-                $rsvpURL ="$apiURL".
-                    "rsvps.xml?event_id=$eventID".
-                    "&key=$apiKey";
-                
-                $rsvpResult = trim( file_get_contents( $rsvpURL ) );
-        
-        
-                $rsvpXML = simplexml_load_string( $rsvpResult );
-
-
-                if( $rsvpXML === FALSE ) {
-                    echo "Parsing Meetup data failed (url = $rsvpURL result = $rsvpResult )<br>";
-                    }
-
-                // way in future
-                $earliestTime = 9992188300000;
-                $earliestMemberID = -1;
-                
-                foreach( $rsvpXML->items->item as $rsvp ) {
-                    
-                    if( (float)$rsvp->created < (float)$earliestTime ) {
-                        $earliestTime = $rsvp->created;
-                        $earliestMemberID = $rsvp->member->member_id;
-                        }
-                    }
-
-                if( $earliestMemberID != -1 ) {
-
-                    $hostedEventCount++;                
-
-                    // don't count the host(s) in the rsvp count
-                    $rsvpCount -= 1;
-
-                    
-                    $id = $earliestMemberID;
-
-                    // don't give credit for events with no official host
-                    /*
-                    $oldHostCount = $memberList["$id"]["host_count"];
-                    $oldHostedRSVPCount =
-                        $memberList["$id"]["hosted_rsvp_count"];
-                                        
-                    $memberList["$id"]["host_count"] = $oldHostCount + 1;
-                    $memberList["$id"]["hosted_rsvp_count"] =
-                        $oldHostedRSVPCount + $rsvpCount;
-
-                    $memberList["$id"]["hosted_events"]["$item->event_url"] =
-                        $rsvpCount;
-                    */
-
-                    // but flag them for special listing
-
-                    $noHost = true;
-                    
-                    $hostName = $memberList["$id"]["name"];
-                    $eventListing = $eventListing .
-                        " ( <b>no official host</b>, earliest RSVP by <a href=https://www.meetup.com/Homespun/members/$id>$hostName</a> )</b>";
-                    }
-                else {
-                    $eventListing = $eventListing . " (<b>no host listed</b>)";
-                    }
+            else {
+                $noHost = true;
+                $eventListing = $eventListing . " (<b>no host listed</b>)";
                 }
-
+            
+        
             $eventListing = $rsvpCount . $eventListing;
             
             $eventList[] = $eventListing;
-
+            
             if( $noHost ) {
-                $noHostList[] = $eventListing;
+                $noHostList["$eventListing"] = $rsvpCount;
                 }
-
+            
             $totalRSVPCount += $rsvpCount;
             }
+    
 
 
         // another page of results?
         $nextUrl = $xml->head->next;
         }
+    
     
 
 
@@ -353,13 +294,14 @@ if( $monthsPast != 0 ) {
 
     echo "<br><br><br><br>";
 
-    echo "List of events with no official host:<br><br>\n";
     
-    foreach( $noHostList as $event ) {
-        echo "$event<br><br>\n";
+    echo "List of events with no official host:<br><br>\n";
+    arsort( $noHostList );
+    foreach( $noHostList as $key => $value ) {
+        echo "$key<br><br>\n";
         }
 
-    echo "<br><br><br><br>";
+    echo "<br><br><hr><br><br>";
 
     echo "Raw event dump:<br><br>\n";
     
