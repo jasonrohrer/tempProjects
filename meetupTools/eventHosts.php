@@ -42,6 +42,8 @@ if( $monthsPast != 0 ) {
         echo "Parsing Meetup data failed<br>";
         }
 
+    $eventList = array();
+    
     $memberList = array();
     
     foreach( $xml->items->item as $item ) {
@@ -50,14 +52,20 @@ if( $monthsPast != 0 ) {
 
         $member["name"] = (string)( $item->name );
         $member["host_count"] = 0;
+        $member["hosted_rsvp_count"] = 0;
 
+        // key event id, value rsvp_count
+        $member[ "hosted_events" ] = array();
+        
         $id = (string)( $item->id );
+
+        $member[ "id" ] = $id;
 
         $memberList["$id"] = $member;
         }
 
     
-
+    $allURLList = array();
     
     
     $nextUrl ="$apiURL".
@@ -67,10 +75,12 @@ if( $monthsPast != 0 ) {
 
     $totalEventCount = 0;
     $hostedEventCount = 0;
+    $totalRSVPCount = 0;
     
     while( strlen( $nextUrl ) > 5 ) {
         
-    
+        $allURLList[] = $nextUrl;
+        
         $result = trim( file_get_contents( $nextUrl ) );
         
         
@@ -84,23 +94,55 @@ if( $monthsPast != 0 ) {
         foreach( $xml->items->item as $item ) {
             $totalEventCount ++;
             
+            $rsvpCount = $item->yes_rsvp_count;
+
+            $name = $item->name;
+            $date = gmdate("Y-m-d", $item->time / 1000);
+
+            $eventListing = "$rsvpCount attended <a href=$item->event_url>$item->name</a> on $date";
+            
+            
             if( (bool)$item->event_hosts->event_hosts_item ) {
 
-                $hostedEventCount++;
+                $hostedEventCount++;                
                 
                 foreach( $item->event_hosts->event_hosts_item as $host ) {
-                
+
+                    // don't count the host(s) in the rsvp count
+                    $rsvpCount -= 1;
+
+                    
                     $id = $host->member_id;
                 
                     //echo "$id\n";
                 
                     $oldHostCount = $memberList["$id"]["host_count"];
-                
+                    $oldHostedRSVPCount =
+                        $memberList["$id"]["hosted_rsvp_count"];
+                                        
                     $memberList["$id"]["host_count"] = $oldHostCount + 1;
+                    $memberList["$id"]["hosted_rsvp_count"] =
+                        $oldHostedRSVPCount + $rsvpCount;
+
+                    $memberList["$id"]["hosted_events"]["$item->event_url"] =
+                        $rsvpCount;
+
+                    $hostName = $memberList["$id"]["name"];
+                    $eventListing = $eventListing .
+                        " hosted by <a href=https://www.meetup.com/Homespun/members/$id>$hostName</a>";
+                    
                     //echo $memberList["$id"]["name"] . "<br>";
                     //echo "   ".$memberList["$id"]["host_count"] . "<br>";
                     }
                 }
+            else {
+                $eventListing = $eventListing . " (<b>no host listed</b>)";
+                }
+            
+            $eventList[] = $eventListing;
+            
+
+            $totalRSVPCount += $rsvpCount;
             }
 
 
@@ -110,7 +152,8 @@ if( $monthsPast != 0 ) {
     
 
 
-    echo "Counted <b>$totalEventCount</b> events.<br>";
+    echo "Counted <b>$totalEventCount</b> events " .
+         "attended by <b>$totalRSVPCount</b> members.<br>";
     echo "(<b>$hostedEventCount</b> of them had hosts assigned)<br><br>";
 
            
@@ -140,8 +183,8 @@ if( $monthsPast != 0 ) {
 
         foreach( $memberList as $id => $member ) {
 
-            if( $member["host_count"] > $largestCount ) {
-                $largestCount = $member["host_count"];
+            if( $member["hosted_rsvp_count"] > $largestCount ) {
+                $largestCount = $member["hosted_rsvp_count"];
                 $largestCountID = $id;
                 }
             }
@@ -157,22 +200,102 @@ if( $monthsPast != 0 ) {
     
             
     
+    echo "<table border=1 cellpadding=10>";
+
+    $color = "#FFFFFF";
+    $colorAlt = "#EEEEEE";
+    
+
+    $i = 1;
     
     foreach( $sortedMemberList as $member ) {
 
         $name = $member["name"];
         $count = $member["host_count"];
+        $rsvp_count = $member["hosted_rsvp_count"];
+        $id = $member["id"];
 
+        arsort( $member["hosted_events"] );
+        
+        $maxURL = "";
+        $max = 0;
+
+        $urlList = array_keys( $member["hosted_events"] );
+        $countList = array_values( $member["hosted_events"] );
+            
+        if( count( $urlList ) > 0 ) {
+            $maxURL = $urlList[0];
+            $max = $countList[0];
+            }
+            
         $eventWord = "events";
 
         if( $count == 1 ) {
             $eventWord = "event";
             }
-        
-        
-        echo "$name hosted <b>$count</b> $eventWord<br>";
+
+        $memberWord = "members";
+
+        if( $rsvp_count == 1 ) {
+            $memberWord = "member";
+            }
+
+        $maxString = "";
+
+        if( $count > 0 && $rsvp_count > 0 ) {
+
+            $maxMemberWord = "members";
+
+            if( $max == 1 ) {
+                $maxMemberWord = "member";
+                }
+            
+            $maxString = "<b>$max</b> $maxMemberWord at ".
+                "<a href=$maxURL>largest event</a>";
+
+            $numEvents = count( $urlList );
+            
+            if( $numEvents > 1 ) {
+
+                for( $i = 1; $i<5 && $i < $numEvents; $i++ ) {
+
+                    $url = $urlList[$i];
+                    $c = $countList[$i];
+                    
+                    $maxString = $maxString . " [<a href=$url>$c</a>]";
+                    }
+                }
+            }
+
+        echo "<tr bgcolor=$color><td>$i</td><td><a href=https://www.meetup.com/Homespun/members/$id>$name</a></td><td>hosted <b>$count</b> $eventWord</td><td>attended by <b>$rsvp_count</b> $memberWord</td><td>$maxString</td></tr>\n";
+
+        $temp = $color;
+        $color = $colorAlt;
+        $colorAlt = $temp;
+
+        $i ++;
         }
+
+    echo "</table>";
+
+    echo "<br><br><br><br>";
+
+    echo "Raw event dump:<br><br>\n";
+    
+    foreach( $eventList as $event ) {
+        echo "$event<br><br>\n";
+        }
+
+    echo "<br><br><br><br>";
+
+    echo "Fetched events from these URLs:<br><br>\n";
+
+    foreach( $allURLList as $url ) {
+        echo "<a href=$url>$url</a><br><br>\n";
+        }
+
     }
+
 
 
 
