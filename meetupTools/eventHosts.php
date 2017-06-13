@@ -100,7 +100,7 @@ if( $monthsPast != 0 ) {
 
             $eventID = $item->id;
             
-            $eventListing = "$rsvpCount attended <a href=$item->event_url>$item->name</a> on $date";
+            $eventListing = " attended <a href=$item->event_url>$item->name</a> on $date";
             
             
             if( (bool)$item->event_hosts->event_hosts_item ) {
@@ -110,8 +110,10 @@ if( $monthsPast != 0 ) {
                 foreach( $item->event_hosts->event_hosts_item as $host ) {
 
                     // don't count the host(s) in the rsvp count
-                    $rsvpCount -= 1;
-
+                    if( $rsvpCount > 0 ) {
+                        $rsvpCount -= 1;
+                        }
+                    
                     
                     $id = $host->member_id;
                 
@@ -136,7 +138,7 @@ if( $monthsPast != 0 ) {
                     //echo "   ".$memberList["$id"]["host_count"] . "<br>";
                     }
                 }
-            else {
+            else if( $rsvpCount > 0 ) {
 
                 // manually find the host for this event
                 // (the first to RSVP for it)
@@ -159,7 +161,8 @@ if( $monthsPast != 0 ) {
                 $earliestMemberID = -1;
                 
                 foreach( $rsvpXML->items->item as $rsvp ) {
-                    if( $rsvp->created < $earliestTime ) {
+                    
+                    if( (float)$rsvp->created < (float)$earliestTime ) {
                         $earliestTime = $rsvp->created;
                         $earliestMemberID = $rsvp->member->member_id;
                         }
@@ -190,12 +193,14 @@ if( $monthsPast != 0 ) {
 
                     $hostName = $memberList["$id"]["name"];
                     $eventListing = $eventListing .
-                        " hosted by <a href=https://www.meetup.com/Homespun/members/$id>$hostName</a>";
+                        " ( <b>no official host</b>, earliest RSVP by <a href=https://www.meetup.com/Homespun/members/$id>$hostName</a> )</b>";
                     }
                 else {
                     $eventListing = $eventListing . " (<b>no host listed</b>)";
                     }
                 }
+
+            $eventListing = $rsvpCount . $eventListing;
             
             $eventList[] = $eventListing;
             
@@ -264,7 +269,7 @@ if( $monthsPast != 0 ) {
     $colorAlt = "#EEEEEE";
     
 
-    $i = 1;
+    $ind = 1;
     
     foreach( $sortedMemberList as $member ) {
 
@@ -325,13 +330,13 @@ if( $monthsPast != 0 ) {
                 }
             }
 
-        echo "<tr bgcolor=$color><td>$i</td><td><a href=https://www.meetup.com/Homespun/members/$id>$name</a></td><td>hosted <b>$count</b> $eventWord</td><td>attended by <b>$rsvp_count</b> $memberWord</td><td>$maxString</td></tr>\n";
+        echo "<tr bgcolor=$color><td>$ind</td><td><a href=https://www.meetup.com/Homespun/members/$id>$name</a></td><td>hosted <b>$count</b> $eventWord</td><td>attended by <b>$rsvp_count</b> $memberWord</td><td>$maxString</td></tr>\n";
 
         $temp = $color;
         $color = $colorAlt;
         $colorAlt = $temp;
 
-        $i ++;
+        $ind ++;
         }
 
     echo "</table>";
