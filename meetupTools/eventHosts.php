@@ -39,8 +39,7 @@ if( $monthsPast != 0 ) {
     $xml = simplexml_load_string( $result );
 
     if( $xml === FALSE ) {
-        echo "Parsing Meetup data failed<br>";
-        }
+        echo "Parsing Meetup data failed ( url = $url result = $result )<br>";      }
 
     $eventList = array();
     
@@ -87,7 +86,7 @@ if( $monthsPast != 0 ) {
         $xml = simplexml_load_string( $result );
 
         if( $xml === FALSE ) {
-            echo "Parsing Meetup data failed<br>";
+            echo "Parsing Meetup data failed ( url = $nextUrl result = $result )<br>";
             }
 
 
@@ -99,6 +98,8 @@ if( $monthsPast != 0 ) {
             $name = $item->name;
             $date = gmdate("Y-m-d", $item->time / 1000);
 
+            $eventID = $item->id;
+            
             $eventListing = "$rsvpCount attended <a href=$item->event_url>$item->name</a> on $date";
             
             
@@ -136,7 +137,64 @@ if( $monthsPast != 0 ) {
                     }
                 }
             else {
-                $eventListing = $eventListing . " (<b>no host listed</b>)";
+
+                // manually find the host for this event
+                // (the first to RSVP for it)
+                $rsvpURL ="$apiURL".
+                    "rsvps.xml?event_id=$eventID".
+                    "&key=$apiKey";
+                
+                $rsvpResult = trim( file_get_contents( $rsvpURL ) );
+        
+        
+                $rsvpXML = simplexml_load_string( $rsvpResult );
+
+
+                if( $rsvpXML === FALSE ) {
+                    echo "Parsing Meetup data failed (url = $rsvpURL result = $rsvpResult )<br>";
+                    }
+
+                // way in future
+                $earliestTime = 9992188300000;
+                $earliestMemberID = -1;
+                
+                foreach( $rsvpXML->items->item as $rsvp ) {
+                    if( $rsvp->created < $earliestTime ) {
+                        $earliestTime = $rsvp->created;
+                        $earliestMemberID = $rsvp->member->member_id;
+                        }
+                    }
+
+                if( $earliestMemberID != -1 ) {
+
+                    $hostedEventCount++;                
+
+                    // don't count the host(s) in the rsvp count
+                    $rsvpCount -= 1;
+
+                    
+                    $id = $earliestMemberID;
+                
+                    //echo "$id\n";
+                
+                    $oldHostCount = $memberList["$id"]["host_count"];
+                    $oldHostedRSVPCount =
+                        $memberList["$id"]["hosted_rsvp_count"];
+                                        
+                    $memberList["$id"]["host_count"] = $oldHostCount + 1;
+                    $memberList["$id"]["hosted_rsvp_count"] =
+                        $oldHostedRSVPCount + $rsvpCount;
+
+                    $memberList["$id"]["hosted_events"]["$item->event_url"] =
+                        $rsvpCount;
+
+                    $hostName = $memberList["$id"]["name"];
+                    $eventListing = $eventListing .
+                        " hosted by <a href=https://www.meetup.com/Homespun/members/$id>$hostName</a>";
+                    }
+                else {
+                    $eventListing = $eventListing . " (<b>no host listed</b>)";
+                    }
                 }
             
             $eventList[] = $eventListing;
