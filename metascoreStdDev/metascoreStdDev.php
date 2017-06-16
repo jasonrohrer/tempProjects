@@ -78,12 +78,14 @@ foreach( preg_split("/((\r?\n)|(\r\n?))/", $list ) as $line ){
     $lines[] = $line;
     }
 
-$listB = file_get_contents( $mainURL . "?page=1", false, $context );
+for( $p=1; $p<10; $p++ ) {
 
+    $listB = file_get_contents( $mainURL . "?page=$p", false, $context );
 
-foreach( preg_split("/((\r?\n)|(\r\n?))/", $listB ) as $line ){
+    foreach( preg_split("/((\r?\n)|(\r\n?))/", $listB ) as $line ){
 
-    $lines[] = $line;
+        $lines[] = $line;
+        }
     }
 
 
@@ -115,7 +117,7 @@ for( $i=0; $i<count( $lines ) && $numPrinted < $maxToPrint; $i++ ) {
             
             $film = printReportForFilmURL( $filmURL );
             
-            if( $film->title != "" ) {
+            if( $film != FALSE && $film->title != "" ) {
                 $films[] = $film;
                 $numPrinted ++;
                 }
@@ -140,15 +142,19 @@ echo "<h2>Films from the <a href=$mainURL>Past 90 Days</a><br>Sorted by Metascor
 
 echo "<table border=0>";
 
+$filmIndex = 1;
+
 foreach( $films as $film ) {
     echo "<tr><td class=row_table>";
-    printFilmLine( $film->url, $film->title, $film->metaScore, $film->dev );
+    printFilmLine( $filmIndex,
+                   $film->url, $film->title, $film->metaScore, $film->dev );
     echo "</td></tr>";
+    $filmIndex++;
     }
 echo "</table><br>";
 
 
-function printFilmLine( $inURL, $inTitle, $inMetaScore, $inDev ) {
+function printFilmLine( $index, $inURL, $inTitle, $inMetaScore, $inDev ) {
     echo "<table border=0 cellpadding=10><tr>";
 
     $color = "#f00";
@@ -159,7 +165,8 @@ function printFilmLine( $inURL, $inTitle, $inMetaScore, $inDev ) {
     if( $inMetaScore > 60 ) {
         $color = "#6c3";
         }
-    echo "<td align=center><table border=0 cellpadding=10>".
+    echo "<td align=left width=20>$index</td>".
+        "<td align=center><table border=0 cellpadding=10>".
         "<tr><td bgcolor=$color align=center class=metascore_font width=30>".
         "$inMetaScore</td></tr></table></td>";
     
@@ -184,12 +191,24 @@ echo "<br><br><br><br>";
 </center>
 <?php
 
+
 function printReportForFilmURL( $inURL ) {
     global $context;
     
     $list = file_get_contents( $inURL, false, $context );
 
+    if( $list === FALSE ) {
+        if( preg_match( "/429/", $http_response_header[0] ) ) {
+            // too many requests
+            // try sleeping and retrying
+            sleep( 10 );
 
+            $list = file_get_contents( $inURL, false, $context );
+            }       
+        }
+        
+
+        
     $lines = array();
 
     $title = "";
@@ -207,7 +226,8 @@ function printReportForFilmURL( $inURL ) {
 
     
     if( $title == "" ) {
-        return;
+        
+        return FALSE;
         }
     
     $metaScore;
