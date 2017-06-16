@@ -83,7 +83,7 @@ foreach( preg_split("/((\r?\n)|(\r\n?))/", $list ) as $line ){
 // up to 10 pages
 for( $p=1; $p<10; $p++ ) {
     
-    $listB = file_get_contents( $mainURL . "&page=$p", false, $context );
+    $listB = file_get_contents( $mainURL . "?page=$p", false, $context );
 
 
     foreach( preg_split("/((\r?\n)|(\r\n?))/", $listB ) as $line ){
