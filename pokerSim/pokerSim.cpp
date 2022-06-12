@@ -16,6 +16,8 @@ typedef enum{ jack=11, queen, king, ace, endRank } highRank;
 typedef struct card {
         suit s;
         int r;
+        // index of this card in new-deck order (from 0 to 51)
+        int index;
     } card;
 
 
@@ -37,6 +39,7 @@ card *buildFreshDeck() {
         for( int r = 2; r<endRank; r++ ) {
             deck[i].s = (suit)s;
             deck[i].r = r;
+            deck[i].index = i;
             
             i++;
             }
