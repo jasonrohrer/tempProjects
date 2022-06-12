@@ -1,0 +1,1 @@
+g++ -I../.. -o kellyTest kellyTest.cpp ../../minorGems/system/unix/TimeUnix.cpp
