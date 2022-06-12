@@ -236,8 +236,13 @@ int getRangedRandom( BitStream *inStream, int inStart, int inEnd ) {
 
 
 // shuffles deck using a random bit stream
+// this is reverse-order modern-method Fisher-Yates
+// https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#Modern_method
+//
+// Note that we only go up to i = 50 (second to last card), because
+// the last card card would only be swapped with itself
 void shuffleDeck( card *inDeck, BitStream *inStream ) {
-    for( int i=0; i<52; i++ ) {
+    for( int i=0; i<51; i++ ) {
         card temp = inDeck[i];
         
         int swapPos = getRangedRandom( inStream, i, 51 );
