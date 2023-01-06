@@ -1,0 +1,304 @@
+This document describes the HTTP-based protocol for the trust database server.
+
+Throughout this document, the string [URL] represents the URL of the trust
+server.  In the case of a CGI script, [URL] will point to the script.
+In the case of a PHP implementation, [URL] will point to the .php file.
+
+Any (or all) of the arguments can be POSTed if they make the full URL too long.
+
+
+
+ --
+| Creating a new user.
+ --
+
+[URL]?action=createAccount&userName=[NAME]&publicKey=[KEY]
+
+[NAME]  the user's human-readable name
+[KEY]  the user's public RSA key as a hex-encoded string
+
+Result:
+An ID for the created user as a base-10, two-number pair (partA and partB) 
+delimited by "_" 
+--OR--
+The error string NAME_EXISTS if the user name already exists.
+
+
+Example:
+http://www.myserver.com/cgi-bin/primroseTrust.pl?action=createAccount&userName=jcr13&publicKey=01F745A0B3A078572F95A6BFCC2E4CCC2EDFDB9168B5575A1A6FA9AEDDF746D576AAC2154F185E45962818E2C82CF7ADC7210DDD6DCFEE5EB72767F90C7A5A28
+
+Example Result 1:
+382736487_87637277 
+
+Example Result 2:
+NAME_EXISTS 
+
+
+
+ --
+| Getting a user's trust level
+ --
+
+[URL]?action=getTrustLevel&userIDPartA=[PART_A]&userIDPartB=[PART_B]
+
+[PART_A]  the first part of a big-endian 64-bit user ID as base-10 ASCII
+[PART_B]  the second part of a big-endian 64-bit user ID as base-10 ASCII
+
+Result:
+The user's trust level in the range [0.0, 1.0]
+The trust level for non-existing users is 0.
+
+
+Example:
+http://www.myserver.com/cgi-bin/primroseTrust.pl?action=getTrustLevel&userIDPartA=382736487&userIDPartB=87637277
+
+Example Result:
+0.877
+
+
+
+ --
+| Getting a user's public key
+ --
+
+[URL]?action=getPublicKey&userIDPartA=[PART_A]&userIDPartB=[PART_B]
+
+[PART_A]  the first part of a big-endian 64-bit user ID as base-10 ASCII
+[PART_B]  the second part of a big-endian 64-bit user ID as base-10 ASCII
+
+Result:
+The user's public RSA key as ASCII hex
+The string "0" is returned for non-existing users.
+
+
+Example:
+http://www.myserver.com/cgi-bin/primroseTrust.pl?action=getPublicKey&userIDPartA=382736487&userIDPartB=87637277
+
+Example Result 1:
+01F745A0B3A078572F95A6BFCC2E4CCC2EDFDB9168B5575A1A6FA9AEDDF746D576AAC2154F185E45962818E2C82CF7ADC7210DDD6DCFEE5EB72767F90C7A5A28
+
+Example Result 2:
+0
+
+
+
+ --
+| Getting a user's name
+ --
+
+[URL]?action=getUserName&userIDPartA=[PART_A]&userIDPartB=[PART_B]
+
+[PART_A]  the first part of a big-endian 64-bit user ID as base-10 ASCII
+[PART_B]  the second part of a big-endian 64-bit user ID as base-10 ASCII
+
+Result:
+The user's human-readable name
+The string "-" is returned for non-existing users.
+
+
+Example:
+http://www.myserver.com/cgi-bin/primroseTrust.pl?action=getUserName&userIDPartA=382736487&userIDPartB=87637277
+
+Example Result 1:
+jcr13
+
+Example Result 2:
+-
+
+
+
+ --
+| Getting an ID for a given user name
+ --
+
+[URL]?action=getUserID&userName=[NAME]
+
+[NAME]  the user name
+
+Result:
+An ID for the user as a base-10, two-number pair (partA and partB) 
+delimited by "_"
+The string "-" is returned for non-existing users. 
+
+
+Example:
+http://www.myserver.com/cgi-bin/primroseTrust.pl?action=getUserID&userName=jcr13
+
+Example Result 1:
+382736487_87637277
+
+Example Result 2:
+-
+
+
+
+ --
+| Establishing a trust relationship
+ --
+
+[URL]?action=setTrustRelationship&userIDPartA=[PART_A]&userIDPartB=[PART_B]&trustedIDPartA=[TRUSTED_PART_A]&trustedIDPartB=[TRUSTED_PART_B]&type=[TYPE]&signature=[SIG]
+
+
+[PART_A]  the first part of a big-endian 64-bit user ID as base-10 ASCII
+[PART_B]  the second part of a big-endian 64-bit user ID as base-10 ASCII
+[TRUSTED_PART_A]  the first part of the trusted ID
+[TRUSTED_PART_B]  the second part of the trusted ID
+[TYPE]  the type of trust relationship, one of:
+        trusted
+        neutral
+        distrusted
+[SIG]  the trusted ID parts, plus the type, concatonated together with "_", 
+       signed by the trusting user's private RSA key.  The signature must be 
+       generated with SSA PKCS1v1.5 SHA and hex-encoded.
+	   The concatonation should be in the form:
+       [TRUSTED_PART_A]_[TRUSTED_PART_B]_[TYPE]
+
+Result:
+"OK"   if the relationship is established successfully
+"FAILED" if the operation fails
+
+
+Example:
+http://www.myserver.com/cgi-bin/primroseTrust.pl?action=setTrustRelationship&userIDPartA=382736487&userIDPartB=87637277&trustedIDPartA=1928&trustedIDPartB=38484&type=trusted&signature=5B553F1EDBD682B7E12EAD021F8E2C22113E2BE672D99D4EE1AF621FCB205C2B13E362602DB928ABA2FF1174A587
+
+Example Result 1:
+OK
+
+Example Result 2:
+FAILED
+
+
+
+ --
+| Checking a trust relationship
+ --
+
+[URL]?action=getTrustRelationship&userIDPartA=[PART_A]&userIDPartB=[PART_B]&trustedIDPartA=[TRUSTED_PART_A]&trustedIDPartB=[TRUSTED_PART_B]
+
+
+[PART_A]  the first part of a big-endian 64-bit user ID as base-10 ASCII
+[PART_B]  the second part of a big-endian 64-bit user ID as base-10 ASCII
+[TRUSTED_PART_A]  the first part of the trusted ID
+[TRUSTED_PART_B]  the second part of the trusted ID
+
+Result:
+The type of trust relationship, one of:
+"trusted"
+"neutral"
+"distrusted"
+
+Or, if checking the relationship fails:
+"FAILED"
+
+
+Example:
+http://www.myserver.com/cgi-bin/primroseTrust.pl?action=getTrustRelationship&userIDPartA=382736487&userIDPartB=87637277&trustedIDPartA=1928&trustedIDPartB=38484
+
+Example Result 1:
+trusted
+
+Example Result 2:
+neutral
+
+Example Result 3:
+FAILED
+
+
+
+ --
+| Listing a trusted or distrusted set (getting a list of all trusted or 
+| distrusted users)
+ --
+
+[URL]?action=listTrustSet&userIDPartA=[PART_A]&userIDPartB=[PART_B]&type=[TYPE]
+
+
+[PART_A]  the first part of a big-endian 64-bit user ID as base-10 ASCII
+[PART_B]  the second part of a big-endian 64-bit user ID as base-10 ASCII
+[TYPE]  the type of trust relationship, one of:
+        trusted
+        distrusted
+
+Result:
+An list of user IDs as base-10, two-number pairs (partA and partB) 
+delimited by whitespace, or NONE if the trusted/distrusted set is empty.
+The the elements of a pair are separated by "_"
+
+
+Example 1:
+http://www.myserver.com/cgi-bin/primroseTrust.pl?action=listTrustSet&userIDPartA=382736487&userIDPartB=87637277&type=trusted
+
+Example 2:
+http://www.myserver.com/cgi-bin/primroseTrust.pl?action=listTrustSet&userIDPartA=382736487&userIDPartB=87637277&type=distrusted
+
+Example Result 1:
+382736487_87637277
+239293_1929
+17758383_2932904
+0_234892
+284_29894718
+
+Example Result 2:
+NONE
+
+
+
+ --
+| Posting an IP address
+ --
+
+[URL]?action=postAddress&userIDPartA=[PART_A]&userIDPartB=[PART_B]&ipAddress=[IP_ADDRESS]&port=[PORT]&signature=[SIG]
+
+
+[PART_A]  the first part of a big-endian 64-bit user ID as base-10 ASCII
+[PART_B]  the second part of a big-endian 64-bit user ID as base-10 ASCII
+[IP_ADDRESS]  the IP address
+[PORT]  the UDP port number
+[SIG]  the IP address and port number, concatonated together with "_", 
+       signed by the user's private RSA key.  The signature must be 
+       generated with SSA PKCS1v1.5 SHA and hex-encoded.
+	   The concatonation should be in the form:
+       [IP_ADDRESS]_[PORT]
+
+Result:
+"OK"   if the address is posted
+"FAILED" if the operation fails
+
+
+Example:
+http://www.myserver.com/cgi-bin/primroseTrust.pl?action=postAddress&userIDPartA=382736487&userIDPartB=87637277&ipAddress=128.23.88.199&port=8000&signature=113E2BE672D99D4EE1AF621FCB205C2B13E362602DB928ABA2FF1174A5875B553F1EDBD682B7E12EAD021F8E2C22
+
+Example Result 1:
+OK
+
+Example Result 2:
+FAILED
+
+
+
+ --
+| Getting a list of seed IP addresses.
+ --
+
+[URL]?action=getHostList
+
+Result:
+A list of userIDPartA userIDPartB IP port quadruplets delimited by whitespace.
+The elements of each quadruplet are separated by "_"
+
+Example:
+http://www.myserver.com/cgi-bin/primroseTrust.pl?action=getHostList
+
+Example Result:
+0_515_128.233.52.2_8000
+123_289399_88.23.92.1_8000
+0_78934_65.58.28.32_8005
+12_93298333_70.89.234.122_8000
+
+
+
+
+
+
+
+

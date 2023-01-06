@@ -1,0 +1,103 @@
+The input to this algorithm is a set of trust and distrust relationships.
+Thus, we have a group of users, and each user explicitly trusts and distrusts
+certain other users in the group.  From this web of trust relationships (a
+directed graph), we want to compute a system-wide trust score for each user
+in the range [0..1].
+
+One user in the group is marked as the "root" user (the root of our trust 
+tree).  This user is automatically assigned a trust score of 1.
+ 
+
+Part 1:  account for trust relationships
+
+--Reset all users to a trust score of 0.
+--Start with root user in the currentSet.
+--Start with currentScore = 1
+
+In each step:
+
+   -- Add the currentScore to the trust score of all users in the set (with
+      a maximum score of 1.0 for each user).
+   
+   -- Follow the trusted (not distrusted) relationship arcs one hop, replacing
+      the currentSet with the users that are reached by this one hop (in other
+      words, the new currentSet is equal to the users that were trusted by
+      the previous currentSet).  Avoid following trust arcs back to acestors
+      in the trust tree (in other words, if A trusts B, and B is an ancestor
+      of A in the trust tree, then ignore the trust arc from A to B).
+      Ensure that currentSet is always single-membership.
+   
+   -- currentScore = currentScore / 2
+
+
+Repeat until currentScore reaches some sufficiently small value.   
+
+
+
+Part 2:  account for distrust relationships 
+
+--Start with root user in the currentSet.
+--Start with currentScore = 1
+
+In each step:
+
+   -- Compute a temporary distrustedSet by following the distrusted 
+      relationship arcs one hop from the currentSet.  This gives us the
+      set of users that the currentSet distrusts.
+	  Ensure that distrustedSet is always single-membership.
+
+   -- Subtract the currentScore to the trust score of all users in the 
+      distrustedSet (with a minimum score of 0 for each user)
+   
+   -- Follow the trusted (not distrusted) relationship arcs one hop from
+      the currentSet, replacing currentSet with the users that are reached 
+      by this one hop (in other words, the new currentSet is equal to the 
+      users that were trusted by the previous currentSet).  Avoid following 
+      trust arcs back to acestors in the trust tree (in other words, if A 
+      trusts B, and B is an ancestor of A in the trust tree, then ignore the 
+      trust arc from A to B).
+      Ensure that currentSet is always single-membership.
+   
+   -- currentScore = currentScore / 2
+
+
+Repeat until currentScore reaches some sufficiently small value.
+
+
+
+Thus, those users that are connected to the root by short trust relationship
+chains get high trust scores in Part 1 (as do users that are connected
+to the root through many long chains).  A user that is 2 hops from the root
+will need to have twice as many trust chains to the root to achieve the same
+trust score of a node that is 1 hop from the root.  Is this doubling property 
+fair, or is to too harsh?  We can adjust this property by changing how
+currentScore is updated in each step.
+
+In Part 2, we are essentially weighting the importance of a user's distrust
+by how far they are away from the root.  Thus, being distrusted by the root
+is deadly (reduces your trust score all the way to 0), while being distrusted
+by a node that is far from the root will hardly affect your trust score (though
+being distrusted by many nodes that are far from the root will have a larger
+impact).
+
+Since we run the distrust-summing step after the trust-summing step, there
+is no way to recover from the impacts of trusted users distrusting you (even
+if the root trusts you, your trust can be destroyed by a few close-to-root 
+users distrusting you).  Thus, we are giving priority to distrust, which
+makes sense (this is cautious and conservative).  However, this makes
+distrust easy to abuse (the root could potentially "blacklist" otherwise
+trustworthy users on a whim or for personal reasons).
+
+Avoiding ancestors when we update the currentSet prevents us from considering
+the trust score boosts that might be caused by cycles in the trust graph.
+
+Ensuring that all sets are single-membership at every step prevents trust
+score boosts (or penalties) that might be caused by the insertion of many
+fake user accounts at a given level of the tree (of sets were 
+multiple-membership, then several fake accounts inserted at the same level
+of the tree could boost/reduce the score of a user in the next level of the
+tree by any amount---more fake accounts would result in a larger 
+boost/reduction).
+
+Anyway, this seems like a nice algorithm to start with, and it is easy to
+implement. 

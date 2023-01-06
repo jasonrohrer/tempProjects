@@ -1,0 +1,76 @@
+#
+# Modification History
+#
+# 2004-November-14    Jason Rohrer
+# Created.
+#
+
+
+##
+# The portion of Primrose util Makefiles common to all 
+# platforms.
+# Should not be made manually---used by Primrose/configure to build Makefiles.
+##
+
+
+
+
+ROOT_PATH = ../..
+
+
+
+
+LAYER_SOURCE = \
+ checkSignature.cpp 
+
+LAYER_OBJECTS = ${LAYER_SOURCE:.cpp=.o}
+
+NEEDED_MINOR_GEMS_OBJECTS =
+
+
+API_LIB = ${ROOT_PATH}/Primrose/api/libPrimrose.a
+CRYPTO_LIB = ${ROOT_PATH}/Primrose/crypto/libcrypto.a
+
+TEST_SOURCE = 
+TEST_OBJECTS = ${TEST_SOURCE:.cpp=.o}
+
+
+
+DEPENDENCY_FILE = Makefile.dependencies
+
+
+# targets
+
+all: checkSignature
+clean:
+	rm -f ${DEPENDENCY_FILE} ${LAYER_OBJECTS} ${TEST_OBJECTS} ${NEEDED_MINOR_GEMS_OBJECTS} checkSignature
+
+
+
+
+checkSignature: checkSignature.o ${API_LIB} ${CRYPTO_LIB}
+	${EXE_LINK} -o checkSignature checkSignature.o ${API_LIB} ${CRYPTO_LIB} ${PLATFORM_LINK_FLAGS}
+
+
+
+# targets that throw errors if the external objects need to be re-made
+
+${API_LIB}:
+	$(error ${API_LIB} is outdated.  Please re-make it)
+
+${CRYPTO_LIB}:
+	$(error ${CRYPTO_LIB} is outdated.  Please re-make it)
+
+
+
+
+# build the dependency file
+${DEPENDENCY_FILE}: ${LAYER_SOURCE} ${TEST_SOURCE}
+	rm -f ${DEPENDENCY_FILE}
+	${COMPILE} -I${ROOT_PATH} -MM ${LAYER_SOURCE} ${TEST_SOURCE} >> ${DEPENDENCY_FILE}
+
+
+include ${DEPENDENCY_FILE}
+
+
+

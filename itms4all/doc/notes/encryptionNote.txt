@@ -1,0 +1,22 @@
+Last year you had a blog entry about Apple encrypting the iTunes Music Store.
+I didn't see any follow ups on this, so I don't know if anyone cares anymore, but I've figured out the encryption.
+
+The encryption is standard AES128 CBC. The iv, of course, is sent in the header, and the encryption key is:
+
+8a 9d ad 39 9f b0 14 c1 31 be 61 18 20 d7 88 95
+
+After decrypting, you'll end up with a gzip file.
+
+The key is actually generated from the following code snippet:
+(using openssl's md5)
+MD5_CTX ctx
+unsigned char key[16];
+MD5_Init(&ctx);
+MD5_Update(&ctx,"Accept-Language",15);
+MD5_Update(&ctx,"user-agent",10);
+MD5_Update(&ctx,"max-age",7);
+MD5_Final(key,&ctx);
+// key[16] contains the AES key now
+
+Hope this helps revive everyone's ITMS interfaces.
+

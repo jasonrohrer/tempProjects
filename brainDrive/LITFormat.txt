@@ -1,0 +1,83 @@
+/*
+ * Modification History
+ *
+ * 2001-November-8   Jason Rohrer
+ * Created.
+ */
+
+
+/**
+ * .lit file format:
+ *
+ * File that contains frequency control points for
+ * a set of linear frequency light controllers.
+ *
+ * All values must be separated by white space.
+ *
+ * @author Jason Rohrer 
+ */
+
+
+
+/**
+ * The number of lights.
+ * integer > 0
+ */
+num_lights
+
+
+
+/**
+ * For each light i:
+ */
+
+
+/**
+ * Is light inverted?
+ *
+ * 0 = non-inverted
+ * 1 = inverted
+ */
+light_i_inverted
+
+
+
+/**
+ * The number of control points for light i.
+ *
+ * integer >= 2
+ */
+light_i_num_points
+
+
+
+/**
+ * For each of light i's control points j:
+ */
+
+
+/**
+ * The location in time of light i's point j in seconds.
+ *
+ * integer >= 0
+ */ 
+point_i_j_time_sec
+
+
+
+/**
+ * The extra time appended to light i's point j in milliseconds.
+ *
+ * integer >= 0, < 1000
+ */
+point_i_j_time_extra_msec
+
+
+
+/**
+ * The frequency of light i's point j in Hertz.
+ *
+ * floating point value > 0
+ */
+point_i_j_frequency
+

@@ -1,0 +1,68 @@
+Installing:
+
+1.  Copy the contents of this distribution into your cgi-bin directory.
+
+2.  Give the various .pl scripts proper permissions to be executable
+    by your web server. 
+    (maybe with  chmod a+x donationTracker.pl )
+
+2.  Make a directory at the same level as cgi-bin called "cgi-data".
+
+3.  Create a directory in cgi-data called "donationTracker".  This is 
+    where private data, such as the donation log, will be stored.
+
+4.  Make sure that cgi-data/donationTracker is writable by the scripts
+    so that the scripts can create files in that directory.
+    (maybe with  chmod a+w cgi-data/donationTracker )
+
+5.  Create a directory inside your public html directory called "donationData".
+    This is where the scripts will store public data that will be served
+    on the web.
+
+6.  Make sure your donationData directory is writable by the script.
+    (maybe with  chmod a+w donationData )
+
+7.  Copy the HTML from tracker.shtml into your web page.
+    Note that the tracker HTML relies on server-side includes to grab
+    the latest donation count and sum from static HTML files in the 
+    donationData directory.  If you are using PHP for your site,
+    there may be a different way to inline these files.  
+
+
+Configuring:
+
+1.  Edit the settings at the top of the donationTracker.pl, 
+    donationGrapher.pl, and graphGrabber.pl scripts as needed.
+    Look for "changeMe" and insert appropriate values.
+
+2.  Edit the fields in the PayPal form that you copied from the tracker.shtml 
+    file.  Look for "changeMe" and insert appropriate values.
+    Also edit the "changeMe" in the URL for the graphGrabber script.
+
+3.  Make sure IPN is enabled on your PayPal account.
+
+
+
+How it works:
+
+Whenever a donation is made through PayPal, their IPN service "pings" your
+donationTracker.pl script, passing it the various data values associated with 
+the donation.  The script saves information about the donations, tracking
+the donation count and overall sum, along with daily sub-totals (for graphing).
+
+If graphing is enabled, the donationGrapher.pl script is called by the 
+donationTracker each time a donation is received.  The grapher turns the
+latest daily sub-totals into a graph of the current month's activity.
+
+But what happens if no donations come in for a few days?  Since the 
+donationTracker would not be called by PayPal, the graph would not be updated,
+and it would fall behind the current date (when it should actually show a
+"plateau" in the donation plot).  This is where graphGrabber.pl comes it.
+Instead of pointing to the graph image files directly, the tracker.shtml HTML
+points to the graphGrabber.  This script checks the modification times on
+the image files to ensure that they have been updated at least one time today.
+If not, it calls donationGrapher to force the graphs to be updated.  The 
+graphGrabber then redirects the browser to the image files directly.
+
+
+

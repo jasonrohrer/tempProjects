@@ -1,0 +1,227 @@
+<!--
+
+Modification History
+
+2004-May-11   Jason Rohrer
+Created.
+Proofread.  Added screen shot.
+Spell checked.
+Added bio blurb and turned the Notes URL into a link.
+
+2004-May-13   Jason Rohrer
+Made changes as suggested by Hadley.
+
+-->
+
+
+
+<HTML>
+
+<HEAD>
+<TITLE>iTunes/iPod Hacks:  iTMS-4-ALL Script</TITLE>
+</HEAD>
+
+<BODY BGCOLOR=#FFFFFF TEXT=#000000 LINK=#0000FF VLINK=#FF0000>
+
+<H2>Getting At the iTunes Music Store Meta-data</H2>
+
+<B>Want to take a peek at the iTunes Music Store metadata?  With this hack, you can.</B><BR>
+<BR>
+
+Apple's iTunes Music Store (iTMS) is more than just a place to buy DRM-restricted songs for $0.99 each;  it is also a massive information repository.  This searchable database contains lots of valuable meta-data about each album, like the publication date and the record label, not to mention a free 30-second preview for each track and a thumbnail image of each CD cover.  Of course, to search this trove of information, you need the iTunes application, which means you need to be sitting in front of a Mac OS X or Windows 2000/XP machine---a limitation, certainly.<BR>
+<BR>
+Maybe you would like to browse the Store from your cell phone while sitting on the bus.  Maybe you run Linux or (gasp!) Mac OS 9.  Maybe you are a peer-to-peer developer who would love to "borrow" thumbnail images and preview clips on-demand in your client.  Maybe you want to write an application that cross-checks every iTunes track against RIAA Radar so that you can avoid buying RIAA-owned tracks.  Maybe you would like to develop a full-blown iTMS client for your favorite platform.  There are many other scenarios like these, but they are all singing the same refrain:  It would be nice to access the iTMS from anywhere.<BR>
+<BR>
+iTMS-4-ALL is a Perl-based CGI script lets you search the Store from any web browser.  Along with being a useful search tool in its own right, the script serves as an example of how to interact with Apple's Store server.
+
+
+<H2>Up and Running</H2>
+
+For those people who want to explore the script right away, the code can be downloaded from:  <A HREF="http://hcsoftware.sourceforge.net/jason-rohrer/itms4all/">http://hcsoftware.sourceforge.net/jason-rohrer/itms4all/</A>  On that page, there is also a link to a web server running the live script, so you can try iTMS-4-ALL yourself and search Apple's database.  Here is a screen shot of the script in action:<BR>
+<BR>
+
+<CENTER>
+<IMG SRC="screen.png" BORDER=5>
+</CENTER>
+
+
+<H2>The iTMS Protocol</H2>
+
+We know the following facts about the protocol:
+
+<OL>
+<LI>iTunes communicates with Apple almost exclusively through HTTP.</LI>
+
+<LI>iTunes authentication (logging in so you can actually buy something) is not happening through HTTP, but instead through HTTPS.  For some reason, iTunes will not direct its HTTPS requests through a web proxy, even though other applications (like Internet Explorer) will.</LI>
+
+<LI>iTunes fetches gzipped XML files from Apple to lay out its GUI (to display the store front, genre pages, and search results).</LI>
+
+<LI>Every gzipped XML file is encrypted with AES-128 (Rijndael) in CBC mode.  The CBC initialization vector is included as one of the HTTP headers (x-apple-crypto-iv).</LI>
+
+<LI>The AES key is <B>8a9dad399fb014c131be611820d78895</B>.  This key was hacked out of the iTunes application by Sean Kasun.</LI>
+
+</OL>
+
+Fetching information from Apple (for example, searching for "Xiu Xiu") involves the following steps:<BR>
+<BR>
+
+iTunes sends the following HTTP request to <B>phobos.apple.com</B> on port 80:
+
+<TABLE BORDER=0 CELLPADDING=20><TR><TD>
+<PRE>
+GET /WebObjects/MZSearch.woa/wa/com.apple.jingle.search.DirectAction/search?term=Xiu%20Xiu HTTP/1.1
+User-Agent: iTunes/4.2 (Macintosh; U; PPC Mac OS X 10.2)
+Accept-Language: en-us, en;q=0.50
+Cookie: countryVerified=1
+Accept-Encoding: gzip, x-aes-cbc
+Connection: close
+Host: phobos.apple.com
+</PRE>
+</TD></TR></TABLE>
+
+The <B>User-Agent</B> header is important:  Apple will not return information to non-iTunes agents.<BR>
+<BR>
+
+Apple responds with the following HTTP:
+<TABLE BORDER=0 CELLPADDING=20><TR><TD>
+<PRE>
+HTTP/1.1 200 Apple
+Date: Fri, 16 Apr 2004 13:55:07 GMT
+Content-Length: 4320
+Content-Type: text/xml; charset=UTF-8
+Cache-Control: no-cache
+Connection: close
+Server: Apache/1.3.27 (Darwin)
+Pragma: no-cache
+content-encoding: gzip, x-aes-cbc
+x-apple-max-age: 3600
+x-apple-crypto-iv: 19953b75e9846ea59715be906cdca0c8
+x-apple-protocol-key: 2
+x-apple-asset-version: 2118
+x-apple-application-instance: 20
+Via: 1.1 netcache04 (NetCache NetApp/5.2.1R3)
+
+[-- encrypted gzip archive starts here --]
+</PRE>
+</TD></TR></TABLE>
+
+iTunes then initializes an AES-128 CBC cipher with its key (8a9dad399fb014c131be611820d78895) and the initialization vector provided by <B>x-apple-crypto-iv</B> (in this case, 19953b75e9846ea59715be906cdca0c8).  iTunes decrypts the gzip archive and then un-gzips it to get the raw XML.<BR>
+<BR>
+
+The full XML document for search results is too long to show here (one example is 72 KiB of text when uncompressed).  The XML includes lots of layout information, so Apple can change the way results are displayed without upgrading the iTunes client.  The <B>dict</B> entries near the end of the document contain information for each track that matches the search.  These entries are "dictionaries" that map various key names to pieces of meta-data.  Here is an example dict entry:
+<TABLE BORDER=0 CELLPADDING=20><TR><TD>
+<PRE>
+&lt;dict&gt;
+&lt;key&gt;kind&lt;/key&gt;&lt;string&gt;song&lt;/string&gt;
+&lt;key&gt;artistName&lt;/key&gt; &lt;string&gt;Xiu Xiu&lt;/string&gt;
+&lt;key&gt;artistId&lt;/key&gt;&lt;string&gt;3208396&lt;/string&gt;
+&lt;key&gt;bitRate&lt;/key&gt;&lt;integer&gt;128&lt;/integer&gt;
+&lt;key&gt;buyParams&lt;/key&gt;&lt;string&gt;productType=S&amp;salableAdamId=5390052&amp;price=990&lt;/string&gt;
+&lt;key&gt;price&lt;/key&gt;&lt;integer&gt;990&lt;/integer&gt;
+&lt;key&gt;copyright&lt;/key&gt;&lt;string&gt;&#8471; 2004 5 Rue Christine&lt;/string&gt;
+&lt;key&gt;dateModified&lt;/key&gt;&lt;date&gt;2004-03-10T06:44:25Z&lt;/date&gt;
+&lt;key&gt;discCount&lt;/key&gt;&lt;integer&gt;1&lt;/integer&gt;
+&lt;key&gt;discNumber&lt;/key&gt;&lt;integer&gt;1&lt;/integer&gt;
+&lt;key&gt;duration&lt;/key&gt;&lt;integer&gt;179164&lt;/integer&gt;
+&lt;key&gt;explicit&lt;/key&gt;&lt;integer&gt;0&lt;/integer&gt;
+&lt;key&gt;fileExtension&lt;/key&gt;&lt;string&gt;m4p&lt;/string&gt;
+&lt;key&gt;genre&lt;/key&gt;&lt;string&gt;Alternative&lt;/string&gt;
+&lt;key&gt;genreId&lt;/key&gt;&lt;integer&gt;20&lt;/integer&gt;
+&lt;key&gt;playlistName&lt;/key&gt;&lt;string&gt;Fabulous Muscles&lt;/string&gt;
+&lt;key&gt;playlistArtistName&lt;/key&gt;&lt;string&gt;Xiu Xiu&lt;/string&gt;
+&lt;key&gt;playlistArtistId&lt;/key&gt;&lt;integer&gt;3208396&lt;/integer&gt;
+&lt;key&gt;playlistId&lt;/key&gt;&lt;string&gt;5390070&lt;/string&gt;
+&lt;key&gt;previewURL&lt;/key&gt;&lt;string&gt;http://a1535.phobos.apple.com/Music/y2004/m02/d06/h14/s05.ojrmonwq.p.m4p&lt;/string&gt;
+&lt;key&gt;previewLength&lt;/key&gt;&lt;integer&gt;30&lt;/integer&gt;
+&lt;key&gt;relevance&lt;/key&gt;&lt;string&gt;1.0&lt;/string&gt;
+&lt;key&gt;releaseDate&lt;/key&gt;&lt;string&gt;2004-02-17T08:00:00Z&lt;/string&gt;
+&lt;key&gt;sampleRate&lt;/key&gt;&lt;integer&gt;44100&lt;/integer&gt;
+&lt;key&gt;songId&lt;/key&gt;&lt;integer&gt;5390052&lt;/integer&gt;
+&lt;key&gt;comments&lt;/key&gt;&lt;string&gt;&lt;/string&gt;
+&lt;key&gt;trackCount&lt;/key&gt;&lt;integer&gt;10&lt;/integer&gt;
+&lt;key&gt;trackNumber&lt;/key&gt;&lt;integer&gt;2&lt;/integer&gt;
+&lt;key&gt;songName&lt;/key&gt;&lt;string&gt;I Luv the Valley OH!&lt;/string&gt;
+&lt;key&gt;vendorId&lt;/key&gt;&lt;integer&gt;1143&lt;/integer&gt;
+&lt;key&gt;year&lt;/key&gt;&lt;integer&gt;2004&lt;/integer&gt;
+&lt;/dict&gt;
+</PRE>
+</TD></TR></TABLE>
+
+Just look at all that lovely meta-data!  Of particular interest is the <B>previewURL</B> entry:  this URL can be fetched by any web browser (iTunes or not) and played on most platforms with VideoLAN's media player, VLC, which can be downloaded from <A HREF="http://www.videolan.org">http://www.videolan.org</A>.<BR>
+<BR>
+In addition to displaying some of the meta-data from each dict entry, iTMS-4-ALL also searches the document for CD cover thumbnails, which appear in the XML as URLs for JPEG files.  With the current Music Store incarnation, up to four thumbnails are included with each set of search results.<BR>
+<BR>
+
+I have described the protocol that iTunes uses to interact with the Store server, but how do you interact with the server <I>sans</I> iTunes?  Here is where you get to start hacking.
+   
+
+<H2>Searching the iTMS with wget</H2>
+
+Wget is a command-line agent for grabbing data off the Web.  In general, if you pass a URL to the wget command, wget will download the contents pointed to by the URL and save them to disk.  Wget is standard-issue on most Unix-like platforms, including Mac OS X, and you can also download it for Windows platforms (from various sources, try Googling for "wget for Windows").<BR>
+<BR>
+You can grab encrypted iTMS data from Apple yourself with wget, but you need to specify an iTunes User-Agent header to override wget's default User-Agent header:
+
+<TABLE BORDER=0 CELLPADDING=20><TR><TD>
+<TT>
+wget http://phobos.apple.com/WebObjects/MZSearch.woa/wa/com.apple.jingle.search.DirectAction/search?term=Xiu%20Xiu -U "iTunes/4.0 (Macintosh; U; PPC Mac OS X 10.2)" 
+</TT>
+</TD></TR></TABLE>
+
+Of course, the fetched file is encrypted with AES as described above.  Unfortunately, there are are no standard-issue tools for decrypting these files, so we need to resort to some relatively simple Perl code to go any further.
+
+<H2>Cryptography Programming in Perl</H2>
+
+To decrypt AES-128 CBC, you need two non-standard Perl modules:  Crypt::CBC and Crypt::Rijndael.  Both modules can be downloaded from CPAN (<A HREF="http://www.cpan.org">http://www.cpan.org</A>).  (For those people who are wondering, Rijndael is another name for AES, since the Rijndael algorithm was selected as the AES standard.)  CBC.pm is pure Perl, but the Rijndael module must be compiled for your platform.  Compilation instructions are included with the module package that you download from CPAN.  Once installed, these modules can be included in your Perl program as follows:
+<TABLE BORDER=0 CELLPADDING=20><TR><TD>
+<PRE>
+use Crypt::CBC;
+use Crypt::Rijndael;
+</PRE>
+</TD></TR></TABLE>
+
+You can get the encryption initialization vector (IV) for the x-apple-crypto-iv HTTP header, as described above.  Apple picks a fresh IV for each response, and you must use the IV included with a response to decrypt that response.  As an example, assume the IV is 19953b75e9846ea59715be906cdca0c8.  You can set up variables for the key and IV as follows:
+<TABLE BORDER=0 CELLPADDING=20><TR><TD>
+<PRE>
+my $iTunesKeyHex = "8a9dad399fb014c131be611820d78895";
+my $ivHex = "19953b75e9846ea59715be906cdca0c8";
+</PRE>
+</TD></TR></TABLE>
+
+The CBC module requires that both keys and IVs be in binary form, though we currently have them in hex-encoded form.  We can pack our key and IV into binary form as follows:
+<TABLE BORDER=0 CELLPADDING=20><TR><TD>
+<PRE>
+my $iTunesKeyBinary = pack( "H*", $iTunesKeyHex ); 
+my $ivBinary = pack( "H*", $ivHex );
+</PRE>
+</TD></TR></TABLE>
+
+Using these binary values, you can create a Rijndael CBC cipher as follows:
+<TABLE BORDER=0 CELLPADDING=20><TR><TD>
+<PRE>
+my $cipher = Crypt::CBC->new( { 'key'            => $iTunesKeyBinary,
+                                'cipher'         => 'Rijndael',
+                                'iv'             => $ivBinary,
+                                'regenerate_key' => 0,
+                                'padding'        => 'standard',
+                                'prepend_iv'     => 0
+                                } );
+</PRE>
+</TD></TR></TABLE>
+
+Assuming that you have your encrypted gzip data stored in a variable called $encryptedSearchResults, you can finally decrypt the results as follows:
+<TABLE BORDER=0 CELLPADDING=20><TR><TD>
+<PRE>
+my $decryptedSearchResultsGZIP = 
+    $cipher->decrypt( $encryptedSearchResults );
+</PRE>
+</TD></TR></TABLE>
+
+Now your results can be decompressed with gzip, producing raw XML that you can peruse, parse, and otherwise enjoy.
+<BR>
+<BR>
+
+<I><A HREF="http://jasonrohrer.n3.net">Jason Rohrer</A> is the lead developer for several open source projects, including MUTE, konspire2b, minorGems, silk, and tangle.  He is also a writer, artist, and musician, as well as an activist for personal freedom.  He lives voluntarily poor and job-free, dividing his time between parenting and personal projects.</I>
+
+</BODY>
+
+</HTML>

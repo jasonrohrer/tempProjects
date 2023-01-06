@@ -1,0 +1,1 @@
+java -cp .. psi.client.ImageTransmitter localhost 5000 images

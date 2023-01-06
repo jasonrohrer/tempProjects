@@ -1,0 +1,2 @@
+g++ -o linkOpener linkOpener.cpp -I../../.. ../../../minorGems/network/linux/SocketServerLinux.cpp ../../../minorGems/network/linux/SocketLinux.cpp ../../../minorGems/system/unix/LauncherUnix.cpp ../../../minorGems/system/linux/ThreadLinux.cpp -lpthread
+

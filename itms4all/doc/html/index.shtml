@@ -1,0 +1,174 @@
+<HTML>
+
+<HEAD>
+<TITLE>Notes about iTMS-4-ALL</TITLE>
+</HEAD>
+
+<BODY BGCOLOR=#FFFFFF TEXT=#000000 LINK=#0000FF VLINK=#FF0000>
+
+<H1>Notes about iTMS-4-ALL</H1>
+
+
+<HR>
+<B>July 12, 2006 Update</B><BR>
+Many of the "try this script" links below do not work anymore.  
+I am leaving them in place for historical reference.<BR>
+<BR>
+The script itself no longer works with Apple's latest iTunes version.  
+However, the code is still a good starting point, and I have just posted an <A HREF="savetz.txt">email from Kevin Savetz</A> containing code that actually works on <A HREF="http://www.tunestracker.com">tunestracker.com</A>.
+Those code changes should help.<BR>
+<BR>
+<A HREF="http://jasonrohrer.n3.net">Jason Rohrer</A><BR>
+Potsdam, NY
+<HR>
+
+<BR>
+<BR>
+
+<I>This is just the beginning...</I><BR>
+<BR>
+
+First of all, you can try the <A HREF="http://itunes.punboy.net/cgi-bin/itms4all.pl">live script</A>.  Thanks to the people at <A HREF="http://www.downhillbattle.org">Downhill Battle</A> for hosting the script---they have also posted some <A HREF="http://www.downhillbattle.org/itmsscript/index.html">interesting ideas</A> about how the iTunes database can be used.  Jason Terk has released a <A HREF="http://rain.xidus.net/itms4all/">version of the script</A> that uses CSS/XHTML, and you can try his <A HREF="http://rain.xidus.net/cgi-bin/itms4all/itms4all.pl">live script</A>.<BR>
+<BR>
+
+You can also <A HREF="http://prdownloads.sourceforge.net/minorgems/itms4all_0.2.tar.gz?download">download</A> the latest iTMS-4-ALL script package (v0.2, which works with Apple's v4.5 server, thanks to <A HREF="mailto:nandhp@myrealbox.com">nand</A>).  Three non-standard Perl modules are needed, but they are included (INET.pm and CBC.pm are pure Perl;  Rijndael.pm needs to be compiled for your system).  Extract the package, then run <B>installRijndaelLocal.sh</B> to build the Rijndael module.  Copy the <B>itms4all.pl</B> script, the <B>Crypt</B> directory, the <B>IO</B> directory, and the <B>auto</B> directory into your server's cgi-bin directory.  Make sure the itms4all.pl script is executable by your web server.<BR>
+<BR>
+The script has been released under the <A HREF="http://www.gnu.org/copyleft/gpl.html">GNU GPL</A>.<BR>
+<BR>
+This script can browse the store and access previews, but it cannot log in or be used to purchase iTunes.  David Hammerton has been working on <A HREF="http://craz.net/programs/itunes/itms_auth.html">logging in to iTunes</A>.
+
+<H2>The iTMS protocol</H2>
+Here is what I know about the iTunes Music Store Protocol so far:
+
+<OL>
+<LI>iTunes communicates with Apple almost exclusively through HTTP [<I>browsing the store and playing preview clips works through a web proxy, even with no direct connection to the Internet</I>].</LI>
+
+<LI>iTunes authentication (logging in so you can actually buy something) is not happening through HTTP [<I>no requests hit my web proxy when iTunes tries to log in;  logging in fails without a direct Internet connection</I>].</LI>
+
+<LI>iTunes fetches gzipped XML files from Apple to lay out its GUI (to display the store front, genre pages, and search results).</LI>
+
+<LI>Every gzipped XML file is encrypted with AES-128 (Rijndael) in CBC mode.  The CBC initialization vector is included in the HTTP header (x-apple-crypto-iv).</LI>
+
+<LI>The AES key is <B>8a9dad399fb014c131be611820d78895</B>.  This key is hard-coded somehow in iTunes.</LI>
+
+</OL>
+
+<BR>
+<BR>
+Fetching information from Apple (for example, searching for "Xiu Xiu") requires the following steps:<BR>
+<BR>
+
+iTunes sends the following HTTP request to <B>phobos.apple.com</B> on port 80:
+
+<TABLE BORDER=0 CELLPADDING=20><TR><TD>
+<PRE>
+GET /WebObjects/MZSearch.woa/wa/com.apple.jingle.search.DirectAction/search?term=Xiu%20Xiu HTTP/1.1
+User-Agent: iTunes/4.2 (Macintosh; U; PPC Mac OS X 10.2)
+Accept-Language: en-us, en;q=0.50
+Cookie: countryVerified=1
+Accept-Encoding: gzip, x-aes-cbc
+Connection: close
+Host: phobos.apple.com
+</PRE>
+</TD></TR></TABLE>
+
+The <B>User-Agent</B> header is important:  Apple will not return information to non-iTunes agents.<BR>
+<BR>
+
+Apple responds with the following HTTP:
+<TABLE BORDER=0 CELLPADDING=20><TR><TD>
+<PRE>
+HTTP/1.1 200 Apple
+Date: Fri, 16 Apr 2004 13:55:07 GMT
+Content-Length: 4320
+Content-Type: text/xml; charset=UTF-8
+Cache-Control: no-cache
+Connection: close
+Server: Apache/1.3.27 (Darwin)
+Pragma: no-cache
+content-encoding: gzip, x-aes-cbc
+x-apple-max-age: 3600
+x-apple-crypto-iv: 19953b75e9846ea59715be906cdca0c8
+x-apple-protocol-key: 2
+x-apple-asset-version: 2118
+x-apple-application-instance: 20
+Via: 1.1 netcache04 (NetCache NetApp/5.2.1R3)
+
+[-- encrypted gzip archive starts here --]
+</PRE>
+</TD></TR></TABLE>
+
+iTunes must then initialize AES-128 CBC crypto with its key (8a9dad399fb014c131be611820d78895) and the x-apple-crypto-iv (19953b75e9846ea59715be906cdca0c8).  iTunes decrypts the gzip archive and then un-gzips it to get the raw XML.<BR>
+<BR>
+
+The XML for the search results can be <A HREF="searchResultsXML.txt">viewed here</A>.  There is a lot of layout information in the XML, so Apple can change the way results and store pages are displayed without an upgrade to the iTunes client.  The <B>dict</B> entries near the end of the file contain information for each track that matches the search.  In my script, I'm also searching for the JPEG images of CD covers and displaying them too.
+
+<H2>Other stuff</H2>
+
+You can grab encrypted iTMS data from Apple with wget, but you need to specify an iTunes User-Agent header to override wget's default User-Agent header:
+
+<TABLE BORDER=0 CELLPADDING=20><TR><TD>
+<TT>
+wget http://phobos.apple.com/WebObjects/MZSearch.woa/wa/com.apple.jingle.search.DirectAction/search?term=Xiu%20Xiu -U "iTunes/4.0 (Macintosh; U; PPC Mac OS X 10.2)" 
+</TT>
+</TD></TR></TABLE>
+
+
+<H2>What's the story?</H2>
+
+A few weeks ago, I found a winning Pepsi cap on the ground---a free song, 99 cents paid by Pepsi, and 11 cents to some worthy indie artist---might as well redeem it.<BR>
+<BR>
+I have PPC GNU/Linux running on my main work machine.  To make my work easier, I have this machine directly connected to my Cable connection (no NAT box).  I have a few other machines here too:  an iMac running OS X and a win98 machine (for making Mac and win32 builds of my software).  These don't have working Internet connections, but I have a Squid web proxy running on my GNU/Linux machine so that these machines can surf the web.<BR>
+<BR>
+I have iTunes running on the iMac, and the iTunes Music Store seems to work through the web proxy (I can search, browse, and listen to previews).<BR>
+<BR>
+On April 13, 2004, I tried to set up a Music Store account to redeem the winning cap.  For some reason, iTunes could not reach Apple to set up the account (something like, "Could not connect to the Music Store.").  Frustrated, and not wanting to play musical ethernet to give the iMac a real Internet connection, I Googled for Linux iTunes clients---there are none, of course.<BR>
+<BR>
+I was able to find a few sites talking about the iTMS protocol---some scripts that "used to work before Apple started encrypting stuff."  I also found this post from an anonymous source:
+
+<TABLE BORDER=0 CELLPADDING=20><TR><TD>
+<PRE>
+Last year you had a blog entry about Apple encrypting the iTunes Music Store.
+I didn't see any follow ups on this, so I don't know if anyone cares anymore, 
+but I've figured out the encryption.
+
+The encryption is standard AES128 CBC. The iv, of course, is sent in the 
+header, and the encryption key is:
+
+8a 9d ad 39 9f b0 14 c1 31 be 61 18 20 d7 88 95
+
+After decrypting, you'll end up with a gzip file.
+
+The key is actually generated from the following code snippet:
+(using openssl's md5)
+MD5_CTX ctx
+unsigned char key[16];
+MD5_Init(&ctx);
+MD5_Update(&ctx,"Accept-Language",15);
+MD5_Update(&ctx,"user-agent",10);
+MD5_Update(&ctx,"max-age",7);
+MD5_Final(key,&ctx);
+// key[16] contains the AES key now
+
+Hope this helps revive everyone's ITMS interfaces.
+</PRE>
+</TD></TR></TABLE>
+
+We could be romantic and assume that this post is from an Apple insider, though I recently found out that the key was reverse-engineered out of iTunes by Sean Kasun.<BR>
+<BR>
+So, we have the key.  On April 14, 2004, I started reverse-engineering the protocol, first by looking at my web proxy logs, and then by running tenlet (yes, tenlet) to catch the iTunes client's request and telnet to talk to Apple's server.  I wrote a Perl script to decrypt Apple's responses.  After I had that working, I wrote a few regexps to extract the relevant pieces of data from the XML and format them with HTML.  Finally, I wrapped these operations in a CGI interface so that the script can run on a web server.<BR>
+<BR>
+The script is out there, and it works.  My 13-year-old cousin has been searching the iTMS from his Sidekick cell phone (now there's something you couldn't do last week, eh?).<BR>
+<BR>
+The first step (working with Apple's encryption scheme) is complete.  Now the possibilities are endless:  from "borrowing" the iTunes data for use in other apps to a full-fledged iTMS client for Linux.<BR>
+<BR>
+My work here is done, though.  
+
+
+
+<BR>
+<BR>
+<A HREF="http://jasonrohrer.n3.net">Jason Rohrer</A><BR>
+April 16, 2004
+</BODY>
+</HTML>

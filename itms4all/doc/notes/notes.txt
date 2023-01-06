@@ -1,0 +1,220 @@
+Date: Wed, 12 Jul 2006 06:30:34 -0400
+From: Jason Rohrer <rohrer@cse.ucsc.edu>
+To: "Tim Swetonic" <swetonic@gmail.com>
+Subject: Fw: Re: TunesTracker question from iTMS-4-ALL author
+Message-Id: <20060712063034.2a5a5972.rohrer@cse.ucsc.edu>
+X-Mailer: Sylpheed version 0.7.4 (GTK+ 1.2.10; powerpc-debian-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+
+
+
+Begin forwarded message:
+
+Date: Wed, 23 Mar 2005 08:29:11 -0800
+From: Kevin Savetz <kevin@savetz.com>
+To: Jason Rohrer <rohrer@soe.ucsc.edu>
+Subject: Re: TunesTracker question from iTMS-4-ALL author
+
+
+Hi Jason,
+
+> I recently noticed that iTMS-4-ALL doesn't work anymore.  Maybe it is because
+> of these changes.
+> 
+> Doing some sniffing, I see a new header coming back from Apple:
+> 
+> x-apple-twofish-key: 383D8A44A1E11745915B7FF49E9FA98D
+> 
+> I think the search results are two-fished, then gziped, and finally AES'ed.
+> My script is able to de-AES the results and then successfully de-gzip them,
+> but the result is still garbled.
+> 
+> Does your TunesTracker still work?
+
+TunesTracker does still work. I'm still decoding with rijndael-128. Although
+I did make many changes to the original iTMS code, I don't think I changed
+anything specifically when 4.7 came out, although I do recall finding and
+fixing some problems with your code (or whoever wrote the PHP that I started
+from) around the eregi commands - maybe those changes make the difference.
+
+Here's the business end of my PHP code:
+
+$url = 
+"http://phobos.apple.com/WebObjects/MZSearch.woa/wa/advancedSearchResults?no
+nameSubmitButton=submit&songTerm=&composerTerm=&albumTerm=&artistTerm=" .
+urlencode($searchterm). "&genreIndex=1";  //searching artist
+
+$ch=curl_init($url);
+     curl_setopt ($ch, CURLOPT_HEADER, 1);
+     curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
+     curl_setopt ($ch, CURLOPT_TIMEOUT, 9);
+     curl_setopt ($ch, CURLOPT_USERAGENT, "iTunes/4.2 (Macintosh; U; PPC Mac
+OS X 10.2)");
+
+$iTunesKeyHex = "8a9dad399fb014c131be611820d78895";
+$iTunesKey = pack ("H*", $iTunesKeyHex);
+
+$result=curl_exec ($ch);
+curl_close ($ch);
+
+eregi("Content-Length: (.[0-9-]+)", $result, $hvalue[0]);
+eregi("x-apple-crypto-iv: (.[a-z0-9-]+)", $result, $hvalue[1]);
+
+$contentLength = $hvalue[0][1];
+$ivHex = $hvalue[1][1];
+$encryptedSearchResults = substr( $result, strlen( $result ) -
+$contentLength );
+$iv = pack( "H*", $ivHex );
+
+/* Open the cipher */
+$td = mcrypt_module_open('rijndael-128', '', 'cbc', '');
+/* Initialize encryption module for decryption */
+mcrypt_generic_init($td, $iTunesKey, $iv);
+/* Decrypt encrypted string */
+$decryptedSearchResultsGZIP = mdecrypt_generic($td,
+$encryptedSearchResults);
+/* Terminate decryption handle and close module */
+mcrypt_generic_deinit($td);
+mcrypt_module_close($td);
+$tempFileName = tempnam('/tmp','tt');
+
+$out = fopen($tempFileName, "w");
+fwrite($out, trim($decryptedSearchResultsGZIP));
+fclose($out);
+
+//uncompress
+$zd = gzopen($tempFileName, "r");
+$rawData = gzread($zd, $contentLength*1024);
+gzclose($zd);
+unlink($tempFileName);
+
+
+
+Let me know how it goes.
+-Kevin
+
+
+
+
+February 4, 2007
+
+New response from apple (at least when using iTunes 4.2):
+
+
+HTTP/1.1 200 Apple WebObjects
+Date: Sun, 04 Feb 2007 21:14:43 GMT
+Content-Length: 34245
+Content-Type: text/xml; charset=UTF-8
+Cache-Control: no-transform
+Connection: close
+x-apple-lok-response-date: Sun Feb 04 13:31:55 PST 2007
+content-encoding: gzip
+x-apple-lok-current-storefront: <null>
+x-apple-lok-filesize: 35262
+edge-control: cache-maxage=86400s
+x-apple-max-age: 3600
+x-apple-asset-version: 26469
+x-apple-request-store-front: <null>
+x-apple-date-generated: Sun, 04 Feb 2007 21:20:12 GMT
+x-apple-application-instance: 255
+x-apple-lok-path: /opt/itms_lokamai_2/Lokamai/MZSearch/34/84/mzsearch_search&term=test-143441-l
+x-apple-lok-filelastmodified-date: Sun Feb 04 13:20:13 PST 2007
+x-webobjects-loadaverage: 0
+Via: 1.0 netcache21 (NetCache NetApp/5.6.2R1)
+
+
+
+Hmm... looks like it's no longer encrypted with AES.
+
+Testing... and yes, it's no longer encrypted.  Works again once I turn
+decryption off.
+
+
+
+February 8, 2006
+
+Working on iTMS login.
+
+Using Ethereal to capture packets.
+
+iTunes uses SSL to connect to apple... not HTTPS, it looks like, but pure SSL.
+
+Installing perl modules:
+Net::SSLeay   (openssl access in perl)
+IO::Socket::SSL  (wrapper for SSLeay that makes SSL behave like sockets)
+Scalar::Util  and  List::Util  (used by IO::Socket::SSL)
+
+By adding a phobos.apple.com line to /etc/hosts and then calling
+sudo niload -v -m hosts . < /etc/hosts
+
+I was able to cause iTunes to send it's initial SSL request to my machine.
+
+Thus, iTunes now think's my machine is Apple when it tries to send my iTMS
+username and password across.
+
+Next:
+--Setup an SSL server for iTunes to connect to so we can see exactly what 
+  iTunes is sending to Apple once that SSL pipe is established.
+
+Working on doing this using Perl.
+
+Total work time at this point:  4 hours 28 minutes.
+
+
+
+February 10, 2007
+
+This seems to do everything we need to do (maybe doesn't work with latest
+version of iTunes... but worth looking at):
+
+http://search.cpan.org/~billh/LWP-UserAgent-iTMS_Client-0.16/lib/LWP/UserAgent/iTMS_Client.pm
+
+
+February 12, 2007
+
+Working on testing LWP iTMS perl module.
+
+Needs a lot of modules... dependency tree is deep.
+
+Hacking module to strip out DateTime dependency
+
+Installing needed Perl modules:
+
+  XML::Twig
+
+
+
+The LWP client module seems to work, at least for searching.  Adding it all
+to the CVS repository
+
+
+
+February 13, 2007
+
+LWP (perl module) client does not work to login.
+
+My 4.2 iTunes client doesn't work either (it says that I must upgrade to 
+iTunes 7).
+
+Of course, iTunes 7 requires OS 10.3, which I don't have.
+
+Currently trying to figure out what I can learn from 4.2 anyway.
+
+Discovered that openssl can run a dummy server.
+
+Need a server.pem file containing a certificate.  Found one here:
+
+/usr/share/doc/libssl-dev/demos/bio/server.pem
+
+With a server.pem file in the current directory, can run:
+
+openssl s_server -accept 443 -www
+
+
+Now trying to get iTunes 4.2 to connect to me.  Need to still send HTTP stuff
+to phobos.apple.com.  Using minorGems netForward on port 80 to accomplish this.
+
+Still need to try all these parts together.  Even if I get this working,
+it will only help me figure out how iTunes 4.2 logs in.

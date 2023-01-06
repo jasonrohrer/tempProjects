@@ -1,0 +1,18 @@
+-- called when we have a fatal error
+procedure errorState( byte in errorNumber ) is
+   forever loop
+       -- flash both lights according to our error number
+       
+       for errorNumber loop
+           pin_a0 = off
+           pin_a1 = off
+           delay_500ms
+           pin_a0 = on
+           pin_a1 = on
+           delay_500ms
+       end loop
+
+       -- pause 2 seconds, then repeat the error message
+       delay_1s( 2 )
+   end loop
+end procedure

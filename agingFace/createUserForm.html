@@ -1,0 +1,118 @@
+<!-- Modification History
+
+2001-December-19   Jason Rohrer
+Created.
+Changed name argument to username.
+
+2001-December-27   Jason Rohrer
+Changed to incorporate some of Manfred Warmuth's ideas.
+
+2002-January-2   Jason Rohrer
+Fixed font color on form description text.
+
+-->
+
+<CENTER>
+
+<TABLE WIDTH=75% BORDER=0 CELLSPACING=0 CELLPADDING=0>
+
+<TR BGCOLOR=#000000>
+<TD>
+
+<TABLE WIDTH=100% BORDER=0 CELLSPACING=1 CELLPADDING=0>
+
+
+<TR BGCOLOR=#949494>
+<TD>
+
+<CENTER>
+<H1>Create an Account</H1>
+</CENTER>
+</TD>
+</TR>
+
+<TR BGCOLOR=#C4C4C4>
+<TD>
+<!--Description Text-->
+<FONT COLOR=#000000>
+<FORM ACTION=/createuser>
+
+<TABLE WIDTH=100% BORDER=0 CELLSPACING=0 CELLPADDING=0>
+
+<TR>
+<TD ALIGN=LEFT>
+<FONT COLOR=#000000>
+Logging in is useful if you want to see how good you are compared to other players.<BR><BR>
+
+We collect some basic information (optional) so that we can see whether grandmothers really <B>are</B> better at this game.
+</FONT>
+
+<HR>
+<FONT COLOR=#FF0000><!--#ERROR_MESSAGE--></FONT>
+
+<CENTER>
+<TABLE BORDER=0>
+<TR>
+<TD ALIGN=LEFT ><FONT COLOR=#000000>Login name:</FONT></TD>
+<TD ALIGN=LEFT >
+<INPUT TYPE="text" MAXLENGTH=256 SIZE=12 NAME=username VALUE="<!--#NAME_FIELD_VALUE-->"><BR>
+</TD>
+</TR>
+
+<TR>
+<TD ALIGN=LEFT ><FONT COLOR=#000000>Password:</FONT></TD>
+<TD ALIGN=LEFT >
+<INPUT TYPE="password" MAXLENGTH=256 SIZE=12 NAME=password1 VALUE=""><BR>
+</TD>
+</TR>
+
+<TR>
+<TD ALIGN=LEFT ><FONT COLOR=#000000>Retype password:</FONT></TD>
+<TD ALIGN=LEFT >
+<INPUT TYPE="password" MAXLENGTH=256 SIZE=12 NAME=password2 VALUE=""><BR>
+</TD>
+</TR>
+
+<TR>
+<TD ALIGN=LEFT ><FONT COLOR=#000000>Gender:</FONT></TD>
+<TD ALIGN=LEFT >
+<INPUT TYPE="radio" NAME=gender VALUE="m" <!--#GENDER_MALE_CHECKED-->>male <INPUT TYPE="radio" NAME=gender VALUE="f" <!--#GENDER_FEMALE_CHECKED-->>female<BR>
+</TD>
+</TR>
+
+<TR>
+<TD ALIGN=LEFT ><FONT COLOR=#000000>Age:</FONT></TD>
+<TD ALIGN=LEFT >
+<INPUT TYPE="text" MAXLENGTH=3 SIZE=3 NAME=age VALUE="<!--#AGE_FIELD_VALUE-->"><BR>
+</TD>
+</TR>
+
+
+<TR>
+<TD ALIGN=RIGHT COLSPAN=2>
+<INPUT TYPE=submit VALUE="Submit">
+</TD>
+</TR>
+
+</TABLE>
+</CENTER>
+
+
+</TD>
+</TR>
+
+</TABLE>
+
+</FORM>
+
+</FONT>
+</TD>
+</TR>
+
+</TABLE>
+
+</TD>
+</TR>
+</TABLE>
+
+</CENTER>

@@ -1,0 +1,57 @@
+#
+# Modification History
+#
+# 2004-November-13    Jason Rohrer
+# Created.  Modified from MUTE source.
+#
+
+
+##
+# The common portion of all Makefiles.
+# Should not be made manually---used by configure to build Makefiles.
+##
+
+
+EXE_LINKER = ${GXX}
+
+RANLIB = ranlib
+LIBRARY_LINKER = ar
+
+
+DEBUG_ON_FLAG = -g #-DDEBUG_MEMORY
+DEBUG_OFF_FLAG = 
+
+DEBUG_FLAG = ${DEBUG_ON_FLAG}
+
+
+PROFILE_ON_FLAG = -pg -a -DUSE_GPROF_THREADS
+PROFILE_OFF_FLAG = 
+
+PROFILE_FLAG = ${PROFILE_OFF_FLAG}
+
+
+
+
+COMPILE_FLAGS = -Wall ${DEBUG_FLAG} ${PLATFORM_COMPILE_FLAGS} ${PROFILE_FLAG}
+
+
+COMPILE = ${GXX} ${COMPILE_FLAGS} -c
+EXE_LINK = ${EXE_LINKER} ${COMPILE_FLAGS} ${LINK_FLAGS}
+LIBRARY_LINK = ${LIBRARY_LINKER} cru
+
+
+# 
+# Generic:
+#
+# Map all .cpp C++ and C files into .o object files
+#
+# $@   represents the name.o file
+# $<   represents the name.cpp file
+#
+.cpp.o:
+	${COMPILE} -I${ROOT_PATH} -o $@ $<
+.c.o:
+	${COMPILE} -I${ROOT_PATH} -o $@ $<
+
+
+

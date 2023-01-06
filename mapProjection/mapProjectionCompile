@@ -1,0 +1,1 @@
+g++ -g -o mapProjection -I../../.. ../../../minorGems/io/linux/TypeIOLinux.cpp ../../../minorGems/io/file/linux/PathLinux.cpp mapProjection.cpp

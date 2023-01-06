@@ -1,0 +1,31 @@
+<HTML>
+
+<HEAD>
+<TITLE>DonationTracker</TITLE>
+</HEAD>
+
+<BODY BGCOLOR=#FFFFFF TEXT=#000000 LINK=#0000FF VLINK=#FF0000>
+
+<H1>DonationTracker v0.1</H1>
+
+
+DonationTracker is a Perl CGI script for tracking live PayPal donation tallies using IPN (PayPal's Instant Payment Notification service).
+This tool was developed to help creators make a living post-copyright (as described in my essay, <A HREF="http://hcsoftware.sourceforge.net/jason-rohrer/freeDistribution.html">Free Distribution</A>), but others may find it useful as well.<BR>
+<BR>
+This script does not do anything much except track donations.
+Its flashiest feature is the generation of live, PNG-format graphs for the current month's donation history.
+An example of this script in action can be found on the <A HREF="http://mute-net.sf.net">MUTE project website</A>.<BR>
+<BR>
+
+<H2>Download</H2>
+
+<A HREF="http://prdownloads.sourceforge.net/minorgems/DonationTracker_0.1.tar.gz?download">DonationTracker_0.1.tar.gz</A> -- Released on January 2, 2005.<BR>
+<BR>
+Brief installation instructions are included.
+Some non-standard modules (GD and GD:Graph---for graphing) are included.
+If they do not seem to work on your platform, you can always disable graph support (see the setting in donationTracker.pl, and then remove the graph IMG references from the tracker.shtml file).<BR>
+<BR>
+DonationTracker was written by <A HREF="http://jasonrohrer.n3.net">Jason Rohrer</A> and has been released for free under the <A HREF="http://www.gnu.org/licenses/gpl.html">GNU GPL</A>.
+
+</BODY>
+</HTML>

@@ -1,0 +1,13 @@
+rm -r Primrose/build
+rm -r Primrose/doc
+rm -r Primrose/test
+
+rm -r minorGems/ai
+rm -r minorGems/bench
+rm -r minorGems/doc
+rm -r minorGems/examples
+rm -r minorGems/graphics
+rm -r minorGems/math
+rm -r minorGems/sound
+rm -r minorGems/temp
+rm -r minorGems/ui

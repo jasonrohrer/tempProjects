@@ -1,0 +1,876 @@
+April 27, 2006
+
+Lots of nice progress today.
+
+Got it to build on Mac OS X (had to fool around with SDL quite a bit).
+
+Rigged a 3-node video chain (LinuxPPC -> iMac -> LinuxX86).
+
+
+Noticed that second node is not saving proper "start frames" to pass on:
+
+it only saves the first start frame that it gets, which may not be proper 
+anymore as additional clips go by.  Also, we are just grabbing the first 4096
+bytes as a start frame, which is arbitrary... we should figure out exactly
+what we need to grab to make it work.
+
+
+
+April 30, 2006
+
+Need to support audio playback.  The idea of just showing the video as a proof
+of concept is lame:  this project will have no potential for social impact
+without sound.
+
+Okay, so how to support sound?  Need to figure out how to use the ffmpeg 
+library.
+
+First, look at the tutorial here (only video, but we can probably modify it
+to extract the audio too):
+
+http://www.inb.uni-luebeck.de/~boehme/libavcodec_update.html
+
+
+Note these lines:
+
+av_register_all();
+
+av_open_input_file( &pFormatCtx, filename, NULL, 0, NULL )
+
+
+
+av_open_input_file looks deceiving:  it doesn't just open files, but can
+open streams using any protocol registered by the av_register_all function.
+
+This includes http: and some other things (also inludes pipe:, so ffmpeg can
+decode from standard in).
+
+So, I was stuck before with the idea that ffmpeg can only play from files and
+not from buffers of incoming byte data.
+
+However, I think I can design an input protocol wrapper (using the http one
+from ffmpegs http.c as a model) that will support either a specified series
+of local files or a network socket (which may be changing as the user switches
+channels).  Also, I can put hooks in this protocol wrapper that forwards data 
+on to our clients as ffmpeg consumes it.
+
+This will be quite messy, especially compared to how clean libmpeg2 is (where
+we just pass it buffers of data as needed).
+
+However the advantages will be:
+
+--loads of supported formats, including quicktime.
+--sound support.
+
+
+I have moved portaudio into minorGems and written a simple SoundPlayer wrapper
+for it.  It compiles, but I still need to test it.
+
+A compiled version of ffmpeg is currently in /data5/jcr13/downloads.  It 
+consumes something like 100 MiB... yikes.
+
+
+
+May 1, 2006
+
+Got basic MPEG video playing working through ffmpeg.
+
+playFromDataSourceFF.cpp
+
+
+Something strange:  a sample .MOV file that I have does not play if opened
+as a stream or a pipe... only as a file, because the decoder tries to seek
+in the file to determine its size.
+
+Actually, if a seek command is available, the decoder always tries to use it,
+even for mpeg streams.
+
+Need to figure this out eventually, but for now, leave the seek function
+set to NULL.
+
+Got client connections working too.
+
+
+One problem:  when playing a series of mpegs where some have different frame
+sizes, the decoder crashes.  This is not the case for the ffplay application
+(when I cat a bunch of mpegs into ffplay as piped input).  So, ffmpeg can
+handle it somehow... just need to figure out how.
+
+But the next step, and the reason for using ffmpeg in the first place, is 
+to try to get audio output working.
+
+
+
+May 4, 2006
+
+Got audio output working pretty nicely.
+
+Tried to implement synchronization using packet (or frame) PTSs (presentation
+time stamps), but they are encoded in some kind of base time units.  I tried
+several different time_base values (from the codec, from the format, etc.)
+but could never find a combination of PTSs and time_bases that would result
+in the actual frame time in seconds.
+
+Instead, I am computing frame time using the frame rate for the stream (which
+gives us a seconds-per-frame value).  PortAudio includes a current play time
+in its callback, so I am synching the video against that (in other words, the
+audio clock is the master).  
+
+I drop frames simply by not displaying them.  This works okay (since displaying
+a frame does take time, which is saved by not displaying it).  However, this
+method has trouble catching up if the lag is large.  Really need to skip
+decoding some frames to catch up if we fall behind.
+
+
+Looking for a function in the ffmpeg library to skip decoding a frame.  I 
+haven't found anything that will work.
+
+Also, if we are lagging way behind, we should be skipping the display of 
+every frame until we catch up.  But I'm not seeing that happen.  It seems
+like we fall out of synch and then stay out of synch.
+
+Maybe the audioTime is getting out of synch.  After all, it is a PortAudio
+system variable that has nothing to do with how many samples we have actually
+consumed from the audio stream that we are decoding.
+
+For example, audioTime starts rolling as soon as we construct a SoundPlayer. 
+
+Acutally, when it falls out of synch, it looks like the video gets ahead
+of the audio, not behind it.
+
+More work needed here.
+
+
+
+May 5, 2006
+
+Fixed the synch problem by computing a net lag time (away from the PortAudio
+clock) according to the number of missed samples.
+
+This seems to work.
+
+
+
+May 8, 2006
+
+Still need to compile it on OS X so that we can test serving videos with sound.
+
+
+How to deal with a mid-stream video format change?  We really need to construct
+a new ffmpeg decoder, along with a new display Screen.
+
+We could restart playFromDataSource whenever the format changes.
+
+NetworkDataSource could wrap each chunk of data as a know-length packet.  
+Between packets, it could insert a flag if there is a format change starting 
+in the next packet.
+
+Byte codes for flags:
+
+0x00   Packet delimeter
+0x01   Format change starting with the next packet
+
+
+Each packet would then be encoded like this:
+
+[1-byte format change flag (only present if format change in next packet)]
+0x00
+[4-byte big-endian packet data length]
+[packet data bytes ..... ]
+
+DataSource could have an interface for checking if the next packet has a
+format change.
+
+Actually, when we read from a DataSource, we specify the length to read, so
+what we read may span several packets.  Thus, the DataSource should be able
+to tell us the point in our read buffer where the format change starts.
+
+Then, in playFromDataSourceFF, DataSource_read would watch for the format 
+change flag from the underlying DataSource and halt the data stream at that
+point, somehow flagging playFromDataSource to return.
+
+After it returns, we can re-call playFromDataSource on the same DataSource,
+and it will start where the format change starts.
+
+Actually, DataSource should prevent us from reading a chunk of data that 
+crosses a format-change boundary.  Thus, if we request 5000 bytes, but a format
+change happens at byte 3000, DataSource should return 3000 bytes to us along
+with a flag that a format change starts on the next byte.
+
+
+
+May 9, 2006
+
+Got all of this working, and it seems to work pretty well.
+
+Compiled ffmpeg and everything else on the iMac.  It works, but it has trouble
+with the video keeping up with the audio (all video frames are dropped in
+an effort to keep up).
+
+
+
+
+May 15, 2006
+
+Somehow, during all the SF CVS troubles, much of my work on format switching 
+mid-stream was lost.  Trying to redo it.
+
+Got it working for the FileSeriesDataSource, but that was the easy part.
+
+
+Noticing that discarding all frames to catch up is not working well for 
+certain movies (for some reason, on these movies, pVideoCodecCtx->frame_number
+is not updated when we are dropping frames---thus, our video timestamps are
+off).
+
+Instead, I'm switching back to a packet PTS implementation (I finally got 
+code in place to generate reasonable PTS's).
+
+Also, there is an issue of dropping all frames or just non-key frames.
+Non-key frames makes sense, but some movies have a lot of key frames, so
+the timing never catches up if we display all of them.
+
+Why not drop all packets until we catch up, then go into a mode where we
+drop all non-key frames until we display one key frame.  At that point, we
+go back to decoding/showing all packets.
+
+
+May 18, 2006
+
+Implemented this, and it seems to work.  Still need to test on "large" mpeg
+files for which we actually need to drop frames.
+
+Also need to reimplement packets for NetworkDataSource.
+
+
+
+May 19, 2006
+Testing on a large file from the Prelinger archives.
+
+File is strange:
+--PTS values start out in the 800 second range.
+--The image is distorted (the aspect ratio of the video frame data is different
+  than the proper aspect ratio of the presentation).
+
+Added code to deal with both of these strange cases and got it working.
+
+Noticing something else that is strange:
+--Audio packets do not seem to arrive until after a few seconds of video.
+
+Indeed, 13 video packets before the first audio packet.  The silence at
+the beginning of the video is simply not encoded.
+
+Thus, just computing audio time based on number of sampled decoded and rendered
+will not work.  We need to take PTS of audio packets into account.
+
+
+
+May 21, 2006
+
+Got audio PTS stuff in place.  Also added code to adjust for time gap between
+first audio and video packets (for example, if audio arrives late, but has
+PTS of first video packet, then audio will never catch up).  In one sample
+video, the audio PTS's were 1/2 second behind the video PTSs in the stream.
+Thus, the audio could never catch up to the video (unless we buffer the video
+frames to delay them... yuck!  maybe implement this someday, but not now).
+
+Most videos have audio and video streams nicely muxed without a delay.
+
+For videos where keyframes are few and far between, made packet dropping less
+severe (it takes these videos many dropped packets to get back on track).
+Thus, we simply skip frame display if we are more than one frame-time behind, 
+but we drop packets if we are more than two frame-times behind.  Also, we only
+hold a frame if we are more than one frame-time ahead. 
+
+Cleaned out old, commented code.
+
+See FIXME.
+
+
+
+May 22, 2006
+
+Dealt with fixme
+
+Got packets and format switching re-implemented for network data streams.
+
+What about PTS issues when we start playing in the middle of a stream?
+
+It seems like a few frames are included with the data that we are calling
+the "header", so the PTSs from those will be used as the "firstPTS" values.
+Thus, when the stream suddenly skips many frames, the PTS on the new frames
+will be way ahead of our system clock.
+
+Experiment and see what happens.
+
+Seem to have problems (receiver plays a few frames from the "header" section
+and then holds the next frame for a long time (which, of course, stalls the
+the sender too).
+
+Just read a bunch of stuff saying that mpeg files have no header (it is a 
+streaming format where each frame describes itself so that decoders can
+start playing from anywhere in the stream).
+
+Try playing an mpeg file that is cut in half an an arbitrary spot...
+
+Okay... this doesn't work.
+
+Instead, need to watch for large PTS jumps and compensate.
+
+Did this... it can now play a stream with a split in the middle.
+
+
+
+May 23, 2006
+
+When joining a stream, playback on either the sender or receiver gets behind
+and never catches up.  Actually, it seems to happen on the sender more than
+the reciever.
+
+Theory:  sending the large (196 KiB) of header data takes to long and sets
+the sender behind the system time.
+
+We actually don't need to send such a large header.  Experiments with split
+files show that 5000 B is enough (would be nice to split right on a frame
+boundary, but how?)
+
+Seeing decoding errors when I do this.
+
+Still having problems even with a header trimmed to 10,000 bytes.
+
+
+Maybe need to buffer data on the receiving end somehow.  How can we do this
+without threading?  
+
+--Fill buffer on first NetworkDataSource read.
+--On each read after that, check how much data is available without blocking.
+--Read as much data is available, or enough to keep our buffer full.
+
+
+
+May 28, 2006
+
+Got receiver buffering in place.  It seems to help.
+
+
+Having major problems with ffmpeg jumping into the middle of a running stream.
+Lots of "concealed error" messages, and it never gets back on track.
+
+Doing some reading, it sounds like mpeg1 (my test file) was not meant for
+use in an error-prone or live streaming environment (the sequence header is
+only included once at the beginning of the file instead of in each packet).
+
+MPEG-4 was described as a format that is intended for network streaming.
+
+However, MPEG-4 (like all the mpegs) is proprietary.
+
+If we're going to force people to convert videos into a stream-friendly format,
+might as well make it an open format.  Investigating Dirac (no audio at all) 
+and Ogg-Theora (which should support audio too through Vorbis).
+
+Maybe theora is the way to go.  But I cannot get my FF-based player to play
+theora files (maybe ffmpeg is trying to seek to decode them, just like with
+some quicktime files).  I may investigate using libtheora directly.
+
+
+
+May 29, 2006
+
+Point of total failure:
+
+Splitting problems or no splitting problems, there are major problems with
+stream latency as the stream passes through multiple nodes.  Video is 
+completely choppy and unable to keep up with demand even for a chain of 3
+nodes.
+
+Still some hope:  Tried it with a much lower-quality video (160x112) and it
+worked much better.  However, nodes are still getting stalled when the nodes
+they are feeding are too slow.  Need to drop packets in these cases.
+
+Even with low-quality video, still having major problems.
+
+
+So this may be the proof of concept:  this idea simply does not work.
+
+
+Core problems:
+
+--Video data is very time-sensitive.  It must be delivered and presented on
+  a tight schedule if it going to be watchable.  A network environment is
+  not very good at this:  the data will get there, but we cannot make
+  guarantees about how long it will take to get there.
+
+--Streaming data as it is played amplifies the timed-delivery problems inherent
+  in the network.  A slowdown at a single node in a stream chain can ruin
+  the entire stream.
+
+--Streaming data as we watch it makes the problem even worse, since we are
+  sending data out only just as fast as we are consuming it locally.  Thus,
+  I can imagine that it is arriving slightly slower than the rate at which
+  it needs to be consumed remotely.
+
+
+Some solutions:
+
+1-Drop sound support, and stop dropping video frames as we fall behind the 
+  system clock.  Thus, we are sending a series of related pictures instead
+  of live video.  For certain lucky nodes who receive the series fast enough,
+  smooth animation will be seen.  For others who see choppier motion (probably
+  those farther down the chain), they can always change the channel.
+  Problem:  video without sound is not very good at presenting information.
+  For example, who/what are we looking at in the video?  Sure, we can add
+  text captions to the video, but synched audio is much easier to consume.
+
+2-Stop streaming live and start streaming faster than live.  You can imagine
+  a channel being a fast-as-possible file stream that you tap into and start
+  downloading locally.  You can start watching the first file right away,
+  buffering the subsequent files on disk to watch later.  As you download
+  the stream, you forward it on to each of your neighbors that is currently
+  watching the same channel as you.
+  Problem:  disk usage
+  Solution: delete older files from disk
+
+
+Solution 2 has many nice properties.  For one, we can stop worrying about
+whether a file format is streamable or not and support all file formats
+playable by ffmpeg.  How?  When someone joins a stream, we start sending them
+the current file from the beggining.  Thus, for every node receiving from our
+node, we maintain a separate pointer into the file stream.  Each node can
+receive the files as fast as it can, but there is no need to keep the nodes
+in synch or drop packets waiting for slower nodes.  We only need to maintain
+a disk cache of the files actually being received currently by our receivers.
+If we have a limited number of receivers at any given time, we automatically
+have a limited number of files on disk.
+
+
+So, we can think of the following systems operating here:
+
+ffmpeg player function:
+  --Freely reads data from the currently playing file
+  --Plays synched, realtime audio and video frames.
+  --Between frames, calls:
+       --Stream receiver
+       --Stream sender
+  --When finished with current file, opens next file in the stream.
+
+
+Stream receiver
+  --Grabs as much data as is available from our stream source socket.
+  --Saves the data into our currently-being-received file
+  --Starts receiving next file when we finish current file
+
+
+Stream sender
+  --For each connected receiver:
+       --Send as much data as possible without blocking from the receiver's
+         current file in the stream.  
+
+
+In this system, we never drop packets (though we may skip displaying frames
+or decoding packets to keep our video playback in synch).
+
+
+
+
+June 8, 2006
+
+Tagging all files as friend_cast_0_1 so that I can make changes directly to
+the main files.
+
+Making new file playFromFileFF.cpp based on playFromDataSourceFF.cpp
+
+
+
+Protocol:
+
+
+Packet-based
+
+Each stream contains two different kinds of information:
+
+1.  Control packets
+2.  Data packets
+
+
+
+Control packets
+
+Inserted into the data stream to tell remote host what we want them to send
+us back through this socket.  In other words, do we want them to play data
+to us or play nothing?  If we are not watching their channel at the moment,
+we want them to play nothing.
+
+
+Data packets
+
+Stream of data that we are sending to the remote node.
+
+
+Packet structure:
+
+first byte:                 packet type
+Arbitrary number of bytes:  packet payload
+
+
+For control packets, the payload is empty.  Control packet types are:
+
+0x00   stop
+0x01   play
+
+
+
+For data packets, the payload consists of a 4-byte, big endian data size n, 
+followed by n-bytes of data.
+
+Type flags for data packets are:
+
+0x02   start of new file (data of packet is first block of new file)
+0x03   next packet of current file (data of packet is block of file data) 
+
+
+
+
+
+While watching, we are receiving files in the background from the channel
+as fast as possible and saving them to disk.
+
+This stream of files becomes our channel, and we build up a list of file names
+for this channel.  For each client, we have a pointer into this list for the 
+current file it is reading.
+
+We may, if the stream is coming in fast enough, receive a few files ahead
+of our current position in the stream. 
+
+What happens when we locally switch channels?
+
+--We stop receiving the file at the tail of the previous channel (maybe
+  part way through it) which we may not have even got around to watching yet.
+
+--We start receiving a new file from the new channel.
+
+--We put this file name at the *end* of the list of files.
+
+--We jump our local pointer to the end of that list.
+
+--As our clients finish their current file, their pointers jump to the
+  end of the list as well (they skip watching the rest of the files in
+  the list from the old channel that they haven't watched yet).
+
+Thus, a channel switching event serves to bring all of our clients back
+closer in synch to us.
+
+Actually, perhaps every client's pointer, whenever a given client finishes
+a file, should jump to our current file, whatever that is.  Thus, they
+constantly come back in synch with us.  They may skip some files in order
+to do this.
+
+
+Got quite a bit of this implemented.
+
+See FIXME in streamNetwork.cpp
+
+
+
+June 9, 2006
+
+Got local playback working using this framework.
+
+Now need to add framework to playFromConnection.cpp
+
+Close to having this done.  For some reason, first data packet never arrives.
+
+
+
+June 16, 2006
+
+Fixed a buffer allocation bug in streamNetwork.cpp
+
+Close to getting data to play on client, but only one packet (first one?)
+is being written to the client's data file.
+
+Put a break inside processDataPacket to find the problem.
+
+
+
+June 18, 2006
+
+Fixed the problem.  Streams of videos now play.
+
+
+Problem:
+
+When sending series of files to remote client:
+
+After finishing reading from one file, we always jump to the current file
+that we are playing locally.  However, we are sending files out as fast
+as we can, probably faster than our play speed.  This results in the same
+file being sent to the remote client over and over.
+
+Instead, we want to keep moving through the series of files as fast as we can.
+
+Okay, got this change in place.
+
+
+
+Right now, we stall client and send it no more data if it reaches the end
+of our file list.
+
+On client end, player loops last file if it hits the last file in the stream
+(though if playing from a local file set, it loops the whole set).
+
+
+Another option would be to loop in sending the files to the client, sending
+the same files over and over.  However, we are sending them much faster
+than the client is playing them, so this will result in a file build up
+at the client end.
+
+What we really want to do is send the client a series of novel files.  There
+is no point in re-sending a file we have already sent.
+
+However, if the client starts receiving from us mid-sequence, it misses
+the beginning of the sequence.  If we send the last file in the sequence,
+we should return back to the beginning and send the files the client hasn't
+seen yet.
+
+If we really run out of files to send, then client is stalled.
+
+
+On the player end, the client can loop through all the files it has received
+so far.
+
+
+
+Got all of this working.
+
+
+Next steps:
+
+--Multi-platform test.
+--Chain streaming.
+--Channel flipping.
+
+
+
+June 19, 2006
+
+Multi-platform broadcast chaining works well.
+
+Almost have channel flipping implemented.
+
+Problem:  what to do with last packet on previous channel? 
+If we just cut off mid packet, the remaining bytes are interpreted 
+incorrectly. 
+
+
+June 20, 2006
+
+Got channel switching mostly working.
+
+Still problem when switching from same channel immediately back to that 
+channel.
+
+On server end, STOP and then PLAY packets are not seen until after the client
+has stalled.  Thus, we keep sending the previous file until stalled.  Why?
+
+Thought it was because of Nagel alg (not seeing small packets go through), but
+now I don't think so (added anti-Nagel code to SocketLinux.cpp... not checked
+in, probably should pull it back out).
+
+
+
+June 22, 2006
+
+Found problem:
+
+executeNetworkStep gets caught looping, sending as much data as the network
+will take, but the network takes it all (until the file runs out) and never
+blocks.  Thus, we never move on to read packets.
+
+Also, playback on the sever stalls in this case (stuck between frames in a 
+6-second call to executeNetworkStep).
+
+Strange that we can never fill up the network buffer (this only happens on the
+Mac platform).
+
+We need to limit the time taken by executeNetworkStep and jump out.
+
+But how do we avoid starvation of certain clients?  What if we spend all of 
+our time feeding only the first client and then jump out of executeNetworkStep?
+
+
+Split time up among clients equally.
+
+
+
+Video skipping a bit now on both sender and receiver.
+
+What if we use a network step instead of sleeping when we are decoding the
+video too fast?
+
+
+This seems to work better, though client is sometimes starved for file data.
+
+
+Also, when Mac is the server, sometimes executeNetworkStep long-exceeds its
+time limit.  With timing printouts, I've found the stall seems to happen, now
+and again, when sending packet data.  A single send call can sometimes take
+more than a second.
+
+Why?  
+
+--Maybe MSG_DONTWAIT doesn't work on Mac.
+--Maybe the system is hanging on that system call for some other reason.
+
+
+To test MSG_DONTWAIT theory, stop client (no more receiving) to see what 
+happens.
+
+Sure enough, we can make the Mac server hang as long as we want by doing this.
+A single send call takes up to 9371 seconds.
+
+Thus, MSG_DONTWAIT doesn't work.  Well, that's easy enough.
+
+Probably should be putting sockets into a real non-blocking mode anyway.
+
+   
+
+
+June 23, 2006
+
+Switched to using 
+   fcntl( socketID, F_SETFL, O_NONBLOCK ) 
+for non-blocking send calls.  It works.
+
+Okay!  Finally fixed this problem.  No more playback stalls on Mac server.
+
+New problem:  client starvation
+
+
+If we never have hold times between frames (i.e., we are decoding by the seat
+of our pants), then we never call executeNetworkStep, and we never get more
+data.
+ 
+
+With smaller movie files (where we decode faster and thus hold more between
+frames), it works fine, however.
+
+
+Well, we can either sacrifice playback quality to get more network time or
+have high-quality playback up to the point where we outstrip our incoming
+data, in which case we have a "playback problem" anyway.
+
+
+Try a small improvement:  keep executing network steps as long as there
+is more work to do and more time left.  Did this. 
+
+Probably works, though trace printouts only show 1 network step ever
+being executed before it returns.
+
+Most probably, network ops that involve only buffered data are very fast, so
+we are getting all work done long before time runs out.  We end up just 
+sleeping for the rest of the time.
+
+Maybe instead, if we have a lot of extra time, we should sleep a bit right
+in executeNetworkStep and then execute another step with the remaining time.
+
+However, this is not the core problem at this point.  On the linuxPPC end,
+we simply do not have enough frame holds to get our network operations done.
+
+
+Maybe we should do one short network step per frame again.  Try this.
+
+Okay, much better. 
+
+
+
+At this point, we are very close to having a working prototype system.  All
+with only 4591 lines of code.
+
+SDL should work fine for the first prototype release.  I am guessing that it
+is a faster way to flip data to the screen than OpenGL.
+
+
+
+
+-- The channel changing problem --
+
+Example:  suppose we receive 10 files on a given channel, but we are playing
+file number 3.  Suppose one of our client nodes is also playing 3.  Now
+suppose we switch channels.  We move on to file 11, but the client node
+keeps receiving 3 and then goes one to receive 4.
+
+Can solve this by putting "skip" flags on the files that we skip watching
+locally.  Any client that has not received them yet will skip them.
+
+
+Even worse, what if the client node has already received files 3 through 10
+by the time we switch channels.  That client will continue to watch all of
+those before switching to file 11 with us.  Thus, the client will be far
+behind us.
+
+Maybe the "even worse" case doesn't really matter.  After all, it will be
+a coherent experience for the client node, even if it is not exactly what
+you are watching.  They are still receiving video from a channel that you
+chose to watch for a while.
+
+
+
+Okay, so what still needs to be done?
+
+
+X-The channel changing problem (see above)
+--Host discovery (gwebcache) and connection management
+--Better server file management (play all files in a folder)
+X-Use one SDL window (larger than video frame) for entire program execution
+--Some kind of minimal data displays in window
+
+
+June 25, 2006
+
+Actually, should have a "start of current channel" marker in the 
+StreamFileTracker.  We will also need to use this locally when looping
+the current channel's content (we don't want to go all the way back to the
+first file we ever received, but just to the first file from our channel.
+
+
+To test this on one machine, needed to do a few things first:
+
+X-Parameterize server port number.
+X-Change to use one SDL window (windows opening and closing makes testing 
+difficult.
+
+Trying to switch to one SDL window, but this seems to make video playback
+more choppy.  Speed goes down as window size goes up (even for a small video).
+
+Thus, we must be doing an extra copy somewhere (copying the large black 
+border).
+
+Need to tell SDL that only a small portion is "dirty" somehow.
+
+Look at SDL_UpdateRect
+
+
+
+June 26, 2006
+
+Changed to use SDL_UpdateRect... it works great, making redraw speed 
+independent of window size.
+
+Got all video playback to share one static screen.  Good.
+
+Fixed problem (using automatic screen resize) if screen is too small for video.
+
+
+
+Okay, with these changes, testing on one machine is easier.
+
+And the suspected problem is there:  after switching channels and exhausting
+the content on the new channel, we loop back to the content received from
+the previous channel.
+
+
+Implemented the "start of current channel marker" and solved the 
+channel-changing problem.
+
+
+Improved responsiveness to channel change keyboard event.

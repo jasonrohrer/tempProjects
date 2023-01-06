@@ -1,0 +1,4 @@
+
+jalPath=/data5/jcr13/downloads/jal-0.4.60
+
+$jalPath/jal/jal  -s$jalPath/lib brainDrive.jal

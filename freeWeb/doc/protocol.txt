@@ -1,0 +1,115 @@
+The freeWeb protocol is built on top of HTTP/1.0 (as evidenced by
+the fact that the first prototype runs as a CGI script on a web server).
+
+
+There are several commands that can be issued using the standard URL query
+syntax, where the proxy url is followed by a "?" and then a series of 
+parameters.  The proxy URL is represented below by PROXY_URL.  Here are
+two example URLs:
+
+PROXY_URL  = http://www.myserver.com/cgi-bin/freeWeb.pl
+PROXY_URL  = http://123.43.33.98:9095
+
+
+Basic URL Query Commands:
+
+
+PROXY_URL?url=URL_TO_PROXY
+
+Effect:  Fetch a URL through the proxy.
+Example:
+http://123.43.33.98:9095?url=http://www.google.com
+
+
+PROXY_URL?url=URL_TO_PROXY
+
+Effect:  Show debugging information for a fetched URL.
+Example:
+http://123.43.33.98:9095?url=http://www.google.com&debug=1
+
+
+PROXY_URL?ping=1
+
+Effect: Check if the proxy is alive
+Example:
+http://123.43.33.98:9095?ping=1
+
+
+Query Modifiers:
+
+&debug=1
+Effect: displays debug information
+Example:
+http://123.43.33.98:9095?url=http://www.google.com&debug=1
+
+&autoHop=1
+Effect: enables auto-hopping between proxies
+Example:
+http://123.43.33.98:9095?url=http://www.google.com&autoHop=1
+
+
+
+
+Of course, standard URL query syntax is not compatible with HTML forms, which
+would essentially require a query within a query if they were to be proxied.
+For example, consider a Google search, which has the form:
+
+http://www.google.com?hl=en&q=dolphins
+
+When we try to embed this particular URL into a URL_TO_PROXY, we see that
+the two queries conflict with eachother:
+
+http://123.43.33.98:9095?url=http://www.google.com?hl=en&q=dolphins
+
+Is "q=" a parameter of the overall query or a parameter of the embedded Google
+query?  Furthermore, if we set 
+
+http://123.43.33.98:9095?url=http://www.google.com
+
+as the ACTION target of a Google HTML search FORM, hoping that the browser 
+will append another "?" with Google's FORM parameters, we will find that some 
+browsers will instead simply chop off the "?url=..." portion of our action 
+and formulate a new query that looks like:
+
+http://123.43.33.98:9095?hl=en&q=dolphins
+
+We can see that packing a URL into a URL query will not work well in all 
+situations.  Thus, we instead need a syntax for embedding the target URL
+directly into our proxy URL.
+
+
+The following syntax is used:
+
+
+PROXY_URL/TOOLBAR_STATUS/AUTO_HOP_STATUS~~~PACKED_URL_TO_PROXY
+
+For a given URL, packing the URL involves replacing "http://" with "http/".
+
+The TOOLBAR_STATUS flag is used to control the toolbar visibility, and it
+can take on two values:  "hideBar" or "showBar".
+
+The AUTOHOP_STATUS flag is used to control auto-hopping between proxies, and it
+can take on two values:  "autoHopOn" or "autoHopOff".
+
+To enable the debugger, use the following extra flag:
+PROXY_URL/debug/TOOLBAR_STATUS/AUTO_HOP_STATUS~~~PACKED_URL_TO_PROXY
+
+
+
+Here is an example of a complete proxy URL using the packing syntax
+
+
+
+
+http://123.43.33.98:9095/hideBar~~~http/www.google.com?hl=en&q=dolphins
+ 
+
+Since our packed URL does not contain a query, we can use it as the target
+of an HTML form, for example:
+
+<FORM ACTION="http://123.43.33.98:9095/showBar~~~http/www.google.com">
+
+For a Google search form, this ACTION will have the desired result:  A Google
+search will be passed through our proxy as a packed URL:
+
+http://123.43.33.98:9095/showBar~~~http/www.google.com?hl=en&q=dolphins

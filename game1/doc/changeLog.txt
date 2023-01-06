@@ -1,0 +1,26 @@
+Version 0.1    2004-September-1
+--Initial release
+
+
+
+Version 0.1.1-IGF-1  2004-September-3
+(Final submission for first round of IGF 2005)
+
+--Added fades to beginning and end of each sound effect to reduce clicks.
+
+--Changed enemy logic so that they back off after they knock your ship back
+  to the center.
+
+--Made grid coloring in relation to boss position smoother and more detailed.
+
+--Added grid coloring in relation to ship position.
+
+--Improved logic that determines whether a piece is in or out of the collage. 
+
+
+
+Version 0.1.2   2004-September-26
+
+--Added a missing dependency to the GNU/Linux X86 makefile.
+
+--Shortened Mac download file name to make Internet Explorer happy.

@@ -1,0 +1,64 @@
+#!/bin/sh
+
+#
+# Modification History
+#
+# 2004-January-10   Jason Rohrer
+# Copied from MUTE.
+#
+
+
+if [ $# -lt 2 ] ; then
+   echo "Usage: $0 release_name unix_platform_name"
+   exit 1
+fi
+
+
+rm -rf unix
+rm -rf windows
+
+mkdir windows
+mkdir unix
+
+
+# work on unix tree first
+mkdir unix/Primrose
+mkdir unix/Primrose/settings
+
+cp ../../settings/*.ini ../../settings/README.txt unix/Primrose/settings
+
+mkdir unix/Primrose/files
+
+
+
+# duplicate unix tree so far to make windows tree
+cp -r unix/Primrose windows/
+
+cp ../textPrimrose unix/Primrose/
+
+cp win32/textPrimrose.exe win32/*.dll windows/Primrose/
+
+cd unix
+tar cf "Primrose_$1_$2.tar" Primrose
+gzip "Primrose_$1_$2.tar"
+
+
+# compile unix2dos
+cd ..
+g++ -o unix2dos unix2dos.c 
+cp unix2dos windows
+cp unix2dosScript windows
+
+
+cd windows
+for file in Primrose/settings/*
+do
+    ./unix2dosScript "$file"
+done
+
+zip -r "Primrose_$1_Windows.zip" Primrose
+
+
+
+
+

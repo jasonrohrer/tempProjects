@@ -1,0 +1,57 @@
+Threat Model for Trusted Sharing
+
+The adversary in this model is not terribly sophisticated.  The goal of the
+adversary is to: 
+
+1) trick a victim into revealing that he or she is breaking the law
+2) determine the real-world identity of the victim
+3) file a lawsuit against the victim (or have the victim arrested)
+
+
+To thwart this adversary, we only need a mechanism that makes *one* of these
+three steps difficult or impossible.
+
+Step 3 can be prevented by changing legislation at the government level, and
+many activists are working in this direction.  However, legislative change,
+if it will be possible at all, is certainly far off in the future.
+
+Step 2 can be prevented by hiding the vicitim's identity using anonymizing 
+networks like Freenet or MUTE.  However, the resource overhead associated with 
+anonymity makes these networks impractical, or at least unpleasant, compared
+to the non-anonymous alternatives.
+
+Trusted Sharing focuses on making Step 1 difficult for the adversary.  This
+can be generally accomplished by
+
+1) preventing the adversary from communicating directly with the victim and
+2) preventing the adversary from spying on the victim's communications.
+
+
+The adversary in this model is not terribly sophisticated.  The adversary 
+cannot, for instance, "sniff" data as it travels through the Internet or
+engage in any other wiretapping activity.  As long as the victim communicates
+directly (without intermediary partners) to his or her communication partners,
+we can consider Prevention 2 handled by the structure of the Internet and the
+limitations of the adversary.
+
+Thus, we can focus on Prevention 1.  In order to implement this prevention,
+we first need a mechanism for uniquely identifying communication partners.  
+We can assume that the adversary has relatively limited access to 
+computational resources.  For example, if digital signatures are used, keys 
+can be relatively small while still preventing the adversary from forging 
+signatures.  Though the adversary does not have computational resources now, 
+it may acquire such resources in the future, so our idendity mechanisms must 
+be able to grow in strength as the adversary's computational strength grows.
+
+Second, we need a mechanism for identifying communication parterners that
+are likely to be the adversary (or identifying partners that are likely *not*
+to be the adversary).  We assume that the adversary is not very sophisticated
+in terms of real-world social engineering.  Thus, the adversary will not be 
+able to trick victims into fake face-to-face "friendships" that seem real.  
+However, the adversary may be quite sophisticated at faking online friendships.
+For example, the adversary may engage vicitims in chat rooms to build trust.
+
+To thwart these efforts, we cannot simply rely on educating potential victims.
+We need mechanisms that explicitly encourage potential victims to limit the 
+scope of their trust.   
+

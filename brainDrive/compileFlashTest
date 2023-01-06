@@ -1,0 +1,1 @@
+g++ -o FlashTest -I../../.. FlashTest.cpp ../../../minorGems/system/unix/TimeUnix.cpp linuxX86/ParallelPortLinuxX86.cpp -lpthread 

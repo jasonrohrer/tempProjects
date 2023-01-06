@@ -1,0 +1,37 @@
+#!/bin/bash
+
+#
+# Modification History
+#
+# 2004-January-15    Jason Rohrer
+# Added bash path.
+# Fixed string comparison operator.
+#
+
+
+cd game1
+chmod u+x ./configure
+./configure
+
+cd portaudio
+chmod u+x ./configure
+./configure
+make
+cd ..
+
+cd game
+make
+cd ..
+
+
+
+cd ..
+
+cp game1/game/Transcend .
+cp -r game1/levels .
+cp game1/doc/how_to_*.txt .
+
+
+
+
+

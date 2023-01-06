@@ -1,0 +1,117 @@
+This document specifies the format of TCP socket interactions for Trusted
+Sharing.
+
+
+
+ --
+| Use of sockets
+ --
+
+Sockets are used exclusively to request and transfer single chunks of file 
+data.  Chunks are at most 16KiB in size, with partial chunks used as necessary
+for the final chunk of a file.  
+
+To request a chunk from a non-firewalled node, a socket connection is made to 
+the node and a Chunk Request is sent.  The node should respond by sending 
+back a Chunk message.  After the chunk is received, the socket should be
+closed by the node that made the connection (the chunk requester).
+
+To request a chunk from a firewalled node, a inbound socket connection is not 
+possible.  Thus, a UDP message is routed to the node to request a connection.
+After a TCP connection has been formed, the same protocol exchange takes 
+place, with the requester sending a Chunk Request message. 
+
+
+
+ --
+| Basic Message Structure
+ --
+
+The structure of the messages sent over sockets is similar to that of
+messages sent via UDP.  However, since space is not a consideration, and
+since parsing needs to take place on a stream of data (instead of on small,
+self-contained messages), the message format for data fields is pure ASCII
+instead of an ASCII/binary combination.
+
+All messages include two parts:
+
+1.  An ASCII header block, terminted by the null character '\0'
+2.  An optional binary data block that is not terminated (length must
+    be specified in the header block).
+2.  A ASCII block that contains signature data, terminated by '\0'.
+
+
+
+ --
+| Signature Block Structure
+ --
+
+First, we specify the format of the ASCII signature block.
+
+The signature block consists of the following pieces of data concatonated
+together with whitespace:
+
+
+--64-bit sender UserID in big-endian format, split into two 32-bit parts
+  and base-10 ASCII encoded
+--64-bit receiver UserID in big-endian format, split into two 32-bit parts
+  and base-10 ASCII encoded
+--RSA signature value as hex-encoded ASCII
+
+
+Example 1:
+
+382736487 87637277 
+2897238 47783484 
+01F745A0B3A078572F95A6BFCC2E4CCC2EDFDB9168B5575A1A6FA9AEDDF746D576AAC2154F185E45962818E2C82CF7ADC7210DDD6DCFEE5EB72767F90C7A5A28
+
+
+The RSA signature is generated using [RSA SSA PKCS #1 v1.5 SHA1].
+The data signed includes the following pieces concatonated together
+
+--The ASCII header of the message *without* the terminating \0
+--The optional binary data block
+--The 64-bit receiver UserID in big-endian binary order
+
+
+The rest of this document describes the format of the ASCII header portion for
+various message types.  Quotes are used in examples to indicate the start and 
+end of the ASCII header text.  Quotes ARE NOT included in actual protocol 
+messages.
+
+
+
+ --
+| Chunk Request Messages
+ --
+
+A Chunk Request message consists of a SHA1 hash value and a chunk number.  
+The SHA1 hash value must be hex-encoded.
+
+
+Example 1:
+"not_firewalled getChunk FB322F86DB95BE0670D06631EE27E83C5B64679A 15"
+
+
+
+ --
+| Chunk Message
+ --
+
+A Chunk message consists of a SHA1 hash value, a chunk number, a length in 
+bytes, and raw binary chunk data that occurs *after* the ASCII header's 
+\0-termination.  The SHA1 hash value must be hex-encoded.  
+
+The signature should be applied to the following pieces concatonated together
+
+--The ASCII part of the message *without* the terminating \0
+--The binary chunk data
+--The 64-bit receiver UserID
+
+Example 1 (only ASCII header shown):
+"firewalled chunk FB322F86DB95BE0670D06631EE27E83C5B64679A 15 16384"
+
+
+
+
+

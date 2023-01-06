@@ -1,0 +1,16 @@
+#
+# Modification History
+#
+# 2001-May-22   Jason Rohrer
+# Created.
+# Changed to include new subfolders.
+# Added modification history.
+#
+# 2001-May-23   Jason Rohrer
+# Added a statement to copy object classes into the root directory.
+#
+
+jikes os/system/*.java os/system/internal/*.java os/system/internal/gui/*.java os/system/exception/*.java os/objects/interfaces/*.java os/objects/implementations/*.java
+
+cp os/objects/interfaces/*.class root/classes
+cp os/objects/implementations/*.class root/classes

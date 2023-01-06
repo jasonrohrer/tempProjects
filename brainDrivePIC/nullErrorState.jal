@@ -1,0 +1,5 @@
+-- called when we have a fatal error
+procedure errorState( byte in errorNumber ) is
+    -- null version does nothing to save space
+
+end procedure

@@ -1,0 +1,2 @@
+./linkOpener &
+java -cp . LinkLauncher

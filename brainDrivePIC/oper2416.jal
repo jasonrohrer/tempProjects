@@ -1,0 +1,406 @@
+--
+-- file      : oper2416.jal
+-- author    : Eur van Andel
+-- date      : 2002-07-29
+-- purpose   : -, / three & two byte numbers, result integer, can be negative
+-- 
+--
+-- This library is free software; you can redistribute it and/or
+-- modify it under the terms of the GNU Library General Public
+-- License as published by the Free Software Foundation; either
+-- version 2 of the License, or (at your option) any later version.
+--
+-- This library is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-- Library General Public License for more details.
+-- 
+-- You should have received a copy of the GNU Library General Public
+-- License along with this library; if not, write to the
+-- Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+-- Boston, MA  02111-1307, USA.
+
+include 16bit
+
+-- procedure 24 bit addition
+-- input x_super, x_high, x_low, y high, y_low
+-- output sum_s, sum_h, sum_l 
+
+procedure add2416 (byte in x_s,
+                  byte in x_h, 
+                  byte in x_l, 
+                  byte in y_h, 
+                  byte in y_l, 
+                  byte out sum_s,
+                  byte out sum_h, 
+                  byte out sum_l) is
+
+
+if x_l > ( 255 - y_l ) then 
+   sum_h = (x_h + y_h) + 1
+   if x_h > (254 - y_h) then 
+      sum_s = x_s + 1
+   else
+      sum_s = x_s
+   end if
+else 
+   sum_h = x_h + y_h 
+   if x_h > (255 - y_h) then 
+      sum_s = x_s + 1
+   else
+      sum_s = x_s
+   end if
+end if
+
+sum_l = x_l + y_l
+
+end procedure
+
+
+procedure add2424(byte in x_s,
+                  byte in x_h, 
+                  byte in x_l, 
+                  byte in y_s,
+                  byte in y_h, 
+                  byte in y_l, 
+                  byte out sum_s,
+                  byte out sum_h, 
+                  byte out sum_l) is
+
+
+if x_l > ( 255 - y_l ) then 
+   sum_h = (x_h + y_h) + 1
+   if x_h > (254 - y_h) then 
+      sum_s = ( x_s + y_s ) + 1
+   else
+      sum_s = x_s + y_s
+   end if
+else 
+   sum_h = x_h + y_h 
+   if x_h > (255 - y_h) then 
+      sum_s = (x_s + y_s )+ 1
+   else
+      sum_s = x_s + y_s
+   end if
+end if
+
+sum_l = x_l + y_l
+
+end procedure
+
+
+-- procedure 24 bit subtraction
+-- input x_s, x_high, x_low, y high, y_low
+-- output delta_s delta_h, delta_l
+-- sign is true when result is positive or zero
+
+procedure min2416( byte in x_s,
+                   byte in x_h, 
+                   byte in x_l, 
+                   byte in y_h, 
+                   byte in y_l, 
+                   byte out delta_s,
+                   byte out delta_h, 
+                   byte out delta_l, 
+                   bit out sign) is
+sign = true
+
+if x_s < 1 then 
+   if x_h < y_h then 
+      sign = false
+   elsif x_h == y_h then
+      if x_l < y_l then
+         sign = false
+      else
+         delta_s = x_s
+         delta_h = x_h - y_h
+      end if
+   elsif x_h > y_h then
+      if x_l < y_l then
+         delta_s = x_s
+         delta_h = (x_h - y_h) - 1
+      else
+         delta_s = x_s
+         delta_h = x_h - y_h
+      end if
+   end if
+else
+   if x_h < y_h then 
+      if x_l < y_l then
+         delta_s = x_s - 1
+         delta_h = (x_h - y_h) - 1
+      else
+         delta_s = x_s - 1
+         delta_h = x_h - y_h
+      end if
+   elsif x_h == y_h then
+      if x_l < y_l then
+         delta_s = x_s - 1
+         delta_h = (x_h - y_h) - 1
+      else
+         delta_s = x_s 
+         delta_h = x_h - y_h
+      end if
+   elsif x_h > y_h then
+      if x_l < y_l then
+         delta_s = x_s
+         delta_h = (x_h - y_h) - 1
+      else
+         delta_s = x_s
+         delta_h = x_h - y_h
+      end if
+   end if
+end if
+
+delta_l = x_l - y_l
+
+end procedure
+
+
+
+
+
+-- added by Jason Rohrer, September 30, 2004
+-- procedure 24 bit - 24 bit subtraction
+-- input x_s, x_high, x_low, y_super, y_high, y_low
+-- output delta_s delta_h, delta_l
+-- sign is true when result is positive or zero
+-- delta result is bogus when x < y 
+
+procedure min2424( byte in x_s,
+                   byte in x_h, 
+                   byte in x_l, 
+                   byte in y_s, 
+                   byte in y_h, 
+                   byte in y_l, 
+                   byte out delta_s,
+                   byte out delta_h, 
+                   byte out delta_l, 
+                   bit out sign) is
+
+if x_s == y_s then
+   min2416( 0x00, x_h, x_l, 
+            y_h, y_l,
+            delta_s, delta_h, delta_l, sign )
+elsif x_s > y_s  then
+   min2416( x_s, x_h, x_l, 
+            y_h, y_l,
+            delta_s, delta_h, delta_l, sign )
+   delta_s = delta_s - y_s
+else
+   -- x_s < y_s
+   sign = false
+end if
+
+end procedure
+
+
+
+
+-- test min2424
+procedure testMin2424 is
+
+    var byte testX_s = 255
+    var byte testX_h = 255
+    var byte testX_l = 255
+
+    var byte testY_s = 255
+    var byte testY_h = 255
+    var byte testY_l = 255
+
+    var byte testD_s
+    var byte testD_h
+    var byte testD_l
+    var bit sign = false
+
+    min2424( testX_s, testX_h, testX_l, testY_s, testY_h, testY_l,
+             testD_s, testD_h, testD_l, sign );
+
+    pragma test assert testD_s == 0
+    pragma test assert testD_h == 0
+    pragma test assert testD_l == 0
+    pragma test assert sign == true
+
+
+    testY_s = 254
+    testX_h = 0
+    testX_l = 0
+    min2424( testX_s, testX_h, testX_l, testY_s, testY_h, testY_l,
+             testD_s, testD_h, testD_l, sign );
+
+    pragma test assert testD_s == 0
+    pragma test assert testD_h == 0
+    pragma test assert testD_l == 1
+    pragma test assert sign == true
+
+
+    testX_s = 253
+    min2424( testX_s, testX_h, testX_l, testY_s, testY_h, testY_l,
+             testD_s, testD_h, testD_l, sign );
+
+    pragma test assert sign == false
+end procedure
+
+
+
+
+
+
+
+
+-- optimized by Jason Rohrer on 2004-October-1
+-- procedure 24 bit multiplication
+-- input x_s, x_high, x_low, y high, y_low
+-- output prod_s, prod_h, prod_l 
+
+procedure mult2416(byte in x_s,  
+                   byte in x_h, 
+                   byte in x_l, 
+                   byte in y_h, 
+                   byte in y_l, 
+                   byte out prod_s, 
+                   byte out prod_h, 
+                   byte out prod_l) is
+
+prod_s = 0
+prod_h = 0
+prod_l = 0
+
+for y_h loop
+   -- add in a left-shifted x (discarding x_s)
+   add2424(prod_s, prod_h, prod_l, x_h, x_l, 0x00, prod_s, prod_h, prod_l)
+end loop
+
+for y_l loop
+  add2424(prod_s, prod_h, prod_l, x_s, x_h, x_l, prod_s, prod_h, prod_l)
+end loop
+
+end procedure
+
+
+
+
+
+-- procedure 24 bit division
+-- input x_s, x_high, x_low, y high, y_low
+-- output quot_s, quot_h, quot_l 
+-- x / y, only integer quotient
+-- x / 0 = 0
+
+procedure div2416(byte in x_s,   
+                  byte in x_h, 
+                  byte in x_l, 
+                  byte in y_h, 
+                  byte in y_l, 
+                  byte out quot_s, 
+                  byte out quot_h, 
+                  byte out quot_l) is
+
+var bit sign = true
+
+quot_s = 0
+quot_h = 0
+quot_l = 0
+
+if y_h == 0 & y_l == 0 then 
+else 
+   while sign loop
+      min2416(x_s, x_h, x_l, y_h, y_l, x_s, x_h, x_l, sign)
+      add2416(quot_s, quot_h, quot_l, 0, 1, quot_s, quot_h, quot_l)
+   end loop
+   min2416(quot_s,quot_h, quot_l, 0, 1, quot_s, quot_h, quot_l, sign)
+end if
+
+
+end procedure
+
+
+
+
+
+-- added by Jason Rohrer, September 30, 2004
+-- procedure 24 bit / 24 bit division
+-- input x_s, x_high, x_low, y_super, y_high, y_low
+-- output quot_s, quot_h, quot_l 
+-- x / y, only integer quotient
+-- x / 0 = 0
+
+procedure div2424(byte in x_s,   
+                  byte in x_h, 
+                  byte in x_l, 
+                  byte in y_s, 
+                  byte in y_h, 
+                  byte in y_l, 
+                  byte out quot_s, 
+                  byte out quot_h, 
+                  byte out quot_l) is
+
+var bit sign = true
+
+quot_s = 0
+quot_h = 0
+quot_l = 0
+
+if y_s == 0 & y_h == 0 & y_l == 0 then 
+else 
+   while sign loop
+      -- min2424(x_s, x_h, x_l, y_s, y_h, y_l, x_s, x_h, x_l, sign)
+      -- inline min2424 to avoid the stack getting too deep (JAL bug?)
+      if x_s == y_s then
+           min2416( 0x00, x_h, x_l, 
+                    y_h, y_l,
+                    x_s, x_h, x_l, sign )
+      elsif x_s > y_s  then
+           min2416( x_s, x_h, x_l, 
+                    y_h, y_l,
+                    x_s, x_h, x_l, sign )
+           x_s = x_s - y_s
+      else
+           -- x_s < y_s
+           sign = false
+      end if
+      -- use add2424 to reduce code size when we are not using 2416 functions
+      -- in other words, don't force the add2416 function to be linked
+      -- if it isn't being used elsewhere
+      add2424(quot_s, quot_h, quot_l, 0, 0, 1, quot_s, quot_h, quot_l)
+   end loop
+   min2416(quot_s, quot_h, quot_l, 0, 1, quot_s, quot_h, quot_l, sign)
+end if
+
+
+end procedure
+
+
+
+-- test div2424
+procedure testDiv2424 is
+    var byte testY_s = 11
+    var byte testY_h = 11
+    var byte testY_l = 11
+
+    var byte testX_s = 33
+    var byte testX_h = 33
+    var byte testX_l = 33
+
+    var byte quot_s, quot_h, quot_l
+
+    div2424( testX_s, testX_h, testX_l, testY_s, testY_h, testY_l,
+             quot_s, quot_h, quot_l );
+
+    pragma test assert quot_s == 0
+    pragma test assert quot_h == 0
+    pragma test assert quot_l == 3
+
+
+
+    testX_s = 10
+    testX_h = 33
+    testX_l = 33
+
+    div2424( testX_s, testX_h, testX_l, testY_s, testY_h, testY_l,
+             quot_s, quot_h, quot_l );
+
+    pragma test assert quot_s == 0
+    pragma test assert quot_h == 0
+    pragma test assert quot_l == 0
+end procedure

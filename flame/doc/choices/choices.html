@@ -1,0 +1,94 @@
+
+
+<HTML>
+
+<HEAD>
+<TITLE>Flame Choices</TITLE>
+</HEAD>
+
+
+<BODY>
+
+<H1>An example flame parameter set</H1>
+For these examples, we are using 3 linear transforms, each with p=1/3, with the following parameters:<BR>
+
+  p_xf0_cfa=0.646257<BR> p_xf0_cfb=-0.283822<BR> p_xf0_cfc=1.3588<BR> p_xf0_cfd=0.00255696<BR> 
+  p_xf0_cfe=-0.211129<BR>  p_xf0_cff=-3.12319 <BR><BR>
+  p_xf1_cfa=0.977672<BR> p_xf1_cfb=-0.552303<BR> p_xf1_cfc=0.381126<BR> p_xf1_cfd=0.465366<BR> 
+  p_xf1_cfe=-1.33674<BR>  p_xf1_cff=-0.0590757<BR><BR>
+  p_xf2_cfa=0.256568<BR> p_xf2_cfb=0.0805013<BR> p_xf2_cfc=-0.334069<BR> p_xf2_cfd=0.480298<BR> 
+  p_xf2_cfe=1.49009<BR>  p_xf2_cff=0.366954<BR><BR> 
+
+<H1>Color values for transforms</H1>
+
+We have a gradient that maps [0,1] to various colors.  What color value should we set for each transform in order to best show the structure of the flame?<BR>
+<BR>
+
+One option is to let the first transform have a color value of 1.0 and the rest to have a color value of 0.  This produces the following image:<BR><BR>
+<CENTER><IMG SRC="twoColorAverage.jpg"></CENTER><BR>
+
+Note that the gradient is shown across the top of each image for reference.<BR>
+<BR>
+
+Is this really showing the structure?  What if we let the three transforms have color values of 1.0, 0.5, and 0 respectively?  Then we get the following image, which is quite different:<BR><BR>
+<CENTER><IMG SRC="threeColorAverage.jpg"></CENTER><BR>
+
+To make the above images, we used the Draves method, where we iterated over (x,y,c), and set c' = ( c + transformC ) / 2.  Pixels are colored by the average of all c values that hit them (with brightness equal to the log of the hit count for the pixel).<BR><BR>
+
+There are actually 3 visual structures in this flame, one for each transform.  To demonstrate this, we can use a slightly different formula in each iteration:  c' = transformC.  We get the following image:<BR><BR>
+<CENTER><IMG SRC="noAverage.jpg"></CENTER><BR>
+
+Definitely not as pretty, but perhaps more revealing in terms of the underlying math.<BR>
+<BR>
+Of the above two averaging-based transform colorings, the [1.0, 0.5, 0] coloring certainly shows more of this structure while still having smooth color transitions.
+
+<H1>Color accumulation at each pixel</H1>
+Above, we mentioned that "pixels are colored by the average of all c values that hit them."  We have two choices here:  We can simply keep a running sum of all c values that hit each pixel, or we can keep a running sum of the corresponding R, G, and B values by mapping c into the gradient each time.  With either method, we eventually divide the sum(s) by the pixel's hit count to color the pixel.<BR><BR>
+The idea here is that, by keeping track only of the average RGB values for a pixel, we may be missing some of the structure present in the gradient.  If we average the c values and only map into the color map in the end, the average c value may fall onto some structure in the gradient that the averaged RGB values might miss.<BR>
+<BR>
+To highlight this point, we have modified our gradient to include a magenta discontinuity.  The following image is rendered with the RGB-averaging method:<BR><BR>
+<CENTER><IMG SRC="rgbAve.jpg"></CENTER><BR>
+The next image is rendered with the c-averaging method:<BR><BR>
+<CENTER><IMG SRC="cAve.jpg"></CENTER><BR>
+
+Notice that the gradient discontinuity is preserved only by the c-averaging method.  Of course, the discontinuity is not pleasing to the eye, so the RGB-averaging method produces a prettier image.  The RGB-averaging method effectively smoothes our gradient, losing some of the information that it contains.  However, if we wanted our gradient to be smooth, we could have smoothed it before feeding it into the algorithm.<BR>
+<BR>
+The conclusion here is that the RGB-averaging method gives us less control over the rendered image.<BR>
+
+<H1>Apophysis method</H1>
+In Apophysis, the [1.0, 0, 0, 0 ...] color assignment is used instead of the more general color assignment (where the user can pick a c value for each transform).  Also, Apophysis (according to this author's best understanding of the source code) uses the RGB-averaging method.  This document demonstrates that these subtle limitations do make a noticeable difference in the output quality.The following image was rendered by Apophysis (note that the brightness/contrast and zoom factor differ from the other images shown here, but the coloring method is still comparable):<BR><BR>
+<CENTER><IMG SRC="apophysis.jpg"></CENTER><BR>
+
+
+<H1>Final Algorithm (for linear transforms)</H1>
+
+For each transform, we have coefficients <TT>[a, b, c, d, e, f]</TT>, where transform is defined by<BR>
+<CENTER>
+<TT>x' = a*x + c*y + e</TT><BR>
+<TT>y' = b*x + d*y + f</TT><BR>
+</CENTER>
+We also have a probability <TT>p</TT> for each transform such that the sum of all of the transform probabilities is equal to 1.  In addition, each transform is associated with a <TT>c</TT> value in the range [0,1]---this is the color of the transform.<BR>
+<BR> 
+
+Keep a <TT>cSum</TT> for each pixel, as well as a <TT>hitCount</TT>, with both starting at 0.<BR><BR>
+Start with <TT>x=rand(-1,1)</TT>, <TT>y=rand(-1,1)</TT>, and <TT>c=rand(0,1)</TT>.<BR><BR>  
+
+In each iteration:<BR>
+--Pick a transform at random according to <TT>p</TT> probabilities.<BR>
+--Compute <TT>x'</TT> and <TT>y'</TT> according to the chosen transform.<BR>
+--Compute <TT>c' = (c + transform_c) / 2</TT>.<BR>
+--Find <TT>pixel</TT> hit by <TT>x'</TT> and <TT>y'</TT>.<BR>
+--Set <TT>pixel_cSum += c'</TT> and <TT>pixel_hitCount += 1</TT>.<BR>
+--Let <TT>x=x'</TT>, <TT>y=y'</TT>, and <TT>c=c'</TT> for the next iteration.<BR>
+<BR>
+
+
+To render each of the final pixels:<BR>
+--Compute <TT>pixel_c = pixel_cSum / pixel_hitCount</TT>.  This is the average <TT>c</TT> value over all hits for a given pixel.<BR>
+--Map <TT>pixel_c</TT> into the color gradient to get <TT>[R,G,B]</TT> values for the pixel.<BR>
+--Compute <TT>pixel_brightness = k1 * log( 1 + pixelHitCount * k2 )</TT>, where k1 and k2 are parameters that control the overall brightness/contrast of the image.  The <TT>pixel_brightness</TT> value should be in [0,1].<BR>
+--Scale <TT>[R,G,B]</TT> by this brightness value.  This scaled <TT>[R,G,B]</TT> value is the final color value for the pixel.
+  
+ 
+
+</BODY>

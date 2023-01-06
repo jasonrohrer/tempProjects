@@ -1,0 +1,42 @@
+GET /WebObjects/MZSearch.woa/wa/com.apple.jingle.search.DirectAction/search?term=Xiu%20Xiu HTTP/1.1
+User-Agent: iTunes/4.2 (Macintosh; U; PPC Mac OS X 10.2)
+Accept-Language: en-us, en;q=0.50
+Cookie: countryVerified=1
+Accept-Encoding: gzip, x-aes-cbc
+Connection: close
+Host: phobos.apple.com
+
+
+NOTE:
+With the release of iTunes 4.5, Apple has made their server more strict.
+All of the above headers need to be present, and extra headers can cause
+the request to be rejected.  Thus, using wget to fetch search results no
+longer works, since wget adds its own User-Agent header.
+
+The following notes are only for historical reference:
+
+
+
+Need to specify iTunes as the user agent, or else apple's server rejects the connection.
+
+wget http://phobos.apple.com/WebObjects/MZSearch.woa/wa/com.apple.jingle.search.DirectAction/search?term=Xiu%20Xiu -S --header="User-Agent: iTunes/4.0 (Macintosh; U; PPC Mac OS X 10.2)" --header="Accept-Encoding: gzip, x-aes-cbc"
+
+
+Header's that come back (due to wget -S switch):
+
+Connecting to phobos.apple.com:80... connected!
+HTTP request sent, awaiting response... 200 Apple
+2 Date: Wed, 14 Apr 2004 17:34:20 GMT
+3 Content-Length: 4304
+4 Content-Type: text/xml; charset=UTF-8
+5 Cache-Control: no-cache
+6 Server: Apache/1.3.27 (Darwin)
+7 Pragma: no-cache
+8 content-encoding: gzip, x-aes-cbc
+9 x-apple-max-age: 3600
+10 x-apple-crypto-iv: c33f810b5064df1407ac51515df9bd5a
+11 x-apple-protocol-key: 2
+12 x-apple-asset-version: 2107
+13 x-apple-application-instance: 41
+14 Via: 1.1 netcache01 (NetCache NetApp/5.2.1R2D2)
+15 

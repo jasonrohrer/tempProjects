@@ -1,0 +1,1 @@
+java -cp .. psi.server.Server 5000 images 100

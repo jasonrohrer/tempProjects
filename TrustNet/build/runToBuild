@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#
+# Modification History
+#
+# 2005-January-10    Jason Rohrer
+# Copied from MUTE.
+#
+
+
+cd Primrose
+chmod u+x ./configure
+./configure
+
+
+cd crypto
+make libcrypto.a
+
+cd ../api
+make libPrimrose.a
+
+cd ../userInterface/text
+make textPrimrose
+
+cd build
+chmod u+x ./makeDistributions
+./makeDistributions latest CustomUnix
+rm -rf ../../../../Primrose_textUI
+cp -r unix/Primrose ../../../../Primrose_textUI
+rm -r unix
+rm -r windows
+cd ../../../..

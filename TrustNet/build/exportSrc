@@ -1,0 +1,2 @@
+cvs -z3 -d:ext:jcr13@cvs.sf.net:/cvsroot/minorgems export -r HEAD minorGems
+mv minorGems/temp/TrustNet ./Primrose

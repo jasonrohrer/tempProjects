@@ -1,0 +1,2 @@
+cd .. 
+jikes ++ -d . randomX/*.java psi/server/*.java psi/client/*.java

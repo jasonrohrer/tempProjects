@@ -1,0 +1,157 @@
+--
+-- file      : 16bit.jal
+-- author    : Eur van Andel
+-- date      : 2002-07-17
+-- purpose   : + - * / two byte numbers, result always integer, can be negative
+-- 
+--
+-- This library is free software; you can redistribute it and/or
+-- modify it under the terms of the GNU Library General Public
+-- License as published by the Free Software Foundation; either
+-- version 2 of the License, or (at your option) any later version.
+--
+-- This library is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-- Library General Public License for more details.
+-- 
+-- You should have received a copy of the GNU Library General Public
+-- License along with this library; if not, write to the
+-- Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+-- Boston, MA  02111-1307, USA.
+
+-- procedure 16 bit addition
+-- input x_high, x_low, y high, y_low
+-- output sum_h, sum_l 
+
+procedure add16(byte in x_h, 
+                byte in x_l, 
+                byte in y_h, 
+                byte in y_l, 
+                byte out sum_h, 
+                byte out sum_l) is
+
+if y_l > ( 255 - x_l ) then 
+   sum_h = ( x_h + y_h ) + 1
+else
+   sum_h = x_h + y_h
+end if
+
+sum_l = x_l + y_l
+
+end procedure
+
+-- procedure 16 bit subtraction
+-- input x_high, x_low, y high, y_low
+-- output delta_h, delta_l
+-- sign is true when result is positive or zero
+
+procedure min16 (  byte in x_h, 
+                     byte in x_l, 
+                     byte in y_h, 
+                     byte in y_l, 
+                     byte out delta_h, 
+                     byte out delta_l, 
+                     bit out sign) is
+if x_h > y_h then 
+   sign = true
+   if x_l > y_l then		-- x_h > y_h AND x_l > y_l
+      delta_h = x_h - y_h
+      delta_l = x_l - y_l
+   elsif x_l == y_l then
+      delta_h = x_h - y_h
+      delta_l = 0
+   elsif x_l < y_l then
+      delta_h = (x_h - y_h) - 1
+      delta_l = x_l - y_l
+   end if
+
+elsif x_h == y_h then 
+   if x_l > y_l then
+      delta_h = 0
+      delta_l = x_l - y_l
+      sign = true
+   elsif x_l == y_l then
+      delta_h = 0
+      delta_l = 0
+      sign = true
+   elsif x_l < y_l then
+      delta_h = 0
+      delta_l = y_l - x_l
+      sign = false
+   end if
+          
+elsif x_h < y_h then 
+   sign = false
+   if x_l > y_l then		
+      delta_h = (y_h - x_h) - 1
+      delta_l = y_l - x_l
+   elsif x_l == y_l then
+      delta_h = y_h - x_h
+      delta_l = 0
+   elsif x_l < y_l then
+      delta_h = y_h - x_h
+      delta_l = y_l - x_l
+   end if
+
+end if
+
+end procedure
+
+
+-- procedure 16 bit multiplication
+-- input x_high, x_low, y high, y_low
+-- output prod_h, prod_l 
+
+procedure mult16(byte in x_h,   -- x * y, or 
+                byte in x_l, 
+                byte in y_h, 
+                byte in y_l, 
+                byte out prod_h, 
+                byte out prod_l) is
+
+prod_h = 0
+prod_l = 0
+
+for y_h loop
+   for 256 loop
+      add16(prod_h, prod_l, x_h, x_l, prod_h, prod_l)
+   end loop
+end loop
+
+for y_l loop
+   add16(prod_h, prod_l, x_h, x_l, prod_h, prod_l)
+end loop
+
+end procedure
+
+-- procedure 16 bit division
+-- input x_high, x_low, y high, y_low
+-- output quot_h, quot_l 
+-- x / y, only integer quotient
+-- x / 0 = 0
+
+procedure div16(byte in x_h,   
+                byte in x_l, 
+                byte in y_h, 
+                byte in y_l, 
+                byte out quot_h, 
+                byte out quot_l) is
+
+var bit sign = true
+
+quot_h = 0
+quot_l = 0
+
+if y_h == 0 & y_l == 0 then 
+   quot_h = 0
+   quot_l = 0
+else 
+   while sign loop
+      min16(x_h, x_l, y_h, y_l, x_h, x_l, sign)
+      add16(quot_h, quot_l, 0, 1, quot_h, quot_l)
+   end loop
+   min16(quot_h, quot_l, 0, 1, quot_h, quot_l, sign)
+end if
+
+end procedure

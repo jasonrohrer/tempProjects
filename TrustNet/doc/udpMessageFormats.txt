@@ -1,0 +1,224 @@
+This document specifies the format of UDP messages for Trusted Sharing.
+
+All UDP messages are limited to 512 bytes in size to respect possible 
+limitations in packet routing capabilities of Internet routers.
+
+
+
+ --
+| Basic Message Structure
+ --
+
+All messages include two parts:
+
+1.  An ASCII text part, terminted by the null character '\0'
+2.  A binary block that contains signature data.
+
+
+
+ --
+| Signature Block Structure
+ --
+
+First, we specify the format of the binary signature block.  Binary was
+chosen for this block to save space.
+
+The signature block consists of the following pieces of data concatonated
+together:
+
+
+--64-bit sender UserID in big-endian format
+--64-bit receiver UserID in big-endian format
+--RSA signature value in binary
+
+UserIDs are unique for each user in the system and assigned by a central 
+server.
+
+The RSA signature is generated using [RSA SSA PKCS #1 v1.5 SHA1].
+The data signed includes the following pieces concatonated together
+
+--The ASCII part of the message *without* the terminating \0
+--The 64-bit receiver UserID
+
+The RSA signature will contain the same number of bits as the RSA key's 
+modulus.  Thus, a 1024-bit RSA keypair will generate 1024 bit signatures 
+(128 bytes) while a 512-bit key will generated 512 bit signatures (64 bytes).
+Because message size is limited, shorter keys are recommended.  The shortest
+valid key for SHA1-based signatures (to accommodate the encryption of a 20-bit
+SHA1 digest) is 368 bits, which results in signatures that use 46 bytes.
+Together with the 8-byte UserIDs in the signature block and the \0 that 
+terminates the ASCII block, we would have a total signature overhead of 63 
+bytes, or 12% of our message payload---quite a large overhead.
+
+The current recommendation is 368 bit keys.  The largest RSA keypair broken
+to date (as of November, 2004) is a 576-bits long.  Thus, a 368-bit key would
+certainly be breakable with a mass-scale distributed computing effort.  
+However, 368 bit keys are sufficient to thwart forgery efforst on the part
+of the current adversary, according to our threat model.
+
+
+The rest of this document describes the format of the ASCII portion for
+various message types.  Quotes are used in examples to indicate the start and 
+end of the ASCII message text.  Quotes ARE NOT included in actual protocol 
+messages.
+
+Every message starts with either the string "firewalled" or the string 
+"not_firewalled", followed by whitespace, to indicate the firewalled status
+of the message sender.    
+
+
+ --
+| Ping Messages
+ --
+
+A Ping message simply contains the string "ping".  This message is used to 
+detect whether a given node is online and reachable.  A node should respond 
+to a Ping message with a Pong message.
+
+Example 1:
+"firewalled ping"
+
+
+
+ --
+| Pong Messages
+ --
+
+A Pong message simply contains the string "pong". This message is sent in 
+response to a Ping message.
+
+Example 1:
+"not_firewalled pong"
+
+
+
+ --
+| Host List Request Messages
+ --
+
+A Host List Request is sent to request a host list.  This message simply
+contains the string "getHostList".
+
+Example 1:
+"firewalled getHostList"
+
+
+
+ --
+| Host List Messages
+ --
+
+A Host List message is sent in response to a Host List Request.  This message
+contains the string "hostList" followed by a series of whitespace-delimited 
+user ID (parts A and B), IP address, an dport number quadruplets.  User IDs
+are split into two 32-bit parts (big endian) with each part encoded as 
+base-10 ASCII.
+
+Example 1:
+"not_firewalled hostList
+0 515 128.233.52.2 8000
+123 289399 88.23.92.1 8000
+0 78934 65.58.28.32 8005
+12 93298333 70.89.234.122 8000"
+
+
+
+ --
+| Search Messages
+ --
+
+A Search message contains the string "search", followed by a unique search ID
+string, and followed by a string of search terms.  
+The interpretation of the search terms is left up to the implentation of a 
+node that is responding to the Search.  If the search terms contain only a 
+hex-encoded SHA1 hash, prefixed by "hash_", the responding node should return 
+a list of files that have that hash value.
+
+Example 1:
+"firewalled search 384772884 song mp3 indie rock"
+
+Example 2:
+"not_firewalled search 93764737 hash_FB322F86DB95BE0670D06631EE27E83C5B64679A"
+
+
+
+ --
+| Search Results Messages
+ --
+
+A Search Results message contains the string "results", followed by the unique
+search ID, and followed by a TCP port number, followed by a result count,
+and followed by a series of filename-hash-size triplets separated by 
+whitespace.  The port number (in base-10 ASCII) indicates which port the node 
+is listening on for incoming TCP connections.  The port number should be 
+specified even if the node is firewalled (and therefore cannot actually 
+receive incoming TCP connections).
+
+Filenames must be URL-safe encoded if they contain whitespace or other
+unsafe characters. 
+
+Hash values must be hex-encoded SHA1 digests.
+
+Size values must be ASCII base-10 representations of file sizes in bytes.
+
+If all results do not fit into a single message, multiple messages can
+be sent.
+
+Example 1:
+"not_firewalled results 384772884 8023 4
+indie+rock+song.mp3 FB322F86DB95BE0670D06631EE27E83C5B64679A 1388923
+latest+indie+rock+song.mp3 661EDD72E501BA4489848829EFEA602E062ECE18 5021822
+song+indie+rock+virgil.mp3 4353D7A02DCD716A7569532587E5AED45173ACBC 2334512
+song+indie+rock+test.mp3 9532587E5AED45173ACBC4353D7A02DCD716A756 1004333"
+
+Example 1:
+"firewalled results 93764737 8090 3
+indie+rock+song.mp3 FB322F86DB95BE0670D06631EE27E83C5B64679A 1388923
+latest+indie+rock+song.mp3 661EDD72E501BA4489848829EFEA602E062ECE18 5021822
+song+indie+rock+virgil.mp3 4353D7A02DCD716A7569532587E5AED45173ACBC 2334512"
+
+
+
+ --
+| About Chunk Transfers
+ --
+
+Because UDP messages have such a tight space constraint, it is difficult
+to build an efficient mechanism for bulk-data transfer using UDP.  Such a
+mechanism would have to account for sender-receiver synchronization and buffer
+limitations (both in the endpoints and in intermediary Internet routers) while
+still limiting the number of message round-trips to ensure reasonable 
+performance.  Furthermore, because the intended communication for chunk
+transfer is one-to-one instead of one-to-many, UDP is not necessarily a good
+fit anyway (it is a good fit, however, for delivering a small search request to
+a large group of nodes). 
+
+Thus, we resort to TCP connections for bulk data transfer.  However, to 
+limit the overhead of many sustained connections during swarmed downloads, 
+we only transfer a single 16KiB chunk through a connection before closing it.
+
+Since firewalled nodes cannot accept inbound TCP connections, we must resort 
+to another mechanism to obtain chunks from them.  If a firewalled node
+sends out a UDP message to another node, a port is opened on the firewall
+through which any number of responses can be routed.  Thus, to obtain
+a chunk from a firewalled node that has sent us search results, we send
+a Connection Request UDP message.  The firewalled node responds by making
+a TCP connection to us over which we can request and receive a chunk.
+
+See tcpMessageFormats.txt for more details.
+
+
+
+ --
+| Connection Request Messages
+ --
+
+A Connection Request message is used by a not_firewalled node to request a 
+connection from a firewalled node.  
+The message consists of a port number (base-10 ASCII encoded) on which the
+firewalled node should make the connection.
+
+Example 1:
+"not_firewalled connectToMe 8091"
+
+

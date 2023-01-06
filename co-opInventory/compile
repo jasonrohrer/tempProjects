@@ -1,0 +1,1 @@
+g++ -g -I ../../.. -o inventory inventory.cpp ../../util/stringUtils.o ../../util/StringBufferOutputStream.o

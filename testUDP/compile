@@ -1,0 +1,1 @@
+g++ -g -I../../.. -o testUDP testUDP.cpp ../../util/stringUtils.o ../../util/StringBufferOutputStream.o

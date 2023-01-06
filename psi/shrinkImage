@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#
+# Modification History
+#
+# 2001-October-4		Jason Rohrer
+# Created.
+#
+
+
+# shrinks a jpeg image to 500x500 (maintaining aspect ratio),
+# reduces quality, and overwrites the existing file
+
+
+# check for at least 1 argument
+if [ ! -n "$1" ]
+then
+  echo "shrinks a jpeg image to 500x500 (maintaining aspect ratio),"
+  echo "reduces quality to 50 (out of 100)," 
+  echo "and overwrites the existing file."
+  echo ""
+  echo "Usage: `basename $0` FILE ..."
+  exit -1
+fi 
+
+
+# look at each argument as a separate word (as opposed to "$*")
+for file in "$@"  # Doesn't work properly if "$@" isn't quoted.
+do
+  result=$(convert "$file" -geometry 500x500 -quality 50 "$file")
+  echo "shrinking jpeg file:  $file"
+done

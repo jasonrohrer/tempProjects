@@ -1,0 +1,1878 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Document xmlns="http://www.apple.com/itms/" pageType="search">
+
+    
+        
+<Path><PathElement displayName="Search Results for: Xiu Xiu" inhibitDragging="false">http://phobos.apple.com/WebObjects/MZSearch.woa/wa/com.apple.jingle.search.DirectAction/search?term=Xiu%20Xiu</PathElement></Path>
+
+<ScrollView leftInset="0" bottomInset="0" topInset="0" horzScroll="as needed" backColor="aac8ed" vertScroll="as needed" rightInset="0">
+
+<Include url="http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/com.apple.jingle.appserver.MZDirectAction/fontStyles"></Include>
+<MatrixView rightInset="0" bottomInset="0" leftInset="0" topInset="0" rowFormat="100%">
+  
+  
+  <VBoxView rightInset="0" topInset="0" bottomInset="0" leftInset="0">
+    <MatrixView rightInset="10" topInset="5" columnFormat="60%,1,20%,1,20%" rowFormat="100%" bottomInset="5" minWidth="705" leftInset="10" stretchiness="1">
+      <VBoxView rightInset="0" topInset="0" bottomInset="0" leftInset="0">
+  <MatrixView rightInset="0" topInset="0" columnFormat="100%" rowFormat="18,*" leftInset="0">
+    <View leftInset="0" topInset="0" rightInset="0"><TextView normalStyle="lucida11Bold" textJust="left" height="18">Top Albums</TextView></View>
+    
+  <MatrixView rightInset="0" columnFormat="50%,50%" rowFormat="*" leftInset="0">
+    
+      
+
+ <VBoxView rightInset="5" bottomInset="10" leftInset="0" stretchiness="1">
+  
+    <MatrixView columnFormat="64,5,100%" rowFormat="*">
+      <ViewAlbum useNameForDraggingPicture="true" draggingName="Fabulous Muscles" id="5390070">
+        <PictureView leftInset="0" proportional="1" width="60" topInset="0" shadowWidth="2" verticalAlignment="top" shadowHeight="3" horizontalAlignment="center" url="http://a1.phobos.apple.com/Music/y2004/m02/d06/h14/s05.kmxqqbbr.60x60-75.jpg" height="60"></PictureView>
+      </ViewAlbum>
+      <View />
+      <VBoxView topInset="0" leftInset="0" rightInset="0">
+        <HBoxView rightInset="0" topInset="2" bottomInset="0" leftInset="0"><TextView squishiness="1" topInset="0" truncation="right" styleSet="basic11" leftInset="0" maxLines="1" textJust="left"><ViewAlbum useNameForDraggingPicture="true" draggingName="Fabulous Muscles" id="5390070"><B>Fabulous Muscles</B></ViewAlbum></TextView></HBoxView>
+        <TextView topInset="5" truncation="right" styleSet="basic11" maxLines="1" textJust="left"><ViewArtist id="3208396">Xiu Xiu</ViewArtist></TextView>
+        <TextView topInset="5" truncation="right" styleSet="basic11" maxLines="1" textJust="left"><ViewGenre id="20">Genre: Alternative</ViewGenre></TextView>  
+
+        
+            
+            <MatrixView columnFormat="*,*" topInset="3">
+                <TextView topInset="3" styleSet="basic11" leftInset="0" textJust="left"><b>$9.90</b></TextView>
+                <Buy buyParams="productType=P&amp;salableAdamId=5390070&amp;price=9900" itemName="Fabulous Muscles">
+                <if cart="true">
+                    
+                        <PictureButtonView width="68" topInset="1" picts="plain,pressed,rollover" url="http://ax.phobos.apple.com.edgesuite.net/images/btn_addalbum.png" leftInset="5" height="13"></PictureButtonView>
+                        <PictureButtonView width="68" topInset="1" picts="plain,pressed,rollover" url="http://ax.phobos.apple.com.edgesuite.net/images/btn_buyalbum.png" leftInset="5" height="13"></PictureButtonView>
+                    
+                    
+                </if>
+                </Buy>
+            </MatrixView>
+            
+            
+              
+        
+      </VBoxView>
+    </MatrixView>
+  
+</VBoxView>
+
+
+
+
+
+
+    
+      
+
+ <VBoxView rightInset="5" bottomInset="10" leftInset="0" stretchiness="1">
+  
+    <MatrixView columnFormat="64,5,100%" rowFormat="*">
+      <ViewAlbum useNameForDraggingPicture="true" draggingName="A Promise" id="3210238">
+        <PictureView leftInset="0" proportional="1" width="60" topInset="0" shadowWidth="2" verticalAlignment="top" shadowHeight="3" horizontalAlignment="center" url="http://a1.phobos.apple.com/Music/y2003/m10/d13/h10/s03.ruxvziov.60x60-75.jpg" height="60"></PictureView>
+      </ViewAlbum>
+      <View />
+      <VBoxView topInset="0" leftInset="0" rightInset="0">
+        <HBoxView rightInset="0" topInset="2" bottomInset="0" leftInset="0"><TextView squishiness="1" topInset="0" truncation="right" styleSet="basic11" leftInset="0" maxLines="1" textJust="left"><ViewAlbum useNameForDraggingPicture="true" draggingName="A Promise" id="3210238"><B>A Promise</B></ViewAlbum></TextView></HBoxView>
+        <TextView topInset="5" truncation="right" styleSet="basic11" maxLines="1" textJust="left"><ViewArtist id="3208396">Xiu Xiu</ViewArtist></TextView>
+        <TextView topInset="5" truncation="right" styleSet="basic11" maxLines="1" textJust="left"><ViewGenre id="20">Genre: Alternative</ViewGenre></TextView>  
+
+        
+            
+            <MatrixView columnFormat="*,*" topInset="3">
+                <TextView topInset="3" styleSet="basic11" leftInset="0" textJust="left"><b>$9.90</b></TextView>
+                <Buy buyParams="productType=P&amp;salableAdamId=3210238&amp;price=9900" itemName="A Promise">
+                <if cart="true">
+                    
+                        <PictureButtonView width="68" topInset="1" picts="plain,pressed,rollover" url="http://ax.phobos.apple.com.edgesuite.net/images/btn_addalbum.png" leftInset="5" height="13"></PictureButtonView>
+                        <PictureButtonView width="68" topInset="1" picts="plain,pressed,rollover" url="http://ax.phobos.apple.com.edgesuite.net/images/btn_buyalbum.png" leftInset="5" height="13"></PictureButtonView>
+                    
+                    
+                </if>
+                </Buy>
+            </MatrixView>
+            
+            
+              
+        
+      </VBoxView>
+    </MatrixView>
+  
+</VBoxView>
+
+
+
+
+
+
+    
+      
+
+ <VBoxView rightInset="5" bottomInset="10" leftInset="0" stretchiness="1">
+  
+    <MatrixView columnFormat="64,5,100%" rowFormat="*">
+      <ViewAlbum useNameForDraggingPicture="true" draggingName="If the 21st Century Didn&#39;t Exist, It Would Be Necessary to Invent It" id="3208777">
+        <PictureView leftInset="0" proportional="1" width="60" topInset="0" shadowWidth="2" verticalAlignment="top" shadowHeight="3" horizontalAlignment="center" url="http://a1.phobos.apple.com/Music/y2003/m10/d13/h09/s03.fcmxgitr.60x60-75.jpg" height="60"></PictureView>
+      </ViewAlbum>
+      <View />
+      <VBoxView topInset="0" leftInset="0" rightInset="0">
+        <HBoxView rightInset="0" topInset="2" bottomInset="0" leftInset="0"><TextView squishiness="1" topInset="0" truncation="right" styleSet="basic11" leftInset="0" maxLines="1" textJust="left"><ViewAlbum useNameForDraggingPicture="true" draggingName="If the 21st Century Didn&#39;t Exist, It Would Be Necessary to Invent It" id="3208777"><B>If the 21st Century Didn&#39;t Exist, It Would Be Necessary to Invent It</B></ViewAlbum></TextView></HBoxView>
+        <TextView topInset="5" truncation="right" styleSet="basic11" maxLines="1" textJust="left">Various Artists</TextView>
+        <TextView topInset="5" truncation="right" styleSet="basic11" maxLines="1" textJust="left"><ViewGenre id="20">Genre: Alternative</ViewGenre></TextView>  
+
+        
+            
+            <MatrixView columnFormat="*,*" topInset="3">
+                <TextView topInset="3" styleSet="basic11" leftInset="0" textJust="left"><b>$9.99</b></TextView>
+                <Buy buyParams="productType=P&amp;salableAdamId=3208777&amp;price=9990" itemName="If the 21st Century Didn&#39;t Exist, It Would Be Necessary to Invent It">
+                <if cart="true">
+                    
+                        <PictureButtonView width="68" topInset="1" picts="plain,pressed,rollover" url="http://ax.phobos.apple.com.edgesuite.net/images/btn_addalbum.png" leftInset="5" height="13"></PictureButtonView>
+                        <PictureButtonView width="68" topInset="1" picts="plain,pressed,rollover" url="http://ax.phobos.apple.com.edgesuite.net/images/btn_buyalbum.png" leftInset="5" height="13"></PictureButtonView>
+                    
+                    
+                </if>
+                </Buy>
+            </MatrixView>
+            
+            
+              
+        
+      </VBoxView>
+    </MatrixView>
+  
+</VBoxView>
+
+
+
+
+
+
+    
+      
+
+ <VBoxView rightInset="5" bottomInset="10" leftInset="0" stretchiness="1">
+  
+    <MatrixView columnFormat="64,5,100%" rowFormat="*">
+      <ViewAlbum useNameForDraggingPicture="true" draggingName="Knife Play" id="3208419">
+        <PictureView leftInset="0" proportional="1" width="60" topInset="0" shadowWidth="2" verticalAlignment="top" shadowHeight="3" horizontalAlignment="center" url="http://a1.phobos.apple.com/Music/y2003/m10/d13/h09/s03.lyxkdiyy.60x60-75.jpg" height="60"></PictureView>
+      </ViewAlbum>
+      <View />
+      <VBoxView topInset="0" leftInset="0" rightInset="0">
+        <HBoxView rightInset="0" topInset="2" bottomInset="0" leftInset="0"><TextView squishiness="1" topInset="0" truncation="right" styleSet="basic11" leftInset="0" maxLines="1" textJust="left"><ViewAlbum useNameForDraggingPicture="true" draggingName="Knife Play" id="3208419"><B>Knife Play</B></ViewAlbum></TextView></HBoxView>
+        <TextView topInset="5" truncation="right" styleSet="basic11" maxLines="1" textJust="left"><ViewArtist id="3208396">Xiu Xiu</ViewArtist></TextView>
+        <TextView topInset="5" truncation="right" styleSet="basic11" maxLines="1" textJust="left"><ViewGenre id="20">Genre: Alternative</ViewGenre></TextView>  
+
+        
+            
+            <MatrixView columnFormat="*,*" topInset="3">
+                <TextView topInset="3" styleSet="basic11" leftInset="0" textJust="left"><b>$9.99</b></TextView>
+                <Buy buyParams="productType=P&amp;salableAdamId=3208419&amp;price=9990" itemName="Knife Play">
+                <if cart="true">
+                    
+                        <PictureButtonView width="68" topInset="1" picts="plain,pressed,rollover" url="http://ax.phobos.apple.com.edgesuite.net/images/btn_addalbum.png" leftInset="5" height="13"></PictureButtonView>
+                        <PictureButtonView width="68" topInset="1" picts="plain,pressed,rollover" url="http://ax.phobos.apple.com.edgesuite.net/images/btn_buyalbum.png" leftInset="5" height="13"></PictureButtonView>
+                    
+                    
+                </if>
+                </Buy>
+            </MatrixView>
+            
+            
+              
+        
+      </VBoxView>
+    </MatrixView>
+  
+</VBoxView>
+
+
+
+
+
+
+    
+  </MatrixView>
+
+  </MatrixView>
+
+
+
+				
+			</VBoxView>
+      <View topInset="0" bottomInset="0" backColor="696969"></View>
+      
+  <MatrixView rightInset="10" topInset="2" columnFormat="100%" rowFormat="12,*" leftInset="10">
+    <View leftInset="0" topInset="0" rightInset="0"><TextView normalStyle="lucida11Bold" textJust="left">Top Songs</TextView></View>
+    
+  
+  
+  
+  
+  
+    <MatrixView rightInset="0" topInset="0" columnFormat="100%" rowFormat="*" leftInset="0">
+      
+      
+        
+          <TextView rightInset="0" truncation="right" styleSet="normal11" leftInset="0" maxLines="1" textJust="left">
+            
+            
+              <ViewAlbum selectedItemId="3210224" id="3210238">20,000 Deaths for Eidelyn Gonzales, 20,000 Deaths for Jamie Peterson</ViewAlbum>
+            
+          </TextView>
+        
+          <TextView rightInset="0" truncation="right" styleSet="normal11" leftInset="0" maxLines="1" textJust="left">
+            
+            
+              <ViewAlbum selectedItemId="3208409" id="3208419">Anne Dong</ViewAlbum>
+            
+          </TextView>
+        
+          <TextView rightInset="0" truncation="right" styleSet="normal11" leftInset="0" maxLines="1" textJust="left">
+            
+            
+              <ViewAlbum selectedItemId="3210220" id="3210238">Apistat Commander</ViewAlbum>
+            
+          </TextView>
+        
+          <TextView rightInset="0" truncation="right" styleSet="normal11" leftInset="0" maxLines="1" textJust="left">
+            
+            
+              <ViewAlbum selectedItemId="3210230" id="3210238">Blacks</ViewAlbum>
+            
+          </TextView>
+        
+          <TextView rightInset="0" truncation="right" styleSet="normal11" leftInset="0" maxLines="1" textJust="left">
+            
+            
+              <ViewAlbum selectedItemId="5390062" id="5390070">Brian the Vampire</ViewAlbum>
+            
+          </TextView>
+        
+          <TextView rightInset="0" truncation="right" styleSet="normal11" leftInset="0" maxLines="1" textJust="left">
+            
+            
+              <ViewAlbum selectedItemId="3210232" id="3210238">Brooklyn Dodgers</ViewAlbum>
+            
+          </TextView>
+        
+          <TextView rightInset="0" truncation="right" styleSet="normal11" leftInset="0" maxLines="1" textJust="left">
+            
+            
+              <ViewAlbum selectedItemId="5390054" id="5390070">Bunny Gamer</ViewAlbum>
+            
+          </TextView>
+        
+          <TextView rightInset="0" truncation="right" styleSet="normal11" leftInset="0" maxLines="1" textJust="left">
+            
+            
+              <ViewAlbum selectedItemId="5390066" id="5390070">Clowne Towne</ViewAlbum>
+            
+          </TextView>
+        
+          <TextView rightInset="0" truncation="right" styleSet="normal11" leftInset="0" maxLines="1" textJust="left">
+            
+            
+              <ViewAlbum selectedItemId="5390050" id="5390070">Crank Heart</ViewAlbum>
+            
+          </TextView>
+        
+          <TextView rightInset="0" truncation="right" styleSet="normal11" leftInset="0" maxLines="1" textJust="left">
+            
+            
+              <ViewAlbum selectedItemId="3208394" id="3208419">Don Diasco</ViewAlbum>
+            
+          </TextView>
+        
+      
+    </MatrixView>
+  
+  
+
+  </MatrixView>
+
+
+
+      <View topInset="0" bottomInset="0" backColor="696969"></View>
+      
+  <MatrixView rightInset="0" topInset="2" columnFormat="100%" rowFormat="12,*" leftInset="10">
+    <View leftInset="0" topInset="0" rightInset="0"><TextView normalStyle="lucida11Bold" textJust="left">Top Artists</TextView></View>
+    
+  <VBoxView topInset="5">
+    
+      <TextView rightInset="9" topInset="0" truncation="right" styleSet="normal11" leftInset="9" maxLines="1" textJust="left"><ViewArtist id="3208396">Xiu Xiu</ViewArtist></TextView>
+    
+  </VBoxView>  
+
+  </MatrixView>
+
+
+
+    </MatrixView>
+	
+  </VBoxView>
+  
+  
+
+  
+
+  
+  
+  </MatrixView></ScrollView>
+
+  <TrackList>
+    <plist version="1.0">
+      <dict>
+        <key>listType</key><string>search</string>
+        <key>priceFormat</key><string>$%0.2f</string>
+        <key>items</key>
+          <array>
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3208394&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2002 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>175032</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Knife Play</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3208419</string>
+    <key>previewURL</key><string>http://a291.phobos.apple.com/Music/y2003/m10/d13/h09/s03.xymukoyl.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2002-02-19T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3208394</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>11</integer>
+    <key>trackNumber</key><integer>1</integer>
+    <key>songName</key><string>Don Diasco</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2002</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3208399&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2002 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>140225</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Knife Play</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3208419</string>
+    <key>previewURL</key><string>http://a1045.phobos.apple.com/Music/y2003/m10/d13/h09/s03.drivjvcw.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2002-02-19T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3208399</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>11</integer>
+    <key>trackNumber</key><integer>2</integer>
+    <key>songName</key><string>I Broke Up (sj)</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2002</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3208401&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2002 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>242927</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Knife Play</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3208419</string>
+    <key>previewURL</key><string>http://a43.phobos.apple.com/Music/y2003/m10/d13/h09/s03.gpqsoohc.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2002-02-19T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3208401</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>11</integer>
+    <key>trackNumber</key><integer>3</integer>
+    <key>songName</key><string>Luber</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2002</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3208403&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2002 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>223027</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Knife Play</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3208419</string>
+    <key>previewURL</key><string>http://a1039.phobos.apple.com/Music/y2003/m10/d13/h09/s03.xdxyyidr.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2002-02-19T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3208403</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>11</integer>
+    <key>trackNumber</key><integer>4</integer>
+    <key>songName</key><string>Hives Hives</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2002</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3208405&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2002 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>234312</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Knife Play</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3208419</string>
+    <key>previewURL</key><string>http://a1913.phobos.apple.com/Music/y2003/m10/d13/h09/s03.nhvteuvw.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2002-02-19T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3208405</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>11</integer>
+    <key>trackNumber</key><integer>5</integer>
+    <key>songName</key><string>Dr. Troll</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2002</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3208407&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2002 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>245667</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Knife Play</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3208419</string>
+    <key>previewURL</key><string>http://a1663.phobos.apple.com/Music/y2003/m10/d13/h09/s03.ogzmszjq.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2002-02-19T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3208407</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>11</integer>
+    <key>trackNumber</key><integer>6</integer>
+    <key>songName</key><string>Over Over</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2002</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3208409&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2002 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>291898</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Knife Play</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3208419</string>
+    <key>previewURL</key><string>http://a306.phobos.apple.com/Music/y2003/m10/d13/h09/s03.zwxqcwsv.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2002-02-19T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3208409</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>11</integer>
+    <key>trackNumber</key><integer>7</integer>
+    <key>songName</key><string>Anne Dong</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2002</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3208411&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2002 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>297238</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Knife Play</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3208419</string>
+    <key>previewURL</key><string>http://a220.phobos.apple.com/Music/y2003/m10/d13/h09/s03.akgimngj.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2002-02-19T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3208411</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>11</integer>
+    <key>trackNumber</key><integer>8</integer>
+    <key>songName</key><string>Suha</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2002</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3208413&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2002 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>220218</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Knife Play</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3208419</string>
+    <key>previewURL</key><string>http://a883.phobos.apple.com/Music/y2003/m10/d13/h09/s03.euzjwvkb.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2002-02-19T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3208413</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>11</integer>
+    <key>trackNumber</key><integer>9</integer>
+    <key>songName</key><string>Poe Poe</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2002</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3208415&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2002 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>200132</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Knife Play</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3208419</string>
+    <key>previewURL</key><string>http://a1565.phobos.apple.com/Music/y2003/m10/d13/h09/s03.lncpwkyq.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2002-02-19T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3208415</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>11</integer>
+    <key>trackNumber</key><integer>10</integer>
+    <key>songName</key><string>Homonculus</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2002</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3208417&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2002 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>322594</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Knife Play</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3208419</string>
+    <key>previewURL</key><string>http://a1168.phobos.apple.com/Music/y2003/m10/d13/h09/s03.jksxcqaa.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2002-02-19T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3208417</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>11</integer>
+    <key>trackNumber</key><integer>11</integer>
+    <key>songName</key><string>Tonite and Today (What Chu&#39; Talkin&#39; &#39;Bout)</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2002</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3208692&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2002 5 Rue Christine</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>248569</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>If the 21st Century Didn&#39;t Exist, It Would Be Necessary to Invent It</string>
+    <key>playlistArtistName</key><string>Various Artists</string>
+    <key>playlistArtistId</key><integer>756101</integer>
+    <key>playlistId</key><string>3208777</string>
+    <key>previewURL</key><string>http://a76.phobos.apple.com/Music/y2003/m10/d13/h09/s03.snkdfhol.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2002-06-04T07:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3208692</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>24</integer>
+    <key>trackNumber</key><integer>6</integer>
+    <key>songName</key><string>Sad Cory-O-Grapher</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2002</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3210218&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2003 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>197973</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>A Promise</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3210238</string>
+    <key>previewURL</key><string>http://a533.phobos.apple.com/Music/y2003/m10/d13/h10/s03.cubvojns.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2003-02-18T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3210218</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>1</integer>
+    <key>songName</key><string>Sad Pony Guerrilla Girl</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2003</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3210220&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2003 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>275295</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>A Promise</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3210238</string>
+    <key>previewURL</key><string>http://a879.phobos.apple.com/Music/y2003/m10/d13/h10/s03.xbbthntd.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2003-02-18T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3210220</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>2</integer>
+    <key>songName</key><string>Apistat Commander</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2003</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3210222&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2003 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>280984</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>A Promise</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3210238</string>
+    <key>previewURL</key><string>http://a1100.phobos.apple.com/Music/y2003/m10/d13/h10/s03.kneqreko.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2003-02-18T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3210222</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>3</integer>
+    <key>songName</key><string>Walnut House</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2003</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3210224&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2003 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>196092</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>A Promise</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3210238</string>
+    <key>previewURL</key><string>http://a984.phobos.apple.com/Music/y2003/m10/d13/h10/s03.wohhaesl.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2003-02-18T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3210224</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>4</integer>
+    <key>songName</key><string>20,000 Deaths for Eidelyn Gonzales, 20,000 Deaths for Jamie Peterson</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2003</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3210226&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2003 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>133328</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>A Promise</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3210238</string>
+    <key>previewURL</key><string>http://a1030.phobos.apple.com/Music/y2003/m10/d13/h10/s03.qaufskaz.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2003-02-18T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3210226</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>5</integer>
+    <key>songName</key><string>Pink City</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2003</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3210228&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2003 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>199134</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>A Promise</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3210238</string>
+    <key>previewURL</key><string>http://a1538.phobos.apple.com/Music/y2003/m10/d13/h10/s03.oclhoxqt.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2003-02-18T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3210228</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>6</integer>
+    <key>songName</key><string>Sad Redux-O-Grapher</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2003</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3210230&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2003 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>194977</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>A Promise</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3210238</string>
+    <key>previewURL</key><string>http://a846.phobos.apple.com/Music/y2003/m10/d13/h10/s03.yclkmscd.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2003-02-18T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3210230</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>7</integer>
+    <key>songName</key><string>Blacks</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2003</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3210232&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2003 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>231201</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>A Promise</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3210238</string>
+    <key>previewURL</key><string>http://a1658.phobos.apple.com/Music/y2003/m10/d13/h10/s03.vvcbwwrr.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2003-02-18T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3210232</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>8</integer>
+    <key>songName</key><string>Brooklyn Dodgers</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2003</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3210234&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2003 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>353941</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>A Promise</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3210238</string>
+    <key>previewURL</key><string>http://a689.phobos.apple.com/Music/y2003/m10/d13/h10/s03.mmmormip.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2003-02-18T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3210234</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>9</integer>
+    <key>songName</key><string>Fast Car</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2003</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=3210236&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2003 5Rc</string>
+    
+    <key>dateModified</key><date>2003-10-22T12:27:14Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>273902</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>A Promise</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>3210238</string>
+    <key>previewURL</key><string>http://a1998.phobos.apple.com/Music/y2003/m10/d13/h10/s03.uubonfpe.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2003-02-18T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>3210236</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>10</integer>
+    <key>songName</key><string>Ian Curtis Wishlist</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2003</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=5390050&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2004 5 Rue Christine</string>
+    
+    <key>dateModified</key><date>2004-03-10T06:44:25Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>199296</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Fabulous Muscles</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>5390070</string>
+    <key>previewURL</key><string>http://a1753.phobos.apple.com/Music/y2004/m02/d06/h14/s05.rbsqepst.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2004-02-17T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>5390050</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>1</integer>
+    <key>songName</key><string>Crank Heart</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2004</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=5390052&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2004 5 Rue Christine</string>
+    
+    <key>dateModified</key><date>2004-03-10T06:44:25Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>179164</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Fabulous Muscles</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>5390070</string>
+    <key>previewURL</key><string>http://a1535.phobos.apple.com/Music/y2004/m02/d06/h14/s05.ojrmonwq.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2004-02-17T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>5390052</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>2</integer>
+    <key>songName</key><string>I Luv the Valley OH!</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2004</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=5390054&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2004 5 Rue Christine</string>
+    
+    <key>dateModified</key><date>2004-03-10T06:44:25Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>160380</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Fabulous Muscles</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>5390070</string>
+    <key>previewURL</key><string>http://a19.phobos.apple.com/Music/y2004/m02/d06/h14/s05.czwornnj.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2004-02-17T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>5390054</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>3</integer>
+    <key>songName</key><string>Bunny Gamer</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2004</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=5390056&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2004 5 Rue Christine</string>
+    
+    <key>dateModified</key><date>2004-03-10T06:44:25Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>265681</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Fabulous Muscles</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>5390070</string>
+    <key>previewURL</key><string>http://a1430.phobos.apple.com/Music/y2004/m02/d06/h14/s05.lqkqtict.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2004-02-17T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>5390056</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>4</integer>
+    <key>songName</key><string>Little Panda McElroy</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2004</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=5390058&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2004 5 Rue Christine</string>
+    
+    <key>dateModified</key><date>2004-03-10T06:44:25Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>286348</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Fabulous Muscles</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>5390070</string>
+    <key>previewURL</key><string>http://a1877.phobos.apple.com/Music/y2004/m02/d06/h14/s05.tjcifyeh.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2004-02-17T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>5390058</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>5</integer>
+    <key>songName</key><string>Support Our Troops OH! (Black Angels OH!)</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2004</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=5390060&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2004 5 Rue Christine</string>
+    
+    <key>dateModified</key><date>2004-03-10T06:44:25Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>250845</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Fabulous Muscles</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>5390070</string>
+    <key>previewURL</key><string>http://a470.phobos.apple.com/Music/y2004/m02/d06/h14/s05.wxodohck.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2004-02-17T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>5390060</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>6</integer>
+    <key>songName</key><string>Fabulous Muscles (Mama Black Widow Version)</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2004</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=5390062&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2004 5 Rue Christine</string>
+    
+    <key>dateModified</key><date>2004-03-10T06:44:25Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>158869</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Fabulous Muscles</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>5390070</string>
+    <key>previewURL</key><string>http://a567.phobos.apple.com/Music/y2004/m02/d06/h14/s05.thkdbkki.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2004-02-17T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>5390062</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>7</integer>
+    <key>songName</key><string>Brian the Vampire</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2004</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=5390064&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2004 5 Rue Christine</string>
+    
+    <key>dateModified</key><date>2004-03-10T06:44:25Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>213111</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Fabulous Muscles</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>5390070</string>
+    <key>previewURL</key><string>http://a57.phobos.apple.com/Music/y2004/m02/d06/h14/s05.uyltgfrl.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2004-02-17T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>5390064</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>8</integer>
+    <key>songName</key><string>Nieces Pieces (Boat Knife Version)</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2004</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=5390066&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2004 5 Rue Christine</string>
+    
+    <key>dateModified</key><date>2004-03-10T06:44:25Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>230666</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Fabulous Muscles</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>5390070</string>
+    <key>previewURL</key><string>http://a613.phobos.apple.com/Music/y2004/m02/d06/h14/s05.inlctlly.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2004-02-17T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>5390066</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>9</integer>
+    <key>songName</key><string>Clowne Towne</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2004</integer>
+  
+</dict>
+                
+            
+                
+                
+                    <dict>
+  
+	
+    <key>kind</key><string>song</string>
+    <key>artistName</key> <string>Xiu Xiu</string>
+    <key>artistId</key><string>3208396</string>
+    <key>bitRate</key><integer>128</integer>
+    
+      <key>buyParams</key><string>productType=S&amp;salableAdamId=5390068&amp;price=990</string>
+      <key>price</key><integer>990</integer>
+    
+    
+    
+    <key>copyright</key><string>&#8471; 2004 5 Rue Christine</string>
+    
+    <key>dateModified</key><date>2004-03-10T06:44:25Z</date>
+    <key>discCount</key><integer>1</integer>
+    <key>discNumber</key><integer>1</integer>
+    <key>duration</key><integer>314396</integer>
+    <key>explicit</key><integer>0</integer>
+    
+    <key>fileExtension</key><string>m4p</string>
+    <key>genre</key><string>Alternative</string>
+    <key>genreId</key><integer>20</integer>
+    <key>playlistName</key><string>Fabulous Muscles</string>
+    <key>playlistArtistName</key><string>Xiu Xiu</string>
+    <key>playlistArtistId</key><integer>3208396</integer>
+    <key>playlistId</key><string>5390070</string>
+    <key>previewURL</key><string>http://a1937.phobos.apple.com/Music/y2004/m02/d06/h14/s05.xfuraijc.p.m4p</string>
+    <key>previewLength</key><integer>30</integer>
+
+    <key>relevance</key><string>1.0</string>
+    <key>releaseDate</key><string>2004-02-17T08:00:00Z</string>
+    <key>sampleRate</key><integer>44100</integer>
+    <key>songId</key><integer>5390068</integer>
+    <key>comments</key><string></string>    
+    <key>trackCount</key><integer>10</integer>
+    <key>trackNumber</key><integer>10</integer>
+    <key>songName</key><string>Mike</string>
+    
+    <key>vendorId</key><integer>1143</integer>
+    <key>year</key><integer>2004</integer>
+  
+</dict>
+                
+            
+          </array>
+      </dict>
+    </plist>
+  </TrackList>
+
+
+
+</Document>
+
+
+
+
+

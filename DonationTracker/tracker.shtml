@@ -1,0 +1,48 @@
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+
+<!-- Your PayPal email -->
+<input type="hidden" name="business" value="user@changeMe.net">
+
+<!-- The name of the "item" that is shown to the donor -->
+<input type="hidden" name="item_name" value="changeMe fund">
+
+<!-- The thank-you page that is shown after a donation is made -->
+<input type="hidden" name="return" value="http://changeMe.net/thanks.shtml">
+
+<!-- The page shown if the donor cancels before the payment is complete -->
+<input type="hidden" name="cancel_return" value="http://changeMe.net">
+
+<!-- The location of your donationTracker.pl script -->
+<input type="hidden" name="notify_url" value="http://changeMe.net/cgi-bin/donationTracker.pl">
+
+
+<input type="hidden" name="cmd" value="_xclick">
+<input type="hidden" name="no_shipping" value="1">
+<input type="hidden" name="no_note" value="1">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="tax" value="0">
+<input type="hidden" name="custom" value="donation_tracker">
+
+
+<TABLE BORDER=0 CELLSPACING=5 CELLPADDING=0>
+<TR>
+<TD>
+<TABLE BORDER=0 CELLSPACING=5 CELLPADDING=0>
+<TR>
+<TD VALIGN=MIDDLE COLSPAN=2>Want to support this project?  Donate a dollar.<BR>
+</TD>
+</TR>
+<TR> 
+<TD VALIGN=MIDDLE><input type="image" src="https://www.paypal.com/images/x-click-but04.gif" border="0" name="submit" alt="Make payments with PayPal - it's fast, free and secure!" ALIGN=MIDDLE></TD>
+<TD VALIGN=MIDDLE>
+[ <!--#include virtual="/donationData/donationCount.html" --> donations totalling $<!--#include virtual="/donationData/overallSum.html" --> ]</TD>
+</TR>
+</TABLE>
+</TD>
+<TD>
+<A HREF="http://changeMe.net/cgi-bin/graphGrabber.pl?image=full"><IMG SRC="http://changeMe.net/cgi-bin/graphGrabber.pl?image=thumb" BORDER=0></A>
+</TD>
+</TR>
+</TABLE>
+
+</form>

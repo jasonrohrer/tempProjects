@@ -1,0 +1,2 @@
+g++ -g -I../../.. -lpthread -o agingFaceWeb agingFaceWeb.cpp ../../../minorGems/system/linux/ThreadLinux.cpp ../../../minorGems/system/linux/MutexLockLinux.cpp ../../../minorGems/network/linux/SocketLinux.cpp ../../../minorGems/network/linux/SocketServerLinux.cpp ../../../minorGems/io/file/linux/PathLinux.cpp ../../../minorGems/io/linux/TypeIOLinux.cpp
+

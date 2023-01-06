@@ -1,0 +1,10 @@
+#
+# Modification History
+#
+# 2001-May-22   Jason Rohrer
+# Created.
+# Changed to include new subfolders.
+# Added modification history.
+#
+
+jikes ++ os/system/*.java os/system/internal/*.java os/system/internal/gui/*.java os/system/exception/*.java os/objects/interfaces/*.java os/objects/implementations/*.java

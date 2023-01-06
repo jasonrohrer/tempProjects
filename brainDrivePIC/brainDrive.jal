@@ -1,0 +1,545 @@
+include 16f84_10
+include jdelay
+include 16bit
+include oper2416
+
+
+
+
+
+
+-- flash LEDs on pin A0 and A1
+
+pin_a0_direction = output
+pin_a1_direction = output
+
+-- status LED on pin A2
+pin_a2_direction = output
+
+-- turn all lights off to start
+pin_a0 = on
+pin_a1 = on
+pin_a2 = on
+
+
+
+include nullErrorState
+
+
+
+
+
+-- called to report a status message
+procedure reportStatus( byte in statusNumber ) is
+    for statusNumber loop
+        pin_a2 = off
+        delay_500ms
+        pin_a2 = on
+        delay_500ms
+    end loop
+
+    -- pause 2 seconds 
+    delay_1s( 2 )
+end procedure
+
+
+
+-- mode button
+pin_b0_direction = input
+
+-- up button
+pin_b1_direction = input
+
+-- down button
+pin_b2_direction = input
+
+
+
+const byte modeToggleButton = 0
+const byte upButton = 1
+const byte downButton = 2
+
+
+
+-- checks if button is down at this instant
+-- button down if pin pulled to ground
+function isButtonDown( byte in buttonID ) return bit is
+    if buttonID == modeToggleButton	then
+         return ! pin_b0
+    elsif buttonID == upButton then
+         return ! pin_b1
+    end if 
+    
+    -- default (elimiate else clause to reduce code size)     
+    return ! pin_b2    
+end function
+
+
+-- checks if button is held down long enough (100ms button repeat delay)
+function isButtonHeldDown( byte in buttonID ) return bit is
+    if isButtonDown( buttonID )	then
+         delay_100ms
+         return isButtonDown( buttonID )
+    end if
+
+    -- default (elimiate else clause to reduce code size)     
+    return false
+end function
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- start out at 5 Hz
+
+var byte startFrequencyHz = 1
+var byte endFrequencyHz = 10
+
+-- flash delays in base delay units
+
+var byte startFlashDelay
+var byte endFlashDelay
+
+var byte currentFlashDelay
+
+
+
+-- base delay unit:  10 ms
+-- => base period = 20 ms
+-- => max frequency 50 Hz
+
+var byte maxFrequencyHz = 50
+
+
+-- converts Hz frequencies to flash delays (in base delay units)
+procedure getFlashDelays is
+
+    -- 50 delay periods per second
+    startFlashDelay = 50 / startFrequencyHz
+    endFlashDelay = 50 / endFrequencyHz
+
+end procedure
+
+
+
+
+-- true for alternating left-right
+-- false for both eyes in synch
+var bit currentLightStyle = true
+
+
+-- true for forward, false for backward
+-- backward used in ping pong end mode
+var bit currentSessionDirection = true
+
+
+const byte stopEndMode = 1
+const byte restartEndMode = 2
+const byte pingPongEndMode = 3
+const byte holdEndMode = 4
+
+-- for looping through modes
+const byte maxEndModeNumber = 4
+
+var byte sessionEndMode = stopEndMode
+
+
+
+
+-- 24-bit numbers represented by 3 bytes
+-- S = super-order
+-- H = high-order
+-- L = low-order
+
+
+-- session time is a 24-bit number representing the time in base delay units
+
+-- default session time is 32 seconds (3200 base units)
+
+var byte sessionTimeS = 0x00
+var byte sessionTimeH = 0x0C
+var byte sessionTimeL = 0x80
+
+
+-- session times are associated with preset numbers that represent
+-- the log_2 of the session time plus 1
+-- Thus, as the preset number increases by 1, the session time doubles
+-- The default preset number is 6 = ( log_2( 32 ) + 1 )
+-- The lowest preset number, 1, is a 1-second session
+--
+-- Note:
+-- Original plans were to display the session time setting in flashes
+-- for Hours, Minutes, and Seconds, but code memory size was too limited
+-- Using numbered presets takes much less code, but the device will not
+-- be self-explanatory (a reference card will be needed to map preset
+-- numbers to times)
+var byte sessionTimePresetNumber = 6
+
+
+
+-- start time
+var byte currentSessionTimeS 
+var byte currentSessionTimeH 
+var byte currentSessionTimeL 
+
+
+procedure zeroCurrentSessionTime is
+    currentSessionTimeS = 0x00 
+    currentSessionTimeH = 0x00 
+    currentSessionTimeL = 0x00
+end procedure
+
+zeroCurrentSessionTime
+
+
+-- How to compute flash delay from current time point 
+
+-- using floating-point arith
+-- sessionFraction = currentTime / sessionTime
+-- current delay =  currentTime / sessionTime * ( endFlashDelay ) + 
+--                  (1- currentTime / sessionTime) * startFlashDelay
+
+
+-- using integer arith 
+-- current delay = (endFlashDelay * currentTime) / sessionTime +
+--                 ( startFlashDelay - 
+--                        ( startFlashDelay * currentTime ) / sessionTime ) 
+
+-- consolidating division
+-- current delay = startFlashDelay + 
+--                 ( endFlashDelay * currentTime - 
+--                   startFlashDelay * currentTime ) / sessionTime 
+
+-- avoiding negative working numbers
+-- current delay = ( ( startFlashDelay * sessionTime + 
+--                     endFlashDelay * currentTime ) - 
+--                   startFlashDelay * currentTime ) / sessionTime
+
+procedure computeFlashDelay is
+    getFlashDelays
+
+    -- save registers:  reuse variable a
+    -- described in comments as a_1, a_2, etc.
+
+    -- a_1 = endFlashDelay * currentTime
+    var byte aS, aH, aL
+    
+    mult2416( currentSessionTimeS, currentSessionTimeH, currentSessionTimeL,
+	          0, endFlashDelay,
+              aS, aH, aL )
+
+    -- x = startFlashDelay * sessionTime
+    var byte xS, xH, xL
+
+    mult2416( sessionTimeS, sessionTimeH, sessionTimeL, 0, startFlashDelay,
+              xS, xH, xL );
+
+    
+
+    -- a_2 = startFlashDelay * sessionTime + endFlashDelay * currentTime 
+    -- a_2 = x + a_1
+
+    add2424( xS, xH, xL, aS, aH, aL, aS, aH, aL );
+
+    
+    -- b = ( startFlashDelay * currentTime )
+    var byte bS, bH, bL
+
+    mult2416( currentSessionTimeS, currentSessionTimeH, currentSessionTimeL,
+	          0, startFlashDelay,
+              bS, bH, bL )
+
+    -- a_3 = ( ( startFlashDelay * sessionTime + 
+    --         endFlashDelay * currentTime ) - 
+    --       startFlashDelay * currentTime )
+    --   = x + a_1 - b
+    --   = a_2 - b
+    var bit signBit
+
+    min2424( aS, aH, aL, bS, bH, bL, aS, aH, aL, signBit )
+
+
+
+    -- d = a_3 / sessionTime
+    -- dL is actually the current flash delay
+    var byte dS, dH
+
+    div2424( aS, aH, aL, 
+             sessionTimeS, sessionTimeH, sessionTimeL,
+             dS, dH, currentFlashDelay );
+
+    -- if dS != 0 | dH != 0 then
+        -- unexpected:  d should always be an 8-bit number
+    --    errorState( 4 )
+    -- end if
+
+    -- currentFlashDelay = dL
+
+end procedure
+
+
+
+
+-- our modes
+const byte runMode = 0
+const byte setStartFrequencyMode = 1
+const byte setEndFrequencyMode = 2
+const byte setSessionTimeMode = 3
+const byte setSessionEndMode = 4
+const byte setLightStyleMode = 5
+const byte stoppedMode = 6
+
+-- for looping through modes
+const byte maxModeNumber = 6
+
+
+var byte currentMode = runMode
+
+
+
+procedure flickLights is
+    pin_a0 = off
+    pin_a1 = off
+    delay_200ms
+    pin_a0 = on
+    pin_a1 = on
+    delay_200ms
+end procedure
+
+
+
+-- used by the displayValue procedure
+procedure flashLights( bit in leftFlash, bit in rightFlash, 
+                       byte in numFlashes ) is
+    for numFlashes loop
+      -- turn lights on based on our parameters
+      pin_a0 = ! leftFlash
+      pin_a1 = ! rightFlash
+      delay_200ms
+
+      -- turn both lights off
+      pin_a0 = on
+      pin_a1 = on 
+      delay_200ms
+   end loop
+end procedure
+
+
+
+-- displays a value in base-10 using left and right light flashes as digits
+procedure displayValue( byte in value ) is
+   delay_500ms
+
+   var byte tensDigit = value / 10
+
+   var byte onesDigit = value - 10 * tensDigit
+
+   -- flash left light for tens digit
+   flashLights( true, false, tensDigit )
+
+   -- flash right light for ones digit
+   flashLights( false, true, onesDigit )
+
+end procedure
+
+
+
+-- adjust a value according to presses of the up/down buttons
+-- min value is 1
+procedure adjustValueWithButtons( byte in out value, 
+                                  byte in maxValue ) is
+    var bit valueChanged = false
+
+    while isButtonHeldDown( upButton ) loop
+        if value < maxValue then
+            value = value + 1
+        end if
+
+        -- flick lights to indicate that button has been pressed
+        flickLights
+        valueChanged = true
+    end loop
+
+    while isButtonHeldDown( downButton ) loop
+        if value > 1 then
+            value = value - 1
+        end if
+
+        -- flick lights to indicate that button has been pressed
+        flickLights
+        valueChanged = true
+    end loop
+
+    if valueChanged then
+        displayValue( value )
+    end if
+end procedure
+
+
+
+-- flash lights according to current light style with a given delay
+-- delay specified in number of base units
+procedure fullFlash( byte in delay ) is
+    pin_a0 = off
+    -- a1 is opposite of a0 if light style is true
+    pin_a1 = currentLightStyle
+        
+    delay_10ms( delay)
+        
+    pin_a0 = on
+    -- a1 is opposite of a0 if light style is true
+    pin_a1 = ! currentLightStyle
+        
+    delay_10ms( delay )
+end procedure
+
+
+
+-- start up
+
+forever loop
+    -- compute our new flash delay 
+    computeFlashDelay
+
+    if currentMode == runMode then
+       
+        -- flash with our current delay
+        fullFlash( currentFlashDelay )
+
+
+        -- increment our session time
+
+        -- watch for end of session
+        var bit signBit
+                                     
+        if currentSessionDirection then
+            -- forward through session
+            
+            -- optimize:
+            -- use add2424 function here since we must use it elsewhere
+            -- avoid using add2416 to reduce code size
+            add2424( 
+               currentSessionTimeS, currentSessionTimeH, currentSessionTimeL,
+               0, 0, 2 * currentFlashDelay,
+               currentSessionTimeS, currentSessionTimeH, currentSessionTimeL );
+        else
+            -- backward through session
+            min2416( 
+               currentSessionTimeS, currentSessionTimeH, currentSessionTimeL,
+               0, 2 * currentFlashDelay,
+               currentSessionTimeS, currentSessionTimeH, currentSessionTimeL,
+               signBit );
+        end if
+
+
+        if currentSessionDirection then 
+            -- going forward, watch for end
+
+            var byte tempS, tempH, tempL
+            min2424( 
+                sessionTimeS, sessionTimeH, sessionTimeL,
+                currentSessionTimeS, currentSessionTimeH, currentSessionTimeL,
+                tempS, tempH, tempL, signBit )
+        end if
+        -- else going backward, and our sign bit is set correctly above
+            
+
+        if ! signBit then
+            -- reach end of session
+
+            -- clamp our session time at the end
+            currentSessionTimeS = sessionTimeS
+            currentSessionTimeH = sessionTimeH
+            currentSessionTimeL = sessionTimeL
+          
+            if ! currentSessionDirection then
+                -- clamp at beginning
+                zeroCurrentSessionTime
+            end if
+
+            if sessionEndMode == stopEndMode then
+                currentMode = stoppedMode
+            elsif sessionEndMode == restartEndMode then
+                -- return to beginning
+                zeroCurrentSessionTime
+            elsif sessionEndMode == pingPongEndMode then
+                -- switch directions
+                currentSessionDirection = ! currentSessionDirection 
+            end if
+        end if
+    else 
+       -- turn both lights off
+        pin_a0 = on
+        pin_a1 = on
+
+        -- reset session time and direction
+        zeroCurrentSessionTime
+        currentSessionDirection = true
+
+
+
+    if currentMode == setStartFrequencyMode then
+        adjustValueWithButtons( startFrequencyHz, maxFrequencyHz );
+
+    elsif currentMode == setEndFrequencyMode then
+        adjustValueWithButtons( endFrequencyHz, maxFrequencyHz );
+
+    elsif currentMode == setSessionTimeMode then
+
+        adjustValueWithButtons( sessionTimePresetNumber, 16 );
+        
+        -- recompute session time from preset number
+        -- start at 50 units and double according to sessionTimePresetNumber
+        -- Thus, for preset number 1, we get our correct preset of 100 units
+        sessionTimeS = 0
+        sessionTimeH = 0
+        sessionTimeL = 50
+
+        for sessionTimePresetNumber loop
+            mult2416( sessionTimeS, sessionTimeH, sessionTimeL, 
+                      0, 2,
+                      sessionTimeS, sessionTimeH, sessionTimeL );
+        end loop
+
+
+    elsif currentMode == setSessionEndMode then
+        adjustValueWithButtons( sessionEndMode, maxEndModeNumber );
+
+    else   -- set light style mode
+        if isButtonHeldDown( upButton ) then
+            currentLightStyle = ! currentLightStyle
+            
+            -- display the new light style
+            fullFlash( 20 )
+           
+        end if    
+
+    end if 
+    end if
+
+
+    while isButtonHeldDown( modeToggleButton ) loop
+       
+       currentMode = currentMode + 1
+
+       if currentMode > maxModeNumber then
+           currentMode = 0
+       end if
+       
+       -- flick to indicate button press
+       flickLights
+
+       -- delay before moving on to next mode
+       delay_500ms
+    end loop
+
+
+end loop

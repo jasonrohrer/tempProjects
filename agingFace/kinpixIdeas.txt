@@ -1,0 +1,117 @@
+                 
+
+Here are some ideas
+
+
+Top page
+
+
+                  k i n p i x
+
+             
+             You are invited to the family
+           album of the internet
+
+           Let's see how good you are at
+           recognizing fellow kin
+
+           We will present you with a baby face
+           and four pixs of grownups
+
+           One of them is their mom or dad
+
+           Klick and see whether you are right
+
+
+Buttons on this page (numbers are only there so that I later
+expand on each button).
+Same rack of buttons should be on all pages!
+
+1) play round
+2) login 
+3) why login?
+4) add immage pair
+5) why this game
+6) about us
+7) rational for ratings
+8) confidentiality
+
+Subpage 1)
+
+When you click play round then you immediately are thrown into
+the first round
+
+"next round (any key)" has to be easily accessable
+
+Alternate: A shrunken version of current pixs with
+ralationship appears on top right and the next round
+is immediately displayed after you choose
+
+If they want to see the previous pixs in large again
+they can use the back button
+
+The read corners around the baby and parent are not strong enough
+Suggestion: Drop the three other pics to a slightly lower level
+and move the parent up (closer to baby)
+
+Subpage 2)
+Login is useful if you want to see how good you are
+compared to other netizens
+
+Name and password should be easily to remember
+
+We collect some basic info (voluntary) so that
+we can see whether grandma's are really better
+at this game
+
+Subpage 3)
+
+ Make up any name (that you can remember easily)!
+
+ We will keep tallies so that you can compare your skill 
+against uncle Joe and grandma Ottilie
+
+ The password keeps others from using your name
+
+Subpage 4)
+ 
+ Show a little sample picture of BABY image
+and PARENTT image
+ Use the term baby and parent
+
+Subpage 5)
+
+ We want to create a game that is fun for all age groups
+and not just for "adults"
+
+ Our background is in the design of "learning algorithms".
+So the task is to find methods that will automatically present 
+each parent with similar looking decoys. 
+In other words we are trying to make the game challenging 
+for the you
+We have to do this based on history of each picture
+in the game
+
+Subpage 6:
+
+Manfred K. Warmuth (link) teaches Computer Science
+and the University of California at Santa Cruz.
+His interests include: Machine Learning, Statistics, Game Theory,
+Bee Keeping
+
+Jason .....
+
+
+Subpage 7:
+To be filled in
+
+Subpage 8: We will not use your picture for any purpose
+and will keep info about sex and age confidential.
+We might publish papers about
+the ratings schemes, etc, in academic journals.
+           
+
+          
+
+
+

@@ -1,0 +1,354 @@
+
+November 5, 2004
+
+We can create an abstract getConnection function that takes a node's IP, 
+UDP port, TCP port, and firewall status and then returns an open socket 
+connection (or a failure).  This function could send a Connection Request 
+over UDP and listen on a new socket (picking a unique port at random from a 
+"port manager" class) for an incoming connection (using a timeout to give up 
+after a while). 
+
+We need a wrapper around our UDP message receiver so we can register message
+handling functions and drop unhandled messages.
+
+Instead of having multiple layers between the GUI and the searching thread
+(with semaphore synchronization), we can think about how to have a *single*
+result handler function in the GUI that we can re-configure for each search
+to ignore old results.
+
+Thus, the API should allow us to register our search result handler once at
+startup (instead of specifying a new handler for each search).  Then, our
+"search" function can simply send out a search message and then return... if
+we want it to be dynamic and send to more nodes as needed (until we get 
+"enough" results), we can create a thread to monitor the incoming results for 
+matches but do nothing else with those results (so that the GUI's search 
+handler will get the results too).  After seeing enough results come in, the
+search thread can stop sending out search requests and return.
+
+We can have a slider in the search UI to let the user set the trust level
+of nodes that we're searching...  as the slider moves, we can filter results
+in realtime to only show those that meet the trust requirement.
+
+API functions:
+
+registerSearchResultsHandler();
+
+search( char *searchTermsOrHashValue, int desiredResults, float trustLevel );
+
+// get a file from a selection of hosts (both firewalled and not) by swarming
+getFile( char **ipAddresses, 
+         unsigned short *udpPorts, 
+         unsigned short *tcpPorts,
+         char *firewallStatuses,
+         char *fileHash );
+
+
+
+November 14, 2004
+
+Have a lot done...
+
+Next:
+X-Add UDP message to protocol for requesting a host list.
+X-Add code for interacting with web-based host caches.
+X-Maybe trust server should act as host cache so that users can sign their
+  IP addresses (to avoid false IP/ID pairings inserted by attackers).
+  After all, an IP/port by itself does you no good without a user ID (since
+  every UDP message has a user ID in it).
+X-Add simple text-mode commands for testing
+X-Add implementation of API download function.
+X-Test two nodes interacting.
+
+
+
+December 5, 2004
+
+Found apparent bug in SocketUDPUnix's use of select.  
+Working on a test program to isolate it.
+
+
+
+January 3, 2005
+
+Apparently fixed the bug mentioned above.
+
+Changed so that our trust relationship with a user (trusted or distrusted)
+overrides the user's system-wide trust level.  Thus, we will always allow
+our trusted friends to download from us, and we will always deny the
+downloads of our explicit enemies.
+
+Added API and trustServer code for getting lists of trusted/distrusted
+users (trust sets).  Still need to add implementation for this function
+in the UserManager (see fixme).
+
+
+
+January 6, 2005
+
+Got trustServer script in synch with UserManager.  All functions seem to work
+now.
+
+Added trust controls to text UI... they work.  Checked for bugs and memory
+leaks.
+
+Next:
+x-Cache trusted/distrusted lists locally.
+
+
+Got list caching working... checked for leaks.
+
+Worked on first idea for trust metric update algorithm (in docs directory).
+
+
+
+Next:
+--Fix to make quitting faster (use bouded semaphore waits to make thread
+  sleeps interruptable).
+--Implement algorithm on server.
+--Add controls to text UI to set various trust levels.
+
+
+January 7, 2005
+
+Problem with trust score update algorithm (in small initial tests):
+
+Loops in tree can be used to increase a users score.  Consider the following
+tree (sorry... ascii):
+
+     jcr
+    /  \
+  bob  sam
+   |
+  afx
+
+jcr is the root.  The algorithm generates the following scores:
+jcr 1.0
+bob 0.5
+sam 0.5
+afx 0.25
+
+This is a reasonable set of scores.  Likewise, if we add an extra arc:
+
+     jcr
+    /  \
+  bob  sam
+   |  /
+   | /
+  afx
+
+(in other words, sam now trusts afx), then we get a reasonable set of scores:
+jcr 1.0
+bob 0.5
+sam 0.5
+afx 0.5
+
+afx is now trusted by 2 "level2" users, so her score is boosted from 0.25
+to 0.5
+
+However, what happens if we add a looping arc like this:
+
+     jcr____   
+    /  \    |
+  bob  sam  |
+   |    |___|
+  afx
+
+
+sam now trusts jcr13.  Look at the scores that are generated (in the limit?):
+
+jcr 1.0
+bob 0.66666
+sam 0.6666
+afx 0.3333
+
+So, sam has managed to boost her score just by trusting the root.  This
+violates the requirement that users cannot increase their score by trusting
+other users.
+
+Ideally, we need to avoid loops back to an ancestor.  Multiple paths from 
+the root to a given node are okay, however.  Consider this tree:
+
+
+
+     jcr
+    /  \
+   |  sam   
+   |  /
+   | /
+  bob  
+   |
+  afx
+
+
+There are two paths to both bob and afx from the root, and the following
+scores result:
+
+jcr 1.0
+bob 0.75
+sam 0.5
+afx 0.375
+
+bob's score gets a boost from sam's trust, as does afx's.
+
+Similarly, we would want to allow a small boost for sam in this tree:
+
+     jcr   __
+    /  \  /  |   
+  bob  sam   |
+   |         |
+  afx        |
+   |_________|
+
+The current algorithm gives the following scores:
+
+jcr 1.0
+bob 0.5
+sam 0.625
+afx 0.25
+
+
+So, how to we prevent ancestor loops in an efficient/simple way without
+disturbing these other nice properties (simply preventing a node from
+being visited twice won't work).
+
+Essentially, whenever your child (or granchild, etc.) trusts you, it should
+not increase your trust score at all.
+
+Maybe we need a temp list for each user of ancestors.  Whenever we reach a 
+node B from node A, we can add node A's ancestor list to node B's list.
+
+When we are about to go to node D in the tree from node C, we check node
+C's ancestor list to make sure that D is not an ancestor of C.  
+
+Did this using hashes in perl... it works for the test cases above.
+
+Changed code to stop when set empty.
+
+
+Got distrust part of algorithm working.  Consider this trust tree:
+
+     jcr
+    /  \
+  bob  sam
+   |
+  afx
+
+Now suppose afx distrusts sam.  We get the following scores:
+jcr 1.0
+bob 0.5
+sam 0.25
+afx 0.25
+
+afx's distrust is not strong enough to override jcr's full trust.
+
+What happens if the root user is distrusted by someone?  Then the score
+is docked, which is not a problem.
+
+What about fake structures in the tree use to inflate trust scores... like
+
+    bob1
+  /     \           \
+fake1   fake2  ...  fakeN
+   \     |          /
+        bob2
+
+Suppose bob1 is trusted by the root, so he has a score of 0.5.  Then each
+fake user has a score of 0.25.  If there are at least 8 fake users all trusting
+bob2, then bob2 will have a score of 1.0
+
+Such a structure is possible at any point in the tree to fluff a user's score
+up to 1.0 (though more fake users are needed as we get farther from the root).
+
+Solution:  make sure nextSet is a true set (no multiple membership).
+This will deal with this simple structure, but more complicated structures
+are possible that will have the same effect (chains of fake users between
+bob1 and bob2 of various lengths... actually, chains are not dangerous, because
+for each additional step in the chain, the score contribution is cut in half).
+
+Maybe more complicated structures are not a problem... more thought here.
+
+Anyway, single membershipt in each currentSet is still a must.
+
+
+January 8, 2005
+
+And membership in current distrusted set?  Still should be single, to prevent
+users from generating lots of fake accounts to blacklist another user.
+
+Note that preventing a user from getting boosted by appearing more than
+once in a given tree level also will ignore some legitimate trust 
+relationships.
+
+However, if a user appears in each level of the tree, then their summed trust
+score (0.5 + 0.25 + 0.125 + ...) will approach 1.  So, being trusted by
+lots of users will still boost a users score... but it is impossible for
+a score to be boosted by being trusted by more than one user on a given
+level.
+
+So, if sam and bob both trust afx, afx's score will not be boosted beyond
+0.25:
+
+     jcr
+    /  \
+  bob  sam
+   |
+  afx
+
+However, if jcr also trusts afx, then afx's score will be boosted to 0.75
+
+
+
+To Do:
+
+Server:
+X-Need to update description of algorithm to cover the ancestor point.
+X-Code the distrust part of the algorithm.
+X-Single membership in each current set.  
+X-What about membership in distrust set?  Yes, single membership too.
+X-Make sure setTrustRelationship ignores a users trying to trust/distrust
+  themselves.
+
+
+January 9, 2005
+
+Changed StopSignalThread to override Thread::sleep and sleep on a semaphore.
+This will make stopping sleeping threads instantaneous in all applications
+that use StopSignalThread.
+
+Quitting can still take up to 10 seconds, though, because we have *two*
+threads that are waiting to receive connections/messages (each with 5 second
+timeouts).  One is waiting for socket connections, and the other is waiting
+for incoming UDP messages.
+
+Tried implementing a breakConnection function for UDP sockets, but it didn't
+work.  Did not investigate any way to break connections in SocketServer.
+
+Still, quitting is much faster than it used to be.
+
+Got text UI in place for setting trust levels.  Tested it, and it works
+(users are blocked, and search results are filtered).
+
+
+To Do:
+Node:
+X-Fix to make quitting faster (use bounded semaphore waits to make thread
+  sleeps interruptable).
+X-Add controls to text UI to set various trust levels.
+
+
+
+January 10, 2005
+
+Checked trust level code for memory leaks.  Also check rejected downloads for
+leaks.  Note that the current timeouts when trying to make a connection for
+a chunk (or waiting for a connection from a firewalled node) are 30 seconds.
+This is rather long... it takes a long time for a download to fail.
+
+
+To Do:
+X-Check for leaks when trust levels set.
+X-Add code so that UserManager re-fetches trust scores from server after an
+  expiration period (one day, perhaps, for trust scores).
+
+
+Released alph-1  Tagging everything in minorGems as primrose_alpha-1

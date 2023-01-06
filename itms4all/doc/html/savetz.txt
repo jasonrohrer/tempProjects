@@ -1,0 +1,88 @@
+Date: Wed, 23 Mar 2005 08:29:11 -0800
+Subject: Re: TunesTracker question from iTMS-4-ALL author
+From: Kevin Savetz
+To: Jason Rohrer
+   
+
+Hi Jason,
+
+> I recently noticed that iTMS-4-ALL doesn't work anymore.  Maybe it is because
+> of these changes.
+> 
+> Doing some sniffing, I see a new header coming back from Apple:
+> 
+> x-apple-twofish-key: 383D8A44A1E11745915B7FF49E9FA98D
+> 
+> I think the search results are two-fished, then gziped, and finally AES'ed.
+> My script is able to de-AES the results and then successfully de-gzip them,
+> but the result is still garbled.
+> 
+> Does your TunesTracker still work?
+
+TunesTracker does still work. I'm still decoding with rijndael-128. Although
+I did make many changes to the original iTMS code, I don't think I changed
+anything specifically when 4.7 came out, although I do recall finding and
+fixing some problems with your code (or whoever wrote the PHP that I started
+from) around the eregi commands - maybe those changes make the difference.
+
+Here's the business end of my PHP code:
+
+$url = 
+"http://phobos.apple.com/WebObjects/MZSearch.woa/wa/advancedSearchResults?no
+nameSubmitButton=submit&songTerm=&composerTerm=&albumTerm=&artistTerm=" .
+urlencode($searchterm). "&genreIndex=1";  //searching artist
+
+$ch=curl_init($url);
+     curl_setopt ($ch, CURLOPT_HEADER, 1);
+     curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
+     curl_setopt ($ch, CURLOPT_TIMEOUT, 9);
+     curl_setopt ($ch, CURLOPT_USERAGENT, "iTunes/4.2 (Macintosh; U; PPC Mac
+OS X 10.2)");
+
+$iTunesKeyHex = "8a9dad399fb014c131be611820d78895";
+$iTunesKey = pack ("H*", $iTunesKeyHex);
+
+$result=curl_exec ($ch);
+curl_close ($ch);
+
+eregi("Content-Length: (.[0-9-]+)", $result, $hvalue[0]);
+eregi("x-apple-crypto-iv: (.[a-z0-9-]+)", $result, $hvalue[1]);
+
+$contentLength = $hvalue[0][1];
+$ivHex = $hvalue[1][1];
+$encryptedSearchResults = substr( $result, strlen( $result ) -
+$contentLength );
+$iv = pack( "H*", $ivHex );
+
+/* Open the cipher */
+$td = mcrypt_module_open('rijndael-128', '', 'cbc', '');
+/* Initialize encryption module for decryption */
+mcrypt_generic_init($td, $iTunesKey, $iv);
+/* Decrypt encrypted string */
+$decryptedSearchResultsGZIP = mdecrypt_generic($td,
+$encryptedSearchResults);
+/* Terminate decryption handle and close module */
+mcrypt_generic_deinit($td);
+mcrypt_module_close($td);
+$tempFileName = tempnam('/tmp','tt');
+
+$out = fopen($tempFileName, "w");
+fwrite($out, trim($decryptedSearchResultsGZIP));
+fclose($out);
+
+//uncompress
+$zd = gzopen($tempFileName, "r");
+$rawData = gzread($zd, $contentLength*1024);
+gzclose($zd);
+unlink($tempFileName);
+
+
+
+Let me know how it goes.
+-Kevin
+
+--
+Kevin Savetz         http://www.savetz.com
+          Freelance computer technology journalist
+     Free After Rebate: http://www.freeafterrebate.info
+

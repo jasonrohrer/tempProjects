@@ -1,0 +1,3 @@
+g++ -Wall -g -I../.. -c testUDPTransfer.cpp -o testUDPTransfer.o
+
+g++ -Wall -g -I../.. testUDPTransfer.o ../../minorGems/util/stringUtils.o ../../minorGems/util/StringBufferOutputStream.o ../../minorGems/network/unix/SocketUDPUnix.o ../../minorGems/network/linux/SocketLinux.o ../../minorGems/network/NetworkFunctionLocks.o ../../minorGems/system/linux/MutexLockLinux.o ../../minorGems/system/linux/ThreadLinux.o ../../minorGems/io/file/linux/PathLinux.o -o testUDPTransfer -lpthread

@@ -1,0 +1,72 @@
+<!-- Modification History
+
+2001-December-17   Jason Rohrer
+Added a modification history.
+Added a background image.
+
+2001-December-19   Jason Rohrer
+Moved action links from footer into header.
+Added user name and password tags to both URLs.
+Changed name argument to username.
+Added a tag for user stats.
+
+2001-December-20   Jason Rohrer
+Changed stats layout to work better on smaller browser windows.
+Added a global table to prevent contents from overlapping border.
+
+-->
+
+<HTML>
+
+<HEAD>
+
+<TITLE><!--#TITLE--></TITLE>
+
+</HEAD>
+
+<BODY BACKGROUND="http://hcsoftware.sourceforge.net/kinpix/images/greyBook.gif" BGCOLOR=#FFFFFF TEXT=#FFFFFF LINK=#FFFFFF VLINK=#FFFFFF>
+
+
+
+<CENTER>
+<TABLE WIDTH=100% BORDER=0 CELLSPACING=0 CELLPADDING=0>
+
+<TR>
+
+<TD ALIGN=LEFT>
+<!--Spacer to prevent border overlap-->
+<IMG SRC="http://hcsoftware.sourceforge.net/kinpix/images/blank.gif" WIDTH=50 HEIGHT=1>
+</TD>
+
+<TD ALIGN=LEFT>
+<!--#USER_STATS-->
+</TD>
+
+<TD ALIGN=RIGHT>
+--<A HREF="/play<!--#SERIALNUMBER-->?username=<!--#USERNAME-->&password=<!--#PASSWORD-->">Play Round</A>--<A HREF="/formadd<!--#SERIALNUMBER-->?username=<!--#USERNAME-->&password=<!--#PASSWORD-->">Add an Image Pair</A>--
+</TD>
+
+</TR>
+</TABLE>
+
+</CENTER>
+
+
+
+<!--Start of global table-->
+<TABLE WIDTH=100% BORDER=0 CELLSPACING=0 CELLPADDING=0>
+
+<TR>
+<TD>
+<!--Spacer to prevent border overlap-->
+<IMG SRC="http://hcsoftware.sourceforge.net/kinpix/images/blank.gif" WIDTH=50 HEIGHT=1>
+</TD>
+
+<TD>
+<!--Content cell-->
+
+
+
+
+
+
