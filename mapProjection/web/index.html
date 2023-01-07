@@ -1,0 +1,240 @@
+<html>
+
+
+
+<body bgcolor=red>
+
+<div id="content"></div>
+
+</body>
+
+
+<script>
+var canvasA = document.createElement( "canvas" );
+var ctxA = canvasA.getContext( "2d" )
+
+
+canvasA.height = 500;
+canvasA.width = 1000;
+
+var clickX = 0;
+var clickY = 0;
+
+document.body.appendChild( canvasA );
+
+var canvasB = document.createElement( "canvas" );
+var ctxB = canvasB.getContext( "2d" )
+canvasB.height = 500;
+canvasB.width = 1000;
+document.body.appendChild( canvasB );
+
+
+const img = new Image();
+img.src = "./earthmap1k.jpg";
+img.crossOrigin = "anonymous";
+
+img.addEventListener("load", () => {
+	console.log( "loaded" );
+	ctxA.drawImage( img, 0, 0 );
+	ctxB.drawImage( img, 0, 0 );
+	img.style.display = "none";
+	updateClickPos();
+});
+
+img.addEventListener("error", () => {
+	console.log( "error" );
+	});
+
+console.log( "loadStarted" );
+
+
+function getMousePosition( event ) {
+    let rect = canvasA.getBoundingClientRect();
+    let x = event.clientX - rect.left;
+    let y = event.clientY - rect.top;
+	clickX = x;
+	clickY = y;
+	updateClickPos();
+}
+
+
+var mouseIsDown = false;
+
+
+function mouseDown( event ) {
+	mouseIsDown = true;
+	getMousePosition( event );
+}
+
+
+function mouseUp( event ) {
+	mouseIsDown = false;
+	getMousePosition( event );
+	ctxA.drawImage( img, 0, 0 );
+
+	const imageDataA = ctxA.getImageData( 0, 0, canvasA.width, canvasA.height );
+	const dataA = imageDataA.data;
+
+	const imageDataB = ctxB.getImageData( 0, 0, canvasA.width, canvasA.height );
+	const dataB = imageDataB.data;
+
+	var pi = 3.14159265359;
+
+	var w = canvasA.width;
+	var h = canvasA.height;
+
+
+	var alpha = clickX / w;
+	var beta = clickY / h;
+
+	angleA = alpha * 2 * pi;
+    angleB = beta * pi;
+    
+
+	maxNewU = -10000;
+	minNewU = 10000;
+
+	maxNewV = -10000;
+	minNewV = 10000;
+
+    for( let x=0; x< w; x++ ) {
+        u = x / ( w - 1 );
+        angleU = 2 * pi * u;
+        for( let y=0; y<h; y++ ) {
+            v = y / ( h - 1 );
+            angleV = pi * v;
+            
+            // use sphere radius = 1
+            oldX = Math.sin( angleV ) * Math.cos( angleU );
+            oldY = Math.sin( angleU ) * Math.sin( angleV );
+			oldZ = Math.cos( angleV );
+            
+			// rotate based on angles definied by mouse clicks
+			
+			// First, rotate around y axis by B
+			
+
+            tempX = oldX * Math.cos( angleB ) +
+                oldZ * Math.sin( angleB );
+            newZ = - oldX * Math.sin( angleB ) +
+				oldZ * Math.cos( angleB );
+
+			// then rotate around z axis by A
+            newX = tempX * Math.cos( angleA ) -
+                oldY * Math.sin( angleA );
+            newY = tempX * Math.sin( angleA ) +
+                        oldY * Math.cos( angleA );
+
+			        
+            newAngleU = 
+				Math.sign( newY ) *
+				Math.acos( newX /
+						   Math.sqrt( newX * newX +
+									  newY * newY ) );
+			if( newAngleU < 0 ) {
+				newAngleU += 2 * pi;
+			}
+			
+			newAngleV = 
+				Math.acos( newZ /
+						   Math.sqrt( newX * newX +
+									  newY * newY +
+									  newZ * newZ ) );
+			
+			
+			if( newAngleU > maxNewU ) {
+				maxNewU = newAngleU;
+			}
+			if( newAngleU < minNewU ) {
+				minNewU = newAngleU;
+			}
+
+			if( newAngleV > maxNewV ) {
+				maxNewV = newAngleV;
+			}
+			if( newAngleV < minNewV ) {
+				minNewV = newAngleV;
+			}
+
+            projU = newAngleU / ( 2 * pi );
+            projV = newAngleV / pi;
+                                        
+            if( projV < 0 ) {
+                projV = -projV;
+                projU = 0.5 + projU;
+            }
+            if( projV > 1 ) {
+                projV = 2 - projV;
+                projU = 0.5 + projU;
+            }
+                    
+            if( projU < 0 ) {
+                projU = 1 + projU;
+            }
+            if( projU > 1 ) {
+                projU = 2 - projU;
+            }
+                    
+            projX = Math.floor( projU * ( w - 1 ) );
+            projY = Math.floor( projV * ( h - 1 ) );
+
+			iA = 4 * ( projY * w + projX );
+			
+			iB = 4 * ( y * w + x );
+			
+			
+			dataB[ iB ] = dataA[ iA ];
+			dataB[ iB + 1 ] = dataA[ iA + 1 ];
+			dataB[ iB + 2 ] = dataA[ iA + 2 ];
+			dataB[ iB + 3 ] = 255;
+		}
+	}
+
+
+/*
+	console.log( "putting" );
+	console.log( "maxNewU= "+ maxNewU );
+	console.log( "minNewU= "+ minNewU );
+	console.log( "maxNewV= "+ maxNewV );
+	console.log( "minNewV= "+ minNewV );
+*/
+
+	ctxB.putImageData( imageDataB, 0, 0 );
+
+	getMousePosition( event );
+}
+
+
+function mouseMove( event ) {
+	if( mouseIsDown ) {
+		getMousePosition( event );
+	}
+}
+
+
+      
+canvasA.addEventListener( "mousedown", mouseDown );
+canvasA.addEventListener( "mouseup", mouseUp );
+canvasA.addEventListener( "mousemove", mouseMove );
+
+
+function updateClickPos() {
+	ctxA.drawImage( img, 0, 0 );
+	ctxA.beginPath();
+	ctxA.arc( clickX, clickY, 10, 0, 2 * Math.PI, false );
+	ctxA.lineWidth = 3;
+	ctxA.strokeStyle = '#FFFF00DD';
+	ctxA.stroke();
+
+	ctxA.beginPath();
+	ctxA.lineWidth = 6;
+	ctxA.moveTo( clickX, 0 );
+	ctxA.lineTo( clickX, 500 );
+	ctxA.moveTo( 0, clickY );
+	ctxA.lineTo( 1000, clickY);
+	ctxA.stroke();
+}
+
+</script>
+
+</html>
