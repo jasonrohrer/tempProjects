@@ -17,8 +17,8 @@ var ctxA = canvasA.getContext( "2d" )
 canvasA.height = 500;
 canvasA.width = 1000;
 
-var clickX = 0;
-var clickY = 0;
+var clickX = 500;
+var clickY = 250;
 
 document.body.appendChild( canvasA );
 
@@ -84,11 +84,11 @@ function mouseUp( event ) {
 	var h = canvasA.height;
 
 
-	var alpha = clickX / w;
-	var beta = clickY / h;
+	var alpha = ( clickX - 500 ) / w;
+	var beta = ( clickY - 250 ) / h;
 
 	angleA = alpha * 2 * pi;
-    angleB = beta * pi;
+    angleB = -beta * pi;
     
 
 	maxNewU = -10000;
