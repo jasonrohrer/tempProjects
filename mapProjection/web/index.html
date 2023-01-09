@@ -97,6 +97,15 @@ function mouseUp( event ) {
 	maxNewV = -10000;
 	minNewV = 10000;
 
+	// coords for centered horizontal cross line (equator) in imageB
+	var coordsB = [];
+	for( var xVal=0; xVal<1000; xVal++ ) {
+		coordsB.push( {x:xVal, y:250 } );
+	}
+	// indexed by x coordinates in imageA
+	var coordsA = [];
+
+
     for( let x=0; x< w; x++ ) {
         u = x / ( w - 1 );
         angleU = 2 * pi * u;
@@ -185,21 +194,38 @@ function mouseUp( event ) {
 			dataB[ iB + 1 ] = dataA[ iA + 1 ];
 			dataB[ iB + 2 ] = dataA[ iA + 2 ];
 			dataB[ iB + 3 ] = 255;
+
+			if( y == 250 ) {
+				// take this opportunity to populate coordsA
+				coordsA[projX] = projY;
+			}
 		}
 	}
 
-
-/*
-	console.log( "putting" );
-	console.log( "maxNewU= "+ maxNewU );
-	console.log( "minNewU= "+ minNewU );
-	console.log( "maxNewV= "+ maxNewV );
-	console.log( "minNewV= "+ minNewV );
-*/
-
 	ctxB.putImageData( imageDataB, 0, 0 );
 
+	//drawCross( ctxB, 500, 250 );
+
 	getMousePosition( event );
+
+
+	// redraw A with new projectect cross horizontal line
+	ctxA.drawImage( img, 0, 0 );
+
+	// now repack coordsA so it has x: and y: elements, in order
+	// from lowest x to highest
+	
+	coordsARepack = [];
+	for( var xVal=0; xVal<1000; xVal++ ) {
+		if( coordsA[xVal] === 'undefined' ) {
+		    // skip
+		}
+		else {
+			coordsARepack.push( {x:xVal, y:coordsA[ xVal ] } );
+		}
+	}
+
+	drawCross( ctxA, clickX, clickY, coordsARepack );
 }
 
 
@@ -216,21 +242,89 @@ canvasA.addEventListener( "mouseup", mouseUp );
 canvasA.addEventListener( "mousemove", mouseMove );
 
 
+
 function updateClickPos() {
 	ctxA.drawImage( img, 0, 0 );
-	ctxA.beginPath();
-	ctxA.arc( clickX, clickY, 10, 0, 2 * Math.PI, false );
-	ctxA.lineWidth = 3;
-	ctxA.strokeStyle = '#FFFF00DD';
-	ctxA.stroke();
+	var coords = [];
+	for( var xVal=0; xVal<1000; xVal++ ) {
+		coords.push( {x:xVal, y:clickY } );
+	}
+	drawCross( ctxA, clickX, clickY, coords );
+}
 
-	ctxA.beginPath();
-	ctxA.lineWidth = 6;
-	ctxA.moveTo( clickX, 0 );
-	ctxA.lineTo( clickX, 500 );
-	ctxA.moveTo( 0, clickY );
-	ctxA.lineTo( 1000, clickY);
-	ctxA.stroke();
+
+
+function distance( x1, y1, x2, y2 ) {
+	dx = x2 - x1;
+	dy = y2 - y1;
+	
+	return Math.sqrt( dx * dx + dy * dy );
+}
+
+
+
+function drawCross( inCTX, inX, inY, inHorizontalCoordList ) {
+	inCTX.beginPath();
+	inCTX.arc( inX, inY, 10, 0, 2 * Math.PI, false );
+	inCTX.lineWidth = 3;
+	inCTX.strokeStyle = '#FFFF00DD';
+	inCTX.fillStyle = '#FFFF00DD';
+	inCTX.stroke();
+
+	inCTX.beginPath();
+	inCTX.lineWidth = 6;
+	inCTX.moveTo( inX, 0 );
+	inCTX.lineTo( inX, 500 );
+	inCTX.stroke();
+	
+	inCTX.beginPath();
+	coords = inHorizontalCoordList;
+	inCTX.moveTo( coords[0].x, coords[0].y );
+	
+	inCTX.font = "40px Georgia";
+	
+	s = "EQUATOR";
+	si = 0;
+
+	xLast = coords[100].x;
+	yLast = coords[100].y;
+
+	console.log( "Starting drawing. xlast = " + xLast );
+	console.log( "Starting drawing. ylast = " + yLast );
+	for( var i = 1; i < coords.length; i++ ) {
+		x = coords[i].x;
+		y = coords[i].y;
+
+		inCTX.lineTo( x, y );
+
+		if( si < s.length &&
+			i > 100 && distance( xLast, yLast, x, y ) > 40 ) {
+			// new letter drawn every 20 steps
+			letter = s.charAt( si );
+			inCTX.save();
+			inCTX.translate( x, y );
+
+			dx = coords[i+10].x - coords[i-10].x;
+			dy = coords[i+10].y - coords[i-10].y;
+			
+			
+			console.log( "Drawing at x = "+ x );
+			console.log( "Drawing at y = "+ y );
+ 
+			ang = Math.atan( dy / dx );
+
+			inCTX.rotate( ang );
+			inCTX.fillText( letter, 0, -10 );
+			inCTX.restore();
+			si++;
+			xLast = x;
+			yLast = y;
+		}
+	}
+
+	//inCTX.moveTo( 0, inY );
+	//inCTX.lineTo( 1000, inY);
+	inCTX.stroke();
 }
 
 </script>
