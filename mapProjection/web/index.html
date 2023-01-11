@@ -253,11 +253,17 @@ canvasA.addEventListener( "mousemove", mouseMove );
 
 function updateClickPos() {
 	ctxA.drawImage( img, 0, 0 );
-	var coords = [];
-	for( var xVal=0; xVal<1000; xVal++ ) {
-		coords.push( {x:xVal, y:clickY } );
+	
+	if( clickX == 500 && clickY == 250 ) {
+		var coords = [];
+		for( var xVal=0; xVal<1000; xVal++ ) {
+			coords.push( {x:xVal, y:clickY } );
+		}
+		drawCross( ctxA, clickX, clickY, coords );
 	}
-	drawCross( ctxA, clickX, clickY, coords );
+	else {
+		drawClickPoint( ctxA, clickX, clickY );
+	}
 }
 
 
@@ -270,13 +276,13 @@ function distance( x1, y1, x2, y2 ) {
 }
 
 
-
-function drawCross( inCTX, inX, inY, inHorizontalCoordList ) {
+function drawClickPoint( inCTX, inX, inY ) {
+	inCTX.strokeStyle = '#FFFF00DD';
+	inCTX.fillStyle = '#FFFF00DD';
+	
 	inCTX.beginPath();
 	inCTX.arc( inX, inY, 10, 0, 2 * Math.PI, false );
 	inCTX.lineWidth = 3;
-	inCTX.strokeStyle = '#FFFF00DD';
-	inCTX.fillStyle = '#FFFF00DD';
 	inCTX.stroke();
 
 	inCTX.beginPath();
@@ -284,54 +290,68 @@ function drawCross( inCTX, inX, inY, inHorizontalCoordList ) {
 	inCTX.moveTo( inX, 0 );
 	inCTX.lineTo( inX, 500 );
 	inCTX.stroke();
+
+}
+
+
+function drawCross( inCTX, inX, inY, inHorizontalCoordList ) {
+	drawClickPoint( inCTX, inX, inY );
+	
+	inCTX.strokeStyle = '#FFFF00DD';
+	inCTX.fillStyle = '#FFFF00DD';
+	inCTX.lineWidth = 6;
 	
 	inCTX.beginPath();
 	coords = inHorizontalCoordList;
-	inCTX.moveTo( coords[0].x, coords[0].y );
-	
-	inCTX.font = "40px Georgia";
-	
-	s = "EQUATOR";
-	si = 0;
+	if( coords.length > 100 ) {
+		inCTX.moveTo( coords[0].x, coords[0].y );
+		
+		inCTX.font = "40px Georgia";
+		
+		s = "EQUATOR";
+		si = 0;
+		
+		xLast = coords[100].x;
+		yLast = coords[100].y;
 
-	xLast = coords[100].x;
-	yLast = coords[100].y;
-
-	for( var i = 1; i < coords.length; i++ ) {
-		x = coords[i].x;
-		y = coords[i].y;
-
-		inCTX.lineTo( x, y );
-
-		if( si < s.length &&
-			i > 100 && distance( xLast, yLast, x, y ) > 40 ) {
-			// new letter drawn every 20 steps
-			letter = s.charAt( si );
-			inCTX.save();
-			inCTX.translate( x, y );
-
-			dx = coords[i+10].x - coords[i-10].x;
-			dy = coords[i+10].y - coords[i-10].y;
- 
-			ang = Math.atan( dy / dx );
-
-			inCTX.rotate( ang );
+		for( var i = 1; i < coords.length; i++ ) {
+			x = coords[i].x;
+			y = coords[i].y;
 			
-			inCTX.strokeStyle = '#000000DD';
-			inCTX.fillStyle = '#FFFF00DD';
-			inCTX.lineWidth = 4;
-
-			inCTX.strokeText( letter, 0, -10 );
-			inCTX.fillText( letter, 0, -10 );
-			inCTX.restore();
-			si++;
-			xLast = x;
-			yLast = y;
+			inCTX.lineTo( x, y );
+			
+			if( si < s.length &&
+				i > 100 && distance( xLast, yLast, x, y ) > 40 ) {
+				// new letter drawn every 20 steps
+				letter = s.charAt( si );
+				inCTX.save();
+				inCTX.translate( x, y );
+				
+				dx = coords[i+10].x - coords[i-10].x;
+				dy = coords[i+10].y - coords[i-10].y;
+				
+				ang = Math.atan( dy / dx );
+				
+				inCTX.rotate( ang );
+				
+				inCTX.strokeStyle = '#000000DD';
+				inCTX.fillStyle = '#FFFF00DD';
+				inCTX.lineWidth = 4;
+				
+				inCTX.strokeText( letter, 0, -10 );
+				inCTX.fillText( letter, 0, -10 );
+				inCTX.restore();
+				si++;
+				xLast = x;
+				yLast = y;
+			}
 		}
 	}
-
-	//inCTX.moveTo( 0, inY );
-	//inCTX.lineTo( 1000, inY);
+	else {
+		inCTX.moveTo( 0, inY );
+		inCTX.lineTo( 1000, inY);
+	}
+	
 	inCTX.stroke();
 }
 
