@@ -112,7 +112,11 @@ function mouseUp( event ) {
 	}
 	// indexed by x coordinates in imageA
 	var coordsA = [];
-
+	
+	var northPoleX = 500;
+	var northPoleY = 0;
+	var southPoleX = 500;
+	var southPoleY = 500;
 
     for( let x=0; x< w; x++ ) {
         u = x / ( w - 1 );
@@ -207,6 +211,18 @@ function mouseUp( event ) {
 				// take this opportunity to populate coordsA
 				coordsA[projX] = projY;
 			}
+			else if( y == 0 ) {
+				if( x == 500 ) {
+					northPoleX = projX;
+					northPoleY = projY;
+				}
+			}
+			else if( y == 499 ) {
+				if( x == 500 ) {
+					southPoleX = projX;
+					southPoleY = projY;
+				}
+			}
 		}
 	}
 
@@ -233,7 +249,9 @@ function mouseUp( event ) {
 		}
 	}
 
-	drawCross( ctxA, clickX, clickY, coordsARepack );
+	drawCross( ctxA, clickX, clickY, coordsARepack,
+			   northPoleX, northPoleY,
+			   southPoleX, southPoleY );
 }
 
 
@@ -259,7 +277,8 @@ function updateClickPos() {
 		for( var xVal=0; xVal<1000; xVal++ ) {
 			coords.push( {x:xVal, y:clickY } );
 		}
-		drawCross( ctxA, clickX, clickY, coords );
+		drawCross( ctxA, clickX, clickY, coords,
+				   500, 0, 500, 500 );
 	}
 	else {
 		drawClickPoint( ctxA, clickX, clickY );
@@ -294,8 +313,30 @@ function drawClickPoint( inCTX, inX, inY ) {
 }
 
 
-function drawCross( inCTX, inX, inY, inHorizontalCoordList ) {
+function drawCross( inCTX, inX, inY, inHorizontalCoordList,
+					inNorthPoleX, inNorthPoleY,
+					inSouthPoleX, inSouthPoleY ) {
 	drawClickPoint( inCTX, inX, inY );
+
+	if( inNorthPoleX != inX && inSouthPoleX != inX ) {
+		inNorthPoleX += 1;
+		inSouthPoleX += 1;
+	}
+
+	// north pole circle
+	inCTX.beginPath();
+	inCTX.strokeStyle = '#00FF00DD';
+	inCTX.arc( inNorthPoleX, inNorthPoleY, 10, 0, 2 * Math.PI, false );
+	inCTX.lineWidth = 3;
+	inCTX.stroke();
+
+	// south pole circle
+	inCTX.beginPath();
+	inCTX.strokeStyle = '#FF0000DD';
+	inCTX.arc( inSouthPoleX, inSouthPoleY, 10, 0, 2 * Math.PI, false );
+	inCTX.lineWidth = 3;
+	inCTX.stroke();
+
 	
 	inCTX.strokeStyle = '#FFFF00DD';
 	inCTX.fillStyle = '#FFFF00DD';
