@@ -2,14 +2,17 @@
 
 
 
-<body bgcolor=red>
+<body bgcolor=black>
 
-<div id="content"></div>
+<center><div id="content"></div></center>
 
 </body>
 
 
 <script>
+var content = document.getElementById( "content" );
+
+
 var canvasA = document.createElement( "canvas" );
 var ctxA = canvasA.getContext( "2d" )
 
@@ -20,13 +23,18 @@ canvasA.width = 1000;
 var clickX = 500;
 var clickY = 250;
 
-document.body.appendChild( canvasA );
+content.appendChild( canvasA );
+
+var brA = document.createElement( "br" );
+var brB = document.createElement( "br" );
+content.appendChild( brA )
+content.appendChild( brB)
 
 var canvasB = document.createElement( "canvas" );
 var ctxB = canvasB.getContext( "2d" )
 canvasB.height = 500;
 canvasB.width = 1000;
-document.body.appendChild( canvasB );
+content.appendChild( canvasB );
 
 
 const img = new Image();
@@ -217,7 +225,7 @@ function mouseUp( event ) {
 	
 	coordsARepack = [];
 	for( var xVal=0; xVal<1000; xVal++ ) {
-		if( coordsA[xVal] === 'undefined' ) {
+		if( coordsA[xVal] === undefined ) {
 		    // skip
 		}
 		else {
@@ -289,8 +297,6 @@ function drawCross( inCTX, inX, inY, inHorizontalCoordList ) {
 	xLast = coords[100].x;
 	yLast = coords[100].y;
 
-	console.log( "Starting drawing. xlast = " + xLast );
-	console.log( "Starting drawing. ylast = " + yLast );
 	for( var i = 1; i < coords.length; i++ ) {
 		x = coords[i].x;
 		y = coords[i].y;
@@ -306,14 +312,16 @@ function drawCross( inCTX, inX, inY, inHorizontalCoordList ) {
 
 			dx = coords[i+10].x - coords[i-10].x;
 			dy = coords[i+10].y - coords[i-10].y;
-			
-			
-			console.log( "Drawing at x = "+ x );
-			console.log( "Drawing at y = "+ y );
  
 			ang = Math.atan( dy / dx );
 
 			inCTX.rotate( ang );
+			
+			inCTX.strokeStyle = '#000000DD';
+			inCTX.fillStyle = '#FFFF00DD';
+			inCTX.lineWidth = 4;
+
+			inCTX.strokeText( letter, 0, -10 );
 			inCTX.fillText( letter, 0, -10 );
 			inCTX.restore();
 			si++;
