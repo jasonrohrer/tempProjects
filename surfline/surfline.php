@@ -82,7 +82,7 @@ if( $anyReported ) {
 
 
     foreach( $reportToEmails as $e ) {
-        
+        echo "Sending report to $e\n";        
     
         sl_mail( $e,
                  "$spotName Surf Alert:  Waves at least $minHeightToReport ft",
