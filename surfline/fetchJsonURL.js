@@ -9,7 +9,6 @@ if( process.argv.length < 3 ) {
 
 const url = process.argv[2];
 
-console.log( "Fetching url " + url );
 
 (async () => {
 
