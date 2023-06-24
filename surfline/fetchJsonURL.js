@@ -9,6 +9,8 @@ if( process.argv.length < 3 ) {
 
 const url = process.argv[2];
 
+console.log( "Fetching url " + url );
+
 (async () => {
 
 	// use system-installed browser (one installed by puppeteer has
@@ -36,4 +38,8 @@ const url = process.argv[2];
 	const text = await response.text();
 	
 	process.stdout.write( text );
-};
+
+	await browser.close();
+	
+})().catch( e => { console.error(e); 
+				   process.exit(1); } );
