@@ -46,7 +46,7 @@ $smtpPasswordTrans = $smtpPassword;
 
 
 
-$result = shell_exec( "node fetchJsonURL.js $spotURL" );
+$result = shell_exec( "node fetchJsonURL.js '$spotURL'" );
 
 $a = json_decode( $result, true );
 
