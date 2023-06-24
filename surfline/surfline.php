@@ -14,6 +14,8 @@ $reportToEmails = array( "test@test.com" );
 
 $minHeightToReport = 4;
 
+$siteEmailAddress = "Jason Rohrer <jcr13@cornell.edu>";
+$siteEmailDomain = "cornell.edu";
 
 $useSMTP = true;
 
@@ -44,7 +46,7 @@ $smtpPasswordTrans = $smtpPassword;
 
 
 
-$result = file_get_contents( $spotURL );
+$result = shell_exec( "node fetchJsonURL.js $spotURL" );
 
 $a = json_decode( $result, true );
 
