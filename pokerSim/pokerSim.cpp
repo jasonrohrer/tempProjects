@@ -616,10 +616,71 @@ void premiumsPerVisit() {
 
 
 
+#define NUM_PLAYERS 9
+#define NUM_HANDS 10000000
+
+int balanceHistory[NUM_HANDS][NUM_PLAYERS];
+
+
+void fairGameTest() {
+    int numPlayers = NUM_PLAYERS;
+
+    int playerBalances[NUM_PLAYERS];
+
+    for( int i=0; i<numPlayers; i++ ) {
+        playerBalances[i] = 0;
+        }
+
+    CryptoRandBitStream bitStream;
+
+    int numHands = NUM_HANDS;
+
+    
+    for( int h=0; h<numHands; h++ ) {
+        for( int p=0; p<numPlayers; p++ ) {
+            playerBalances[p] -= 1;
+            }
+
+        int winner =
+            getRangedRandom( &bitStream, 0, numPlayers - 1 );
+
+        playerBalances[winner] += numPlayers;
+
+        for( int p=0; p<numPlayers; p++ ) {
+            balanceHistory[h][p] = playerBalances[p];
+            }
+        }
+
+    /*
+    printf( "After %d hands, player balances:\n", numHands );
+
+    for( int p=0; p<numPlayers; p++ ) {
+        printf( "%d:  %d\n", p, playerBalances[p] );
+        }
+        
+    printf( "\n\nBalance history:\n" );
+    */
+    for( int h=0; h<numHands; h++ ) {
+        printf( "%d ", h + 1 );
+        
+        for( int p=0; p<numPlayers; p++ ) {
+            //printf( "%d:  ", p );
+
+            printf( "%d ", balanceHistory[h][p] );
+            }
+        printf( "\n" );
+        }
+    }
+
+
+
+
 int main() {
     //pocketPairTest();
 
-    premiumsPerVisit();
+    // premiumsPerVisit();
+
+    fairGameTest();
     
     return 0;
     }
