@@ -1,0 +1,1 @@
+g++ -I../.. -g -o simPairings simPairings.cpp ../../minorGems/system/unix/TimeUnix.cpp 
