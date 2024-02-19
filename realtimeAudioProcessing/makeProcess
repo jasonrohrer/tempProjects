@@ -1,0 +1,2 @@
+g++ -o process process.cpp -lasound -lX11
+g++ -o keyboardTest keyboardTest.cpp -lX11
