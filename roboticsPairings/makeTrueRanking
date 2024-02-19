@@ -1,0 +1,1 @@
+g++ -g -I../.. -o trueRanking trueRanking.cpp
