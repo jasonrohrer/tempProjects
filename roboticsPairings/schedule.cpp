@@ -3,7 +3,8 @@
 
 #define NUM_TEAMS 40
 
-const char *rankings[40] = {
+// actual rankings
+const char *rankings[ NUM_TEAMS ] = {
     "2820D",
     "2820G",
     "2820W",
@@ -47,9 +48,58 @@ const char *rankings[40] = {
     };
 
 
+// true rankings computed by iterative expected score contribution algorithm
+const char *computedRankings[ NUM_TEAMS ] = {
+    "2820W",
+    "2820G",
+    "72X",
+    "44163A",
+    "2820M",
+    "103E",
+    "2701E",
+    "2820E",
+    "2820B",
+    "2820Y",
+    "2820T",
+    "2820D",
+    "2820F",
+    "6033D",
+    "2820R",
+    "2820A",
+    "603E",
+    "2820K",
+    "2701D",
+    "2701G",
+    "2820J",
+    "2820Z",
+    "3243D",
+    "3931B",
+    "1359C",
+    "56047A",
+    "36498D",
+    "40940A",
+    "2701F",
+    "3243C",
+    "40940C",
+    "6033H",
+    "3931A",
+    "63599B",
+    "6033C",
+    "3243A",
+    "40940F",
+    "56047B",
+    "40940B",
+    "63599D" 
+    };
+
+    
+
+
+
+
 #define NUM_MATCHES 160
 
-const char *pairings[160][2] = {
+const char *pairings[ NUM_MATCHES ][2] = {
     { "72X", "40940B" },
     { "2820Y", "2820D" },
     { "2820W", "6033C" },
@@ -223,6 +273,18 @@ int getRank( const char *inTeam ) {
     }
 
 
+
+int getComputedRank( const char *inTeam ) {
+    for( int i=0; i<NUM_TEAMS; i++ ) {
+        if( strcmp( computedRankings[i], inTeam ) == 0 ) {
+            return i + 1;
+            }
+        }
+    return -1;
+    }
+
+
+
 const char *getOtherTeam( int inMatchNumber, const char *inTeam ) {
     const char *otherTeam = NULL;
             
@@ -254,7 +316,7 @@ int main() {
             const char *otherTeam = getOtherTeam( m, team );
 
             if( otherTeam != NULL ) {
-                int otherRank = getRank( otherTeam );
+                int otherRank = getComputedRank( otherTeam );
                 
                 strengthOfSchedule[i] += otherRank;
                 matchCount++;
