@@ -84,6 +84,17 @@ CardSet makeBoard( const char *inFlopA,
 
 
 
+CardSet copy( CardSet *inSet ) {
+    CardSet newSet;
+    newSet.numCards = inSet->numCards;
+    for( int i=0; i< inSet->numCards; i++ ) {
+        newSet.cards[i] = inSet->cards[i];
+        }
+    return newSet;
+    }
+
+
+
 void boardAdd( CardSet *inBoard, const char *inNewCard ) {
     if( inBoard->numCards < 5 ) {
 
@@ -156,6 +167,7 @@ static void print( CardSet *inCards ) {
 
 
 
+// can handle "?" for unknown cards that shouldn't be removed
 static void remove( Deck *inDeck, const char *inCard ) {
     int findIndex = -1;
     for( int i=0; i < inDeck->numCards; i++ ) {
@@ -174,6 +186,7 @@ static void remove( Deck *inDeck, const char *inCard ) {
     }
 
 
+// can handle "?" for unknown cards that shouldn't be removed
 static void remove( Deck *inDeck, CardSet *inCards ) {
     for( int i=0; i<inCards->numCards; i++ ) {
         remove( inDeck, inCards->cards[i] );
@@ -232,38 +245,121 @@ phevaluator::Rank getRank( CardSet *inFlop,
 
 
 
+typedef struct Result {
+        char winners[9];
+    } Result;
+        
+
 // simulates one run of double-board bomb pot, one turn, one river
-// returns -1 if A wins, 0 if tie, +1 if B wins
-int simWinner( CardSet *inFlopTop, CardSet *inFlopBot,
-               CardSet *inHandA, CardSet *inHandB ) {
+// inHands CardSets can contain ?,?,?,? for unknown hands
+// inHands can be NULL for empty seats (or folded players)
+// returns map of winners
+Result simWinner( CardSet *inFlopTop, CardSet *inFlopBot,
+                  CardSet *inHands[9] ) {
     Deck d;
     setupFreshDeck( &d );
     remove( &d, inFlopTop );
     remove( &d, inFlopBot );
-    remove( &d, inHandA );
-    remove( &d, inHandB );
 
+    // we're going to modify unknown hands by drawing cards
+    // do that in copies of the hands
+    CardSet workingHands[9];
+
+    CardSet *workingHandsPointers[9];
+    
+    for( int i=0; i<9; i++ ) {
+        if( inHands[i] != NULL ) {
+            
+            remove( &d, inHands[i] );
+
+            workingHands[i] = copy( inHands[i] );
+            workingHandsPointers[i] = &( workingHands[i] );
+            }
+        else {
+            workingHandsPointers[i] = NULL;
+            }
+        }    
+    
     shuffle( &d );
-
+    
     // now draw two cards, for turn and river
     const char *turn = d.cards[0];
     const char *river = d.cards[1];
 
-    // player A on top board
-    phevaluator::Rank rankTopA = getRank( inFlopTop, turn, river, inHandA );
+    // now draw cards to populate player's hands that have unknown cards
+    int nextCard = 2;
 
-    // player B on top board
-    phevaluator::Rank rankTopB = getRank( inFlopTop, turn, river, inHandB );
+    for( int i=0; i<9; i++ ) {
+        if( workingHandsPointers[i] != NULL ) {
+            for( int c=0; c<workingHandsPointers[i]->numCards; c++ ) {
+                if( strcmp( workingHandsPointers[i]->cards[c], "?" ) == 0 ) {
+                    workingHandsPointers[i]->cards[c] = d.cards[ nextCard ];
+                    nextCard++;
+                    }
+                }
+            }
+        }
+
+    phevaluator::Rank handRanksTop[9];
+    phevaluator::Rank handRanksBottom[9];
+
+    for( int i=0; i<9; i++ ) {
+        if( workingHandsPointers[i] != NULL ) {
+            handRanksTop[i] =
+                getRank( inFlopTop, turn, river, workingHandsPointers[i] );
+            handRanksBottom[i] =
+                getRank( inFlopBot, turn, river, workingHandsPointers[i] );
+            }
+        }
 
 
-    // player A on bottom board
-    phevaluator::Rank rankBotA = getRank( inFlopBot, turn, river, inHandA );
+    
+    int bestHandValues[9];
 
-    // player B on bottom board
-    phevaluator::Rank rankBotB = getRank( inFlopBot, turn, river, inHandB );
+    for( int i=0; i<9; i++ ) {
+        if( workingHandsPointers[i] != NULL ) {
+            bestHandValues[i] = handRanksTop[i].value();
+            int botVal = handRanksBottom[i].value();
+
+            if( botVal < bestHandValues[i] ) {
+                bestHandValues[i] = botVal;
+                }
+            }
+        }
+    
+
+    
+    Result r;
+
+    // first, find best overall
+    int bestValue = 999999999;
+    int bestValueIndex = -1;
+
+    for( int i=0; i<9; i++ ) {
+        r.winners[i] = false;
+        if( workingHandsPointers[i] != NULL ) {
+            if( bestHandValues[i] < bestValue ) {
+                bestValue = bestHandValues[i];
+                bestValueIndex = i;
+                }
+            }
+        }
+
+    assert( bestValueIndex != -1 );
+    
+    r.winners[bestValueIndex] = true;
+
+    // look for ties with winner
+    for( int i=0; i<9; i++ ) {
+        if( workingHandsPointers[i] != NULL ) {
+            if( bestHandValues[i] == bestValue ) {
+                r.winners[i] = true;
+                }
+            }
+        }
 
     /*
-    printf( "Board = \n" );
+    printf( "\n\nBoard = \n" );
     print( inFlopTop );
 
     printf( "\n         " );
@@ -272,74 +368,83 @@ int simWinner( CardSet *inFlopTop, CardSet *inFlopBot,
 
     print( inFlopBot );
     printf( "\n" );
-    */
 
+
+    printf( "\nHands:\n" );
+    for( int i=0; i<9; i++ ) {
+        if( workingHandsPointers[i] != NULL ) {
+            print( workingHandsPointers[i] );
+
+            if( r.winners[i] ) {
+                printf( "   WINNER" );
+                }
+            printf( "\n" );
+            }
+        }
+
+    printf( "\n\n" );
+    */
+    
     freeDeck( &d );
     
-
-    int bestA = rankTopA.value();
-
-    if( rankBotA.value() < bestA ) {
-        bestA = rankBotA.value();
-        }
-
-    int bestB = rankTopB.value();
-
-    if( rankBotB.value() < bestB ) {
-        bestB = rankBotB.value();
-        }
-
-
-    if( bestA < bestB ) {
-        return -1;
-        }
-    if( bestA > bestB ) {
-        return 1;
-        }
     
-    // tie
-    return 0;
+    return r;
+    }
+
+
+
+void usage() {
+    printf( "Usage:\n\n" );
+    printf( "myPLO4 handFile.txt\n\n" );
+    exit( 1 );
     }
 
 
 
 
+int main( int inNumArgs, const char **inArgs ) {
 
-int main() {
+    if( inNumArgs != 2 ) {
+        usage();
+        }
+    
     srand( time( NULL ) );
 
-    CardSet handA = makeHand( "Qd", "2d", "5c", "9h" );
-    CardSet handB = makeHand( "Kc", "Jc", "As", "Qs" );
+    CardSet *hands[9];
+    
+    
+    CardSet handA = makeHand( "2h", "5h", "?", "?" );
+    CardSet handB = makeHand( "?", "?", "?", "?" );
 
-    CardSet flopTop = makeBoard( "Ks", "Js", "3c" );
-    CardSet flopBot = makeBoard( "Ad", "Kd", "7d" );
-
+    hands[0] = &handA;
+    for( int i=1; i<9; i++ ) {
+        hands[i] = &handB;
+        }
+    
+    
+    CardSet flopTop = makeBoard( "3d", "6c", "Ts" );
+    CardSet flopBot = makeBoard( "3h", "8h", "9h" );
 
     int numRuns = 0;
     int winA = 0;
-    int winB = 0;
-    int tie = 0;
+    int loseA = 0;
+    
+    for( int i=0; i<10; i++ ) {
+        Result r = simWinner( &flopTop, &flopBot, hands );
 
-    for( int i=0; i<10000; i++ ) {
-        int res = simWinner( &flopTop, &flopBot, &handA, &handB );
-
-        if( res == -1 ) {
+        if( r.winners[0] ) {
             winA ++;
             }
-        else if( res == 1 ) {
-            winB ++;
-            }
         else {
-            tie ++;
+            loseA ++;
             }
+        
         
         numRuns++;
         }
 
-    printf( "A: %0.2f   B: %0.2f   Tie: %0.2f\n",
-            (float) winA / (float) numRuns,
-            (float) winB / (float) numRuns,
-            (float) tie / (float) numRuns );
+    printf( "A wins: %0.2f\n",
+            (float) winA / (float) numRuns );
     
     
     return 0;
