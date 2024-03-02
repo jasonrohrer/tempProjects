@@ -22,7 +22,7 @@ for( $i=0; $i<9; $i++ ) {
     $hands[$i] = preg_replace( '/10/', "T", $hands[$i] );
     
     // normalize unknown hands to 4 ? symbols
-    if( strstr( $hands[$i], "?" ) ) {
+    if( stripos( $hands[$i], "?" ) === 0 ) {
         $hands[$i] = "? ? ? ?";
         }
     }
@@ -47,7 +47,8 @@ for( $i=0; $i<2; $i++ ) {
 <form action=index.php method=get>
 <INPUT TYPE="hidden" NAME="action" VALUE="simulate">
 <table>
-	<tr>
+  <tr><td></td><td>Use Ac Ts 2h notation:</td></tr>
+  <tr>
 	  <td>Top Flop:</td><td><INPUT TYPE="text" MAXLENGTH=40
 								   SIZE=20 NAME="flop_0"
 								   VALUE="<?php echo $flops[0];?>"></td>
@@ -57,11 +58,11 @@ for( $i=0; $i<2; $i++ ) {
 								   SIZE=20 NAME="flop_1"
 								   VALUE="<?php echo $flops[1];?>"></td>
 	</tr>
+  <tr><td></td><td>Use ? for unknown cards or leave blank for empty seats:</td></tr>
 <?php
           for( $i=0; $i<9; $i++ ) {
               $h =$i+1;
               ?>
-    <tr>
 	<tr>
 	  <td>
 		Hand <?php echo $h;?>:</td>
