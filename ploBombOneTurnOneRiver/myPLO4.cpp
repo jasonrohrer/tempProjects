@@ -567,6 +567,7 @@ int main( int inNumArgs, const char **inArgs ) {
     
     int numRuns = 0;
     int winCount[9] = { 0,0,0,0,0,0,0,0,0 };
+    int tieCount[9] = { 0,0,0,0,0,0,0,0,0 };
     
         
     
@@ -575,7 +576,19 @@ int main( int inNumArgs, const char **inArgs ) {
 
         for( int p=0; p<9; p++ ) {
             if( r.winners[p] ) {
-                winCount[p]++;
+                char tie = false;
+
+                for( int o=0; o<9; o++ ) {
+                    if( o != p && r.winners[o] ) {
+                        tie = true;
+                        }
+                    }
+                if( tie ) {
+                    tieCount[p]++;
+                    }
+                else {
+                    winCount[p]++;
+                    }
                 }
             }
         
@@ -599,8 +612,9 @@ int main( int inNumArgs, const char **inArgs ) {
             printf( "Seat %d has  ", p + 1 );
             print( handPointers[p] );
             
-            printf( "  wins: %0.1f%%\n",
-                    100 * (float) winCount[p] / (float) numRuns );
+            printf( "  wins: %0.1f%%  ties: %0.1f%%\n",
+                    100 * (float) winCount[p] / (float) numRuns,
+                    100 * (float) tieCount[p] / (float) numRuns );
             }
         }
     return 0;
