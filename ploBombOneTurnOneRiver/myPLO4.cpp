@@ -257,7 +257,7 @@ typedef struct Result {
 // inHands can be NULL for empty seats (or folded players)
 // returns map of winners
 Result simWinner( CardSet *inFlopTop, CardSet *inFlopBot,
-                  CardSet *inHands[9] ) {
+                  CardSet *inHands[9], char inPrintResult = false ) {
     Deck d;
     setupFreshDeck( &d );
     remove( &d, inFlopTop );
@@ -360,33 +360,34 @@ Result simWinner( CardSet *inFlopTop, CardSet *inFlopBot,
             }
         }
 
-    /*
-    printf( "\n\nBoard = \n" );
-    print( inFlopTop );
+    if( inPrintResult ) {
+        
+        printf( "\n\nBoard = \n" );
+        print( inFlopTop );
 
-    printf( "\n         " );
-    printf( "%s ", turn );
-    printf( "%s\n", river );
+        printf( "\n         " );
+        printf( "%s ", turn );
+        printf( "%s\n", river );
 
-    print( inFlopBot );
-    printf( "\n" );
+        print( inFlopBot );
+        printf( "\n" );
 
 
-    printf( "\nHands:\n" );
-    for( int i=0; i<9; i++ ) {
-        if( workingHandsPointers[i] != NULL ) {
-            print( workingHandsPointers[i] );
+        printf( "\nHands:\n" );
+        for( int i=0; i<9; i++ ) {
+            if( workingHandsPointers[i] != NULL ) {
+                print( workingHandsPointers[i] );
 
-            if( r.winners[i] ) {
-                printf( "   WINNER" );
+                if( r.winners[i] ) {
+                    printf( "   WINNER" );
+                    }
+                printf( "\n" );
                 }
-            printf( "\n" );
             }
+
+        printf( "\n\n" );
         }
 
-    printf( "\n\n" );
-    */
-    
     freeDeck( &d );
     
     
@@ -606,7 +607,7 @@ int main( int inNumArgs, const char **inArgs ) {
     
     for( int p=0; p<9; p++ ) {
         if( handPointers[p] == NULL ) {
-            printf( "Seat %d  empty\n", p+1 );
+            printf( "Seat %d  empty / folded\n", p+1 );
             }
         else {
             printf( "Seat %d has  ", p + 1 );
@@ -617,5 +618,9 @@ int main( int inNumArgs, const char **inArgs ) {
                     100 * (float) tieCount[p] / (float) numRuns );
             }
         }
+
+    printf( "\nExample run-out:" );
+    simWinner( &flopTop, &flopBot, handPointers, true );
+    
     return 0;
     }
