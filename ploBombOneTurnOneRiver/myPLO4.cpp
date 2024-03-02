@@ -24,6 +24,8 @@ static const char ranks[] =
 { 'A','2','3','4','5','6','7','8','9','T','J','Q','K' };
 
 
+
+
 // a full or partial deck
 typedef struct Deck {
         char *cards[52];
@@ -162,7 +164,7 @@ static void print( Deck *inDeck ) {
 
 static void print( CardSet *inCards ) {
     for( int i=0; i < inCards->numCards; i++ )
-        printf( "%s ", inCards->cards[i] );
+        printf( "%2s ", inCards->cards[i] );
     }
 
 
@@ -401,51 +403,205 @@ void usage() {
 
 
 
+// const strings for all possible cards in hand
+// used when reading CardSet from file to avoid allocating memory
+static const char *allCards[52] = {
+    "Ad","2d","3d","4d","5d","6d","7d","8d","9d","Td","Jd","Qd","Kd",
+    "As","2s","3s","4s","5s","6s","7s","8s","9s","Ts","Js","Qs","Ks",
+    "Ac","2c","3c","4c","5c","6c","7c","8c","9c","Tc","Jc","Qc","Kc",
+    "Ah","2h","3h","4h","5h","6h","7h","8h","9h","Th","Jh","Qh","Kh" };
+
+
+const char *getConstCard( char *inCard ) {
+    for( int i=0; i<52; i++ ) {
+        if( strcmp( allCards[i], inCard ) == 0 ) {
+            return allCards[i];
+            }
+        }
+    // no match, return blank
+    return "?";
+    }
+
+
+
+CardSet readHandFromFile( FILE *inFile, char *outSuccess ) {
+    *outSuccess = false;
+    
+    CardSet c;
+    c.numCards = 4;
+    for( int i=0; i<4; i++ ) {
+        c.cards[i] = "?";
+        }
+    
+    char cardA[3];
+    char cardB[3];
+    char cardC[3];
+    char cardD[3];
+
+    char *cards[4];
+    cards[0] = cardA;
+    cards[1] = cardB;
+    cards[2] = cardC;
+    cards[3] = cardD;
+    
+    
+    int numRead = fscanf( inFile,
+                          "hand %2s %2s %2s %2s\n",
+                          cardA, cardB, cardC, cardD );
+    if( numRead == 4 ) {
+        *outSuccess = true;
+        for( int i=0; i<4; i++ ) {
+            c.cards[i] = getConstCard( cards[i] );
+            }
+        /*
+        printf( "Read hand from file:  " );
+        print( &c );
+        printf( "\n" );
+        */
+        }
+    else {
+        /*
+          printf( "Failed to read hand from file (numRead = %d)\n", numRead );
+        */
+        }
+
+    
+    return c;
+    }
+
+
+
+
+CardSet readFlopFromFile( FILE *inFile, char *outSuccess ) {
+    *outSuccess = false;
+    
+    CardSet c;
+    c.numCards = 3;
+    for( int i=0; i<3; i++ ) {
+        c.cards[i] = "?";
+        }
+    
+    char cardA[3];
+    char cardB[3];
+    char cardC[3];
+
+    char *cards[3];
+    cards[0] = cardA;
+    cards[1] = cardB;
+    cards[2] = cardC;
+    
+    
+    int numRead = fscanf( inFile,
+                          "flop %2s %2s %2s\n",
+                          cardA, cardB, cardC );
+    if( numRead == 3 ) {
+        *outSuccess = true;
+        for( int i=0; i<3; i++ ) {
+            c.cards[i] = getConstCard( cards[i] );
+            }
+        /*
+        printf( "Read flop from file:  " );
+        print( &c );
+        printf( "\n" );
+        */
+        }
+    else {
+        /*
+        printf( "Failed to read flop from file (numRead = %d)\n", numRead );
+        */
+        }
+
+    
+    return c;
+    }
+
+
 
 int main( int inNumArgs, const char **inArgs ) {
+    
+    srand( time( NULL ) );
 
     if( inNumArgs != 2 ) {
         usage();
         }
-    
-    srand( time( NULL ) );
 
-    CardSet *hands[9];
-    
-    
-    CardSet handA = makeHand( "2h", "5h", "?", "?" );
-    CardSet handB = makeHand( "?", "?", "?", "?" );
+    FILE *f = fopen( inArgs[1], "r" );
 
-    hands[0] = &handA;
-    for( int i=1; i<9; i++ ) {
-        hands[i] = &handB;
+    if( f == NULL ) {
+        usage();
+        }
+
+    CardSet hands[9];
+    
+    CardSet *handPointers[9];
+
+    for( int i=0; i<9; i++ ) {
+        char success;
+
+        hands[i] = readHandFromFile( f, &success );
+
+        if( success ) {
+            handPointers[i] = &( hands[i] );
+            }
+        else {
+            handPointers[i] = NULL;
+            }
+        }
+    
+
+    char success = false;
+    CardSet flopTop = readFlopFromFile( f, &success );
+
+    if( ! success ) {
+        printf( "Failed to read top flop from file after hands\n" );
+        usage();
         }
     
     
-    CardSet flopTop = makeBoard( "3d", "6c", "Ts" );
-    CardSet flopBot = makeBoard( "3h", "8h", "9h" );
+    CardSet flopBot = readFlopFromFile( f, &success );
 
-    int numRuns = 0;
-    int winA = 0;
-    int loseA = 0;
+    if( ! success ) {
+        printf( "Failed to read bottom flop from file after hands\n" );
+        usage();
+        }
     
-    for( int i=0; i<10; i++ ) {
-        Result r = simWinner( &flopTop, &flopBot, hands );
-
-        if( r.winners[0] ) {
-            winA ++;
-            }
-        else {
-            loseA ++;
-            }
+    int numRuns = 0;
+    int winCount[9] = { 0,0,0,0,0,0,0,0,0 };
+    
         
+    
+    for( int i=0; i<20000; i++ ) {
+        Result r = simWinner( &flopTop, &flopBot, handPointers );
+
+        for( int p=0; p<9; p++ ) {
+            if( r.winners[p] ) {
+                winCount[p]++;
+                }
+            }
         
         numRuns++;
         }
 
-    printf( "A wins: %0.2f\n",
-            (float) winA / (float) numRuns );
+    printf( "Top flop:     " );
+    print( &flopTop );
+
+    printf( "\nBottom flop:  " );
+    print( &flopBot );
+
+    printf( "\n\n" );
     
     
+    for( int p=0; p<9; p++ ) {
+        if( handPointers[p] == NULL ) {
+            printf( "Seat %d  empty\n", p+1 );
+            }
+        else {
+            printf( "Seat %d has  ", p + 1 );
+            print( handPointers[p] );
+            
+            printf( "  wins: %0.1f%%\n",
+                    100 * (float) winCount[p] / (float) numRuns );
+            }
+        }
     return 0;
     }
