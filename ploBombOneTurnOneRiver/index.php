@@ -31,7 +31,7 @@ $flops = array();
 
 for( $i=0; $i<2; $i++ ) {
     $flops[$i] = plo_requestFilter( "flop_$i",
-                                    "/[AKQJT2345678910dhcs ]+/i", "" );
+                                    "/[AKQJT2345678910dhcs ?]+/i", "" );
     $flops[$i] = strtolower( $flops[$i] );
     
     $flops[$i] = preg_replace( '/a/', "A", $flops[$i] );
@@ -40,6 +40,11 @@ for( $i=0; $i<2; $i++ ) {
     $flops[$i] = preg_replace( '/j/', "J", $flops[$i] );
     $flops[$i] = preg_replace( '/t/', "T", $flops[$i] );
     $flops[$i] = preg_replace( '/10/', "T", $flops[$i] );
+
+    // normalize unknown flops to 3 ? symbols
+    if( stripos( $hands[$i], "?" ) === 0 ) {
+        $flops[$i] = "? ? ?";
+        }
     }
 
 

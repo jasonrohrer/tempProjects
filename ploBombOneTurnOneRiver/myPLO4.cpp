@@ -263,6 +263,14 @@ Result simWinner( CardSet *inFlopTop, CardSet *inFlopBot,
     remove( &d, inFlopTop );
     remove( &d, inFlopBot );
 
+    // allow unknown flops too
+    CardSet workingFlops[2];
+
+    // but not NULL flops
+    workingFlops[0] = copy( inFlopTop );    
+    workingFlops[1] = copy( inFlopBot );    
+    
+    
     // we're going to modify unknown hands by drawing cards
     // do that in copies of the hands
     CardSet workingHands[9];
@@ -302,15 +310,28 @@ Result simWinner( CardSet *inFlopTop, CardSet *inFlopBot,
             }
         }
 
+    // now draw cards to populate unknown flops too
+    for( int i=0; i<2; i++ ) {
+        for( int c=0; c<workingFlops[i].numCards; c++ ) {
+            if( strcmp( workingFlops[i].cards[c], "?" ) == 0 ) {
+                workingFlops[i].cards[c] = d.cards[ nextCard ];
+                nextCard++;
+                }
+            }
+        }
+    
+    
     phevaluator::Rank handRanksTop[9];
     phevaluator::Rank handRanksBottom[9];
 
     for( int i=0; i<9; i++ ) {
         if( workingHandsPointers[i] != NULL ) {
             handRanksTop[i] =
-                getRank( inFlopTop, turn, river, workingHandsPointers[i] );
+                getRank( &workingFlops[0],
+                         turn, river, workingHandsPointers[i] );
             handRanksBottom[i] =
-                getRank( inFlopBot, turn, river, workingHandsPointers[i] );
+                getRank( &workingFlops[1],
+                         turn, river, workingHandsPointers[i] );
             }
         }
 
@@ -363,13 +384,13 @@ Result simWinner( CardSet *inFlopTop, CardSet *inFlopBot,
     if( inPrintResult ) {
         
         printf( "\n\nBoard = \n" );
-        print( inFlopTop );
+        print( &workingFlops[0] );
 
         printf( "\n         " );
         printf( "%s ", turn );
         printf( "%s\n", river );
 
-        print( inFlopBot );
+        print( &workingFlops[1] );
         printf( "\n" );
 
 
