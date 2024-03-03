@@ -18,17 +18,22 @@ g++ -g -I../include -o myPLO4 myPLO4.cpp ../libphevalplo4.a
 #include <cassert>
 #include <string.h>
 
-static const char suits[] = { 'd', 's', 'c', 'h' };
 
-static const char ranks[] =
-{ 'A','2','3','4','5','6','7','8','9','T','J','Q','K' };
+
+// const strings for all possible cards in hand
+// used when reading CardSet from file to avoid allocating memory
+static const char *allCards[52] = {
+    "Ad","2d","3d","4d","5d","6d","7d","8d","9d","Td","Jd","Qd","Kd",
+    "As","2s","3s","4s","5s","6s","7s","8s","9s","Ts","Js","Qs","Ks",
+    "Ac","2c","3c","4c","5c","6c","7c","8c","9c","Tc","Jc","Qc","Kc",
+    "Ah","2h","3h","4h","5h","6h","7h","8h","9h","Th","Jh","Qh","Kh" };
 
 
 
 
 // a full or partial deck
 typedef struct Deck {
-        char *cards[52];
+        const char *cards[52];
         int numCards;
     } Deck;
 
@@ -112,25 +117,11 @@ void boardAdd( CardSet *inBoard, const char *inNewCard ) {
 
 static void setupFreshDeck( Deck *inDeck ) {
 
-    for( int s=0; s<4; s++ ) {
-        for( int r=0; r<13; r++ ) {
-            int i = r * 4 + s;
-            inDeck->cards[ i ] = new char[3];
-            inDeck->cards[ i ][2] = '\0';
-
-            inDeck->cards[ i ][0] = ranks[r];
-            inDeck->cards[ i ][1] = suits[s];
-            }
-        }
-    inDeck->numCards = 52;
-    }
-
-
-
-static void freeDeck( Deck *inDeck ) {
     for( int i=0; i<52; i++ ) {
-        delete [] inDeck->cards[i];
+        inDeck->cards[i] = allCards[i];
         }
+    
+    inDeck->numCards = 52;
     }
 
 
@@ -149,11 +140,13 @@ static void shuffle( Deck *inDeck ) {
     for( int i = inDeck->numCards - 1; i>=1; i-- ) {
         
         int j = randRange( 0, i );
-        char *temp = inDeck->cards[j];
+        const char *temp = inDeck->cards[j];
         inDeck->cards[j] = inDeck->cards[i];
         inDeck->cards[i] = temp;
         }
     }
+
+
 
 static void print( Deck *inDeck ) {
     for( int i=0; i < inDeck->numCards; i++ )
@@ -182,7 +175,7 @@ static char remove( Deck *inDeck, const char *inCard ) {
 
     if( findIndex != -1 ) {
         for( int i=findIndex; i< inDeck->numCards -1; i++ ) {
-            memcpy( inDeck->cards[i], inDeck->cards[ i+1 ], 3 );
+            inDeck->cards[i] = inDeck->cards[ i+1 ];
             }
         inDeck->numCards--;
         return true;
@@ -213,16 +206,12 @@ static char remove( Deck *inDeck, CardSet *inCards ) {
 
 static Deck copy( Deck *inDeck ) {
     Deck newDeck;
-
-    for( int i=0; i < 52; i++ ) {
-        newDeck.cards[i] = new char[3];
-        }
     
-    for( int i=0; i < inDeck->numCards; i++ ) {
-        memcpy( newDeck.cards[i], inDeck->cards[i], 3 );
-        }
-
     newDeck.numCards = inDeck->numCards;
+
+    for( int i=0; i < newDeck.numCards; i++ ) {
+        newDeck.cards[i] = inDeck->cards[i];
+        }
     
     return newDeck;
     }
@@ -423,8 +412,6 @@ Result simWinner( CardSet *inFlopTop, CardSet *inFlopBot,
         printf( "\n\n" );
         }
 
-    freeDeck( &d );
-    
     
     return r;
     }
@@ -439,13 +426,6 @@ void usage() {
 
 
 
-// const strings for all possible cards in hand
-// used when reading CardSet from file to avoid allocating memory
-static const char *allCards[52] = {
-    "Ad","2d","3d","4d","5d","6d","7d","8d","9d","Td","Jd","Qd","Kd",
-    "As","2s","3s","4s","5s","6s","7s","8s","9s","Ts","Js","Qs","Ks",
-    "Ac","2c","3c","4c","5c","6c","7c","8c","9c","Tc","Jc","Qc","Kc",
-    "Ah","2h","3h","4h","5h","6h","7h","8h","9h","Th","Jh","Qh","Kh" };
 
 
 const char *getConstCard( char *inCard ) {
@@ -615,8 +595,7 @@ int main( int inNumArgs, const char **inArgs ) {
     allGoodCards &= remove( &d, &flopTop );
     allGoodCards &= remove( &d, &flopBot );
 
-    freeDeck( &d );
-    
+
     if( !allGoodCards ) {
         printf( "Bad card present in hand or flop\n" );
         return 1;
