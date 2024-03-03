@@ -170,7 +170,8 @@ static void print( CardSet *inCards ) {
 
 
 // can handle "?" for unknown cards that shouldn't be removed
-static void remove( Deck *inDeck, const char *inCard ) {
+// returns true if remove, false if removal fails (and card is not ?)
+static char remove( Deck *inDeck, const char *inCard ) {
     int findIndex = -1;
     for( int i=0; i < inDeck->numCards; i++ ) {
         if( strcmp( inDeck->cards[i], inCard ) == 0 ) {
@@ -184,15 +185,28 @@ static void remove( Deck *inDeck, const char *inCard ) {
             memcpy( inDeck->cards[i], inDeck->cards[ i+1 ], 3 );
             }
         inDeck->numCards--;
+        return true;
+        }
+
+    if( strcmp( inCard, "?" ) != 0 ) {
+        return false;
+        }
+    else {
+        return true;
         }
     }
 
 
+
 // can handle "?" for unknown cards that shouldn't be removed
-static void remove( Deck *inDeck, CardSet *inCards ) {
+// returns true if all present in deck and removed (or ?)
+// returns false if non-? card is not in deck
+static char remove( Deck *inDeck, CardSet *inCards ) {
+    char allRemoved = true;
     for( int i=0; i<inCards->numCards; i++ ) {
-        remove( inDeck, inCards->cards[i] );
+        allRemoved &= remove( inDeck, inCards->cards[i] );
         }
+    return allRemoved;
     }
 
 
@@ -586,6 +600,29 @@ int main( int inNumArgs, const char **inArgs ) {
         printf( "Failed to read bottom flop from file after hands\n" );
         usage();
         }
+
+    // make sure there are no duplicate (or bad) cards in flops or hands
+    char allGoodCards = true;
+
+    Deck d;
+    setupFreshDeck( &d );
+    
+    for( int p=0; p<9; p++ ) {
+        if( handPointers[p] != NULL ) {
+            allGoodCards &= remove( &d, handPointers[p] );
+            }
+        }
+    allGoodCards &= remove( &d, &flopTop );
+    allGoodCards &= remove( &d, &flopBot );
+
+    freeDeck( &d );
+    
+    if( !allGoodCards ) {
+        printf( "Bad card present in hand or flop\n" );
+        return 1;
+        }
+    
+    
     
     int numRuns = 0;
     int winCount[9] = { 0,0,0,0,0,0,0,0,0 };
