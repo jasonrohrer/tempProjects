@@ -42,7 +42,7 @@ for( $i=0; $i<2; $i++ ) {
     $flops[$i] = preg_replace( '/10/', "T", $flops[$i] );
 
     // normalize unknown flops to 3 ? symbols
-    if( stripos( $hands[$i], "?" ) === 0 ) {
+    if( stripos( $flops[$i], "?" ) === 0 ) {
         $flops[$i] = "? ? ?";
         }
     }
