@@ -586,18 +586,41 @@ int main( int inNumArgs, const char **inArgs ) {
 
     Deck d;
     setupFreshDeck( &d );
+
+
+    
+    char thisGood = remove( &d, &flopTop );
+    if( ! thisGood ) {
+        printf( "Duplicate card present in Top Flop: " );
+        print( &flopTop );
+        printf( "\n" );
+        }
+    allGoodCards &= thisGood;
+
+    thisGood = remove( &d, &flopBot );
+    if( ! thisGood ) {
+        printf( "Duplicate card present in Bottom Flop: " );
+        print( &flopBot );
+        printf( "\n" );
+        }
+    allGoodCards &= thisGood;
+    
     
     for( int p=0; p<9; p++ ) {
         if( handPointers[p] != NULL ) {
-            allGoodCards &= remove( &d, handPointers[p] );
+            thisGood = remove( &d, handPointers[p] );
+            if( ! thisGood ) {
+                printf( "Duplicate card present in Hand %d: ", p + 1 );
+                print( handPointers[p] );
+                printf( "\n" );
+                }
+            allGoodCards &= thisGood;
             }
         }
-    allGoodCards &= remove( &d, &flopTop );
-    allGoodCards &= remove( &d, &flopBot );
+
 
 
     if( !allGoodCards ) {
-        printf( "Bad card present in hand or flop\n" );
         return 1;
         }
     
