@@ -3,12 +3,12 @@ To compile:
 
 git clone https://github.com/HenryRLee/PokerHandEvaluator.git
 cd PokerHandEvaluator/cpp
-make libphevalplo4.a
+make libphevalplo4.a libphevalplo5.a libphevalplo6.a
 
 cp myPLO4.cpp PokerHandEvaluator/cpp/examples
 cd examples
 
-g++ -g -I../include -o myPLO4 myPLO4.cpp ../libphevalplo4.a
+g++ -g -I../include -o myPLO4 myPLO4.cpp ../libphevalplo4.a ../libphevalplo5.a ../libphevalplo6.a
 */
 
 
@@ -497,10 +497,23 @@ CardSet readHandFromFile( FILE *inFile, char *outSuccess ) {
     cards[3] = cardD;
     cards[4] = cardE;
     cards[5] = cardF;
-    
+
+
+    long startPos = ftell( inFile );
+
+    char lineBuffer[200];
+
+    // read full line
+    char *line = fgets( lineBuffer, 200, inFile );
+
+    if( line == NULL ) {
+        // failed
+        return c;
+        }
+
     
     // try reading 6, but count num read to determine hand size
-    int numRead = fscanf( inFile,
+    int numRead = sscanf( line,
                           "hand %2s %2s %2s %2s %2s %2s\n",
                           cardA, cardB, cardC, cardD, cardE, cardF  );
     if( numRead == 4 || numRead == 5 || numRead == 6 ) {
@@ -518,6 +531,10 @@ CardSet readHandFromFile( FILE *inFile, char *outSuccess ) {
         */
         }
     else {
+        // not a valid hand
+        // rewind to start of line
+        fseek( inFile, startPos, SEEK_SET );
+        
         /*
           printf( "Failed to read hand from file (numRead = %d)\n", numRead );
         */

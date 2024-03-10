@@ -22,10 +22,21 @@ for( $i=0; $i<9; $i++ ) {
     $hands[$i] = preg_replace( '/10/', "T", $hands[$i] );
     
     // normalize unknown hands to 4 ? symbols
+    $questionMarkCount = substr_count( $hands[$i], "?" );
+    
     if( stripos( $hands[$i], "?" ) === 0 ) {
-        $hands[$i] = "? ? ? ?";
+        if( $questionMarkCount == 1 || $questionMarkCount == 4 ) {
+            $hands[$i] = "? ? ? ?";
+            }
+        else if( $questionMarkCount == 5 ) {
+            $hands[$i] = "? ? ? ? ?";
+            }
+        else if( $questionMarkCount == 6 ) {
+            $hands[$i] = "? ? ? ? ? ?";
+            }
         }
     }
+
 
 $flops = array();
 
@@ -109,7 +120,7 @@ if( $action == "simulate" ) {
 
     echo "<pre>\n$output\n</pre>";
 
-    unlink( $tmpFileName );
+    //unlink( $tmpFileName );
     }
 
 
