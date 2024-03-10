@@ -40,9 +40,10 @@ typedef struct Deck {
 
 
 // represents either a hand or a board
-// for PLO, this is 5 cards max (had can be 4, board can be 3, 4, or 5)
+// for PLO, this is 6 cards max (hand can be 4, 5, or 6, 
+// board can be 3, 4, or 5)
 typedef struct CardSet {
-        const char *cards[5];
+        const char *cards[6];
         int numCards;
     } CardSet;
         
@@ -221,16 +222,48 @@ static Deck copy( Deck *inDeck ) {
 phevaluator::Rank getRank( CardSet *inFlop,
                            const char *inTurn, const char *inRiver,
                            CardSet *inHand ) {
-    phevaluator::Rank rank =
-        phevaluator::EvaluatePlo4Cards( inFlop->cards[0],
-                                        inFlop->cards[1],
-                                        inFlop->cards[2],
-                                        inTurn,
-                                        inRiver,
-                                        inHand->cards[0],
-                                        inHand->cards[1],
-                                        inHand->cards[2],
-                                        inHand->cards[3] );
+    phevaluator::Rank rank;
+    
+    if( inHand->numCards == 4 ) {
+        rank =
+            phevaluator::EvaluatePlo4Cards( inFlop->cards[0],
+                                            inFlop->cards[1],
+                                            inFlop->cards[2],
+                                            inTurn,
+                                            inRiver,
+                                            inHand->cards[0],
+                                            inHand->cards[1],
+                                            inHand->cards[2],
+                                            inHand->cards[3] );
+        }
+    else if( inHand->numCards == 5 ) {
+        rank =
+            phevaluator::EvaluatePlo5Cards( inFlop->cards[0],
+                                            inFlop->cards[1],
+                                            inFlop->cards[2],
+                                            inTurn,
+                                            inRiver,
+                                            inHand->cards[0],
+                                            inHand->cards[1],
+                                            inHand->cards[2],
+                                            inHand->cards[3],
+                                            inHand->cards[4] );
+        }
+    else if( inHand->numCards == 6 ) {
+        rank =
+            phevaluator::EvaluatePlo6Cards( inFlop->cards[0],
+                                            inFlop->cards[1],
+                                            inFlop->cards[2],
+                                            inTurn,
+                                            inRiver,
+                                            inHand->cards[0],
+                                            inHand->cards[1],
+                                            inHand->cards[2],
+                                            inHand->cards[3],
+                                            inHand->cards[4],
+                                            inHand->cards[5] );
+        }
+    
     /*
     printf( "Board: %s %s %s %s %s, hand: %s %s %s %s,  ",
             inFlop->cards[0],
@@ -257,6 +290,7 @@ typedef struct Result {
 
 // simulates one run of double-board bomb pot, one turn, one river
 // inHands CardSets can contain ?,?,?,? for unknown hands
+// inHands can be 4-card, 5-card, or 6-card hands
 // inHands can be NULL for empty seats (or folded players)
 // returns map of winners
 Result simWinner( CardSet *inFlopTop, CardSet *inFlopBot,
@@ -444,8 +478,8 @@ CardSet readHandFromFile( FILE *inFile, char *outSuccess ) {
     *outSuccess = false;
     
     CardSet c;
-    c.numCards = 4;
-    for( int i=0; i<4; i++ ) {
+    c.numCards = 6;
+    for( int i=0; i<6; i++ ) {
         c.cards[i] = "?";
         }
     
@@ -453,20 +487,28 @@ CardSet readHandFromFile( FILE *inFile, char *outSuccess ) {
     char cardB[3];
     char cardC[3];
     char cardD[3];
+    char cardE[3];
+    char cardF[3];
 
-    char *cards[4];
+    char *cards[6];
     cards[0] = cardA;
     cards[1] = cardB;
     cards[2] = cardC;
     cards[3] = cardD;
+    cards[4] = cardE;
+    cards[5] = cardF;
     
     
+    // try reading 6, but count num read to determine hand size
     int numRead = fscanf( inFile,
-                          "hand %2s %2s %2s %2s\n",
-                          cardA, cardB, cardC, cardD );
-    if( numRead == 4 ) {
+                          "hand %2s %2s %2s %2s %2s %2s\n",
+                          cardA, cardB, cardC, cardD, cardE, cardF  );
+    if( numRead == 4 || numRead == 5 || numRead == 6 ) {
         *outSuccess = true;
-        for( int i=0; i<4; i++ ) {
+        
+        c.numCards = numRead;
+        
+        for( int i=0; i<c.numCards; i++ ) {
             c.cards[i] = getConstCard( cards[i] );
             }
         /*
@@ -605,9 +647,12 @@ int main( int inNumArgs, const char **inArgs ) {
         }
     allGoodCards &= thisGood;
     
-    
+
+    int numPlayerCards = 0;
     for( int p=0; p<9; p++ ) {
         if( handPointers[p] != NULL ) {
+            numPlayerCards += handPointers[p]->numCards;
+            
             thisGood = remove( &d, handPointers[p] );
             if( ! thisGood ) {
                 printf( "Duplicate card present in Hand %d: ", p + 1 );
@@ -618,6 +663,16 @@ int main( int inNumArgs, const char **inArgs ) {
             }
         }
 
+
+    // 2 flops, 1 turn, 1 river, 8 board cards
+    if( numPlayerCards + 8 > 52 ) {
+        // we can get here without duplicate cards, if there are ?
+        // catch case where we have too many players for hand size
+        
+        printf( "Too many players for hand sizes (%d cards required)",
+                numPlayerCards + 8 );
+        allGoodCards = false;
+        }
 
 
     if( !allGoodCards ) {
