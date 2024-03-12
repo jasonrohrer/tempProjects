@@ -794,6 +794,7 @@ int countStraightFillTwo( char inRankPresentMap[14] ) {
 char *categorizeHand( CardSet *inFiveCardHand, char inStraightDrawOnly,
                       char inFlushDrawOnly,
                       char *outIsFlushOrBetter, char *outIsStraightOrBetter ) {
+    
     char isFlush = false;
     char isStraight = false;
 
@@ -804,8 +805,8 @@ char *categorizeHand( CardSet *inFiveCardHand, char inStraightDrawOnly,
     // since this is omaha, look at both hole cards for flush
     char possibleFlushSuit = '?';
     
-    if( getSuit( inFiveCardHand->cards[3] ) ==
-        getSuit( inFiveCardHand->cards[4] ) ) {
+    if( getSuit( inFiveCardHand->cards[0] ) ==
+        getSuit( inFiveCardHand->cards[1] ) ) {
     
         possibleFlushSuit = getSuit( inFiveCardHand->cards[3] ) ;
         }
@@ -943,10 +944,10 @@ char *categorizeHand( CardSet *inFiveCardHand, char inStraightDrawOnly,
         extraB = " with Open-ended Straight Draw";
         }
     else if( isGutshotStraightDraw ) {
-        extraB = " with with Gutshot Straight Draw";
+        extraB = " with Gutshot Straight Draw";
         }
     else if( isBackdoorStraightDraw ) {
-        extraB = " with with Backdoor Straight Draw";
+        extraB = " with Backdoor Straight Draw";
         }
 
     if( inStraightDrawOnly && inFlushDrawOnly ) {
@@ -1041,7 +1042,7 @@ char *categorizeHand( CardSet *inFiveCardHand, char inStraightDrawOnly,
         }
     else if( maxRankCount == 2 ) {
         // one or two pair
-        if( numRanksOccurring == 2 ) {
+        if( numRanksOccurring == 3 ) {
             // two pair
             snprintf( buffer, 100, "Two Pair, %c's and %c's%s%s", 
                       numToRank( maxOccurringRank ),
@@ -1197,20 +1198,6 @@ char *categorizeHand( CardSet *inHand, CardSet *inBoard ) {
             }
         }
 
-    // cards not in our best 2
-    int k, l;
-    if( bestI == 0 && bestJ == 1 ) {
-        k = 2;
-        l = 3;
-        }
-    else if( bestI == 1 && bestJ == 2 ) {
-        k = 0;
-        l = 3;
-        }
-    else if( bestI == 2 && bestJ == 3 ) {
-        k = 0;
-        l = 1;
-        }
     
     
     
@@ -1229,30 +1216,67 @@ char *categorizeHand( CardSet *inHand, CardSet *inBoard ) {
                                     &flushOrBetter,
                                     &straightOrBetter );
 
+    
     if( !flushOrBetter ) {
-        // run again with our alternate pair of hold cards
-        
-        c.cards[0] = inHand->cards[k];
-        c.cards[1] = inHand->cards[l];
-    
-        char *drawDes = categorizeHand( &c,
-                                        ! flushOrBetter,
-                                        ! straightOrBetter,
-                                        &flushOrBetter,
-                                        &straightOrBetter );
+        // run again with our alternate pairs of hold cards
 
-        char *buffer = new char[200];
+        for( int k=0; k<inHand->numCards; k++ ) {
+            for( int l=k+1; l<inHand->numCards; l++ ) {
 
-        snprintf( buffer, 200, "%s%s", mainDes, drawDes );
+                if( k != bestI && l != bestJ ) {
+                    // not our best hole cards
+                    
+                    c.cards[0] = inHand->cards[k];
+                    c.cards[1] = inHand->cards[l];
 
-        delete [] mainDes;
-        delete [] drawDes;
-        return buffer;
+                    for( int p=0; p<2; p++ ) {
+                        
+                    
+                        char *drawDes;
+
+                        if( p == 0 ) {
+                            
+                            drawDes = categorizeHand( &c,
+                                                      true,
+                                                      false,
+                                                      &flushOrBetter,
+                                                      &straightOrBetter );
+                            }
+                        else if( p == 1 ) {
+                            if( straightOrBetter ) {
+                                break;
+                                }
+                            drawDes = categorizeHand( &c,
+                                                      false,
+                                                      true,
+                                                      &flushOrBetter,
+                                                      &straightOrBetter );
+                            }
+                        
+                    
+                        if( strstr( mainDes, drawDes ) == NULL ) {
+                            // this draw des not already present
+                            // add it
+                            
+                            char *buffer = new char[200];
+                            
+                            snprintf( buffer, 200, "%s%s", mainDes, drawDes );
+                            
+                            delete [] mainDes;
+                            delete [] drawDes;
+                            mainDes = buffer;
+                            }
+                        else {
+                            // already present, discard it
+                            delete [] drawDes;
+                            }
+                        }
+                    }
+                }
+            }
         }
-    else {
-        return mainDes;
-        }
     
+    return mainDes;
     }
 
 
