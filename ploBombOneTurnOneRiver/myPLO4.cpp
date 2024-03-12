@@ -1294,14 +1294,13 @@ char *categorizeHand( CardSet *inHand, CardSet *inBoard ) {
                                     &flushOrBetter,
                                     &straightOrBetter );
 
-    
     if( !flushOrBetter ) {
         // run again with our alternate pairs of hold cards
 
         for( int k=0; k<inHand->numCards; k++ ) {
             for( int l=k+1; l<inHand->numCards; l++ ) {
 
-                if( k != bestI && l != bestJ ) {
+                if( k != bestI || l != bestJ ) {
                     // not our best hole cards
                     
                     c.cards[0] = inHand->cards[k];
@@ -1330,12 +1329,8 @@ char *categorizeHand( CardSet *inHand, CardSet *inBoard ) {
                                                       &flushOrBetter,
                                                       &straightOrBetter );
                             }
-                        
-                    
+
                         if( strstr( mainDes, drawDes ) == NULL ) {
-                            printf( "Main des: %s\np = %d Draw des: %s\n",
-                                    mainDes, p,
-                                    drawDes );
                             // this draw des not already present
                             // add it
                             
