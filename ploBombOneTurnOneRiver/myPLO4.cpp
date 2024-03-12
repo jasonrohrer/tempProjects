@@ -863,7 +863,7 @@ char *categorizeHand( CardSet *inFiveCardHand, char inStraightDrawOnly,
     if( getSuit( inFiveCardHand->cards[0] ) ==
         getSuit( inFiveCardHand->cards[1] ) ) {
     
-        possibleFlushSuit = getSuit( inFiveCardHand->cards[3] ) ;
+        possibleFlushSuit = getSuit( inFiveCardHand->cards[0] ) ;
         }
     
     int suitHits = countSuitHits( inFiveCardHand, possibleFlushSuit );
