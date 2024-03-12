@@ -8,7 +8,7 @@ make libphevalplo4.a libphevalplo5.a libphevalplo6.a
 cp myPLO4.cpp PokerHandEvaluator/cpp/examples
 cd examples
 
-g++ -g -I../include -o myPLO4 myPLO4.cpp ../libphevalplo4.a ../libphevalplo5.a ../libphevalplo6.a
+g++ -g -I../include -o myPLO4 myPLO4.cpp ../libpheval.a ../libphevalplo4.a ../libphevalplo5.a ../libphevalplo6.a
 */
 
 
@@ -611,7 +611,7 @@ char getSuit( const char *inCard ) {
 // ...
 // K = 11
 // A = 12
-int getRankNum( char inRank, char inAceLow = false ) {
+int getRankNum( const char *inCard, char inAceLow = false ) {
     char r = getRank( inCard );
 
     if( inAceLow ) {
@@ -834,12 +834,19 @@ char *categorizeHand( CardSet *inFiveCardHand ) {
         rankPresentMap[0] = true;
         rankPresentMap[13] = true;
         }
+
+    int maxRank = 0;
     
     for( int i=0; i<12; i++ ) {
-        rankPresentMap[ i + 1 ] = rankPresent( inFiveCardHand, i );
+        char p = rankPresent( inFiveCardHand, i );
+        rankPresentMap[ i + 1 ] = p;
+
+        if( p ) {
+            maxRank = i;
+            }
         }
     
-    int countStraights = countStraights( rankPresentMap );
+    isStraight = isStraightPresent( rankPresentMap );
     
     int countStraightDraws = countStraightFillOne( rankPresentMap );
     
@@ -851,11 +858,7 @@ char *categorizeHand( CardSet *inFiveCardHand ) {
     
     char isBackdoorStraightDraw = false;
     
-    
-    if( countStraights > 0 ) {
-        isStraight = true;
-        }
-    else {
+    if( ! isStraight ){
         if( countStraightDraws > 0 ) {
             
             if( countStraightDraws > 1 ) {
@@ -885,7 +888,7 @@ char *categorizeHand( CardSet *inFiveCardHand ) {
             }
         
         snprintf( buffer, 100, "%c-high Straight%s", 
-                  numToRank( maxRank ), exta );
+                  numToRank( maxRank ), extra );
         
         return buffer;
         }
@@ -1010,12 +1013,14 @@ char *categorizeHand( CardSet *inFiveCardHand ) {
                       numToRank( maxOccurringRank ),
                       numToRank( secondMaxOccurringRank ),
                       extraA, extraB );
+            return buffer;
             }
         else {
             // one pair
             snprintf( buffer, 100, "One Pair of %c's%s%s", 
                       numToRank( maxOccurringRank ),
                       extraA, extraB );
+            return buffer;
             }
         }
     else {
@@ -1025,6 +1030,8 @@ char *categorizeHand( CardSet *inFiveCardHand ) {
         snprintf( buffer, 100, "%c High%s%s", 
                       numToRank( highestRank ),
                       extraA, extraB );
+
+        return buffer;
         }
         
     }
@@ -1128,10 +1135,11 @@ char *categorizeHand( CardSet *inHand, CardSet *inBoard ) {
             
             const char *cardJ = inHand->cards[j];
             
-            Rank r = phevaluator::EvaluateCards( cardI, cardJ,
-                                                 inBoard->cards[0],
-                                                 inBoard->cards[1],
-                                                 inBoard->cards[2] );
+            phevaluator::Rank r =
+                phevaluator::EvaluateCards( cardI, cardJ,
+                                            inBoard->cards[0],
+                                            inBoard->cards[1],
+                                            inBoard->cards[2] );
             int v = r.value();
             
             if( v < bestValue ) {
