@@ -846,8 +846,9 @@ int countStraightFillTwo( char inRankPresentMap[14],
 // for example).  If both are true, we describe both  
 
 // string destroyed by caller
-char *categorizeHand( CardSet *inFiveCardHand, char inStraightDrawOnly,
+char *categorizeHand( CardSet *inFiveCardHand,
                       char inFlushDrawOnly,
+                      char inStraightDrawOnly,
                       char *outIsFlushOrBetter, char *outIsStraightOrBetter ) {
     
     char isFlush = false;
@@ -967,33 +968,37 @@ char *categorizeHand( CardSet *inFiveCardHand, char inStraightDrawOnly,
 
 
     char *buffer = new char[100];
-    
-    if( isStraight && ! isFlush ) {
-        const char *extra = "";
-        if( isBackdoorFlushDraw ) {
-            extra = " with Backdoor Flush Draw";
+
+
+    if( ! inFlushDrawOnly && ! inStraightDrawOnly ) {
+        
+        if( isStraight && ! isFlush ) {
+            const char *extra = "";
+            if( isBackdoorFlushDraw ) {
+                extra = " with Backdoor Flush Draw";
+                }
+            else if( isFlushDraw ) {
+                extra = " with Flush Draw";
+                }
+            
+            snprintf( buffer, 100, "%c-high Straight%s", 
+                      numToRank( maxRank ), extra );
+            
+            return buffer;
             }
-        else if( isFlushDraw ) {
-            extra = " with Flush Draw";
+        
+        if( isFlush && ! isStraight ) {
+            snprintf( buffer, 100, "%c-high Flush", 
+                      numToRank( maxRank ) );
+            
+            return buffer;
             }
-        
-        snprintf( buffer, 100, "%c-high Straight%s", 
-                  numToRank( maxRank ), extra );
-        
-        return buffer;
-        }
-    
-    if( isFlush && ! isStraight ) {
-        snprintf( buffer, 100, "%c-high Flush", 
-                  numToRank( maxRank ) );
-        
-        return buffer;
-        }
-    if( isFlush && isStraight ) {
-        snprintf( buffer, 100, "%c-high Straight Flush", 
-                  numToRank( maxRank ) );
-        
-        return buffer;
+        if( isFlush && isStraight ) {
+            snprintf( buffer, 100, "%c-high Straight Flush", 
+                      numToRank( maxRank ) );
+            
+            return buffer;
+            }
         }
     
     // flushes and straights never have duplicate ranks (never have pairs)
@@ -1021,6 +1026,8 @@ char *categorizeHand( CardSet *inFiveCardHand, char inStraightDrawOnly,
         extraB = " with Backdoor Straight Draw";
         }
 
+
+    // now handle case where we want to describe our draws only
     if( inStraightDrawOnly && inFlushDrawOnly ) {
         snprintf( buffer, 100, "%s%s", extraA, extraB );
         return buffer;
@@ -1326,6 +1333,9 @@ char *categorizeHand( CardSet *inHand, CardSet *inBoard ) {
                         
                     
                         if( strstr( mainDes, drawDes ) == NULL ) {
+                            printf( "Main des: %s\np = %d Draw des: %s\n",
+                                    mainDes, p,
+                                    drawDes );
                             // this draw des not already present
                             // add it
                             
