@@ -829,19 +829,21 @@ char *categorizeHand( CardSet *inFiveCardHand ) {
         }
     
 
+    int maxRank = 0;
+
     if( rankPresent( inFiveCardHand, 12 ) ) {
         // A present
         rankPresentMap[0] = true;
         rankPresentMap[13] = true;
+        maxRank = 12;
         }
 
-    int maxRank = 0;
     
     for( int i=0; i<12; i++ ) {
         char p = rankPresent( inFiveCardHand, i );
         rankPresentMap[ i + 1 ] = p;
 
-        if( p ) {
+        if( p && i > maxRank ) {
             maxRank = i;
             }
         }
@@ -874,6 +876,12 @@ char *categorizeHand( CardSet *inFiveCardHand ) {
         }
     
 
+    if( isStraight && maxRank == 12 &&
+        ! rankPresent( inFiveCardHand, 11 ) ) {
+        // straight with an A in it, but no K
+        // 5 must actually be the max rank
+        maxRank = 3;
+        }
 
 
     char *buffer = new char[100];
@@ -953,10 +961,10 @@ char *categorizeHand( CardSet *inFiveCardHand ) {
         if( rankCountMap[i] > maxRankCount ) {
             // demote previous to second
             secondMaxRankCount = maxRankCount;
-            secondMaxOccurringRank = i;
+            secondMaxOccurringRank = maxOccurringRank;
             
             maxRankCount = rankCountMap[i];
-            maxOccurringRank = numToRank( i );
+            maxOccurringRank = i;
             }
         else if( rankCountMap[i] > secondMaxRankCount ) {
             secondMaxRankCount = rankCountMap[i];
@@ -1043,8 +1051,21 @@ char *categorizeHand( CardSet *inFiveCardHand ) {
 // Includes descriptions of draws for hand+flop
 //
 // string destroyed by caller
+// can return NULL if hand or board contain ?
 char *categorizeHand( CardSet *inHand, CardSet *inBoard ) {
 
+    for( int i=0; i<inHand->numCards; i++ ) {
+        if( strcmp( inHand->cards[i], "?" ) == 0 ) {
+            return NULL;
+            }
+        }
+    for( int i=0; i<inBoard->numCards; i++ ) {
+        if( strcmp( inBoard->cards[i], "?" ) == 0 ) {
+            return NULL;
+            }
+        }
+    
+    
     // if board has 5 cards, then we use library categorization code
     // since draws irrelevant
     if( inBoard->numCards == 5 ) {
@@ -1321,6 +1342,18 @@ int main( int inNumArgs, const char **inArgs ) {
             printf( "  wins: %0.1f%%  ties: %0.1f%%\n",
                     100 * (float) winCount[p] / (float) numRuns,
                     100 * (float) tieCount[p] / (float) numRuns );
+
+            char *topDes = categorizeHand( handPointers[p], &flopTop );
+            char *botDes = categorizeHand( handPointers[p], &flopBot );
+
+            if( topDes != NULL ) {
+                printf( "  On top board: %s\n", topDes );
+                delete [] topDes;
+                }
+            if( botDes != NULL ) {
+                printf( "  On bottom board: %s\n", botDes );
+                delete [] botDes;
+                }
             }
         }
 
