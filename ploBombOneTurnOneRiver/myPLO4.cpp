@@ -459,6 +459,8 @@ Result simWinner( CardSet *inFlopTop, CardSet *inFlopBot,
 void usage() {
     printf( "Usage:\n\n" );
     printf( "myPLO4 handFile.txt\n\n" );
+    printf( "OR Usage:\n\n" );
+    printf( "myPLO4 handSize numPlayers\n\n" );
     exit( 1 );
     }
 
@@ -1358,15 +1360,210 @@ char *categorizeHand( CardSet *inHand, CardSet *inBoard ) {
 
 
 
+float computeWinEquity(
+    CardSet *inFlopTop, CardSet *inFlopBottom,
+    CardSet *inHand, int inNumTotalPlayers, int inNumSims ) {
+
+    int numRuns = 0;
+    int winCount[9] = { 0,0,0,0,0,0,0,0,0 };
+    int tieCount[9] = { 0,0,0,0,0,0,0,0,0 };
+
+    int numCardsInHand = inHand->numCards;
+
+    CardSet hands[9];
+
+    CardSet *handPointers[9];
+
+    for( int i=0; i<9; i++ ) {
+        handPointers[i] = NULL;
+        }
+    handPointers[0] = inHand;
+
+    for( int i=1; i<inNumTotalPlayers; i++ ) {
+        hands[i].numCards = inHand->numCards;
+        for( int c=0; c< inHand->numCards; c++ ) {
+            hands[i].cards[c] = "?";
+            }
+        handPointers[i] = &( hands[i] );
+        }
+    
+    
+    for( int i=0; i<inNumSims; i++ ) {
+        Result r = simWinner( inFlopTop, inFlopBottom, handPointers );
+
+        for( int p=0; p<9; p++ ) {
+            if( r.winners[p] ) {
+                char tie = false;
+
+                for( int o=0; o<9; o++ ) {
+                    if( o != p && r.winners[o] ) {
+                        tie = true;
+                        }
+                    }
+                if( tie ) {
+                    tieCount[p]++;
+                    }
+                else {
+                    winCount[p]++;
+                    }
+                }
+            }
+        
+        numRuns++;
+        }
+
+
+    
+    return 100 * (float) winCount[0] / (float) numRuns;
+    }
+
+
+
+typedef struct BombPotSituation {
+        CardSet flopTop;
+        CardSet flopBottom;
+        CardSet hand;
+    } BombPotSituation;
+        
+
+
+BombPotSituation getRandomBombPotSituation( int inHandSize ) {
+    Deck d;
+    setupFreshDeck( &d );
+    shuffle( &d );
+
+    int nextCard = 0;
+
+    BombPotSituation s;
+
+    s.flopTop.numCards = 3;
+    s.flopBottom.numCards = 3;
+    
+    for( int i=0; i<3; i++ ) {
+        s.flopTop.cards[i] = d.cards[nextCard];
+        nextCard++;
+        s.flopBottom.cards[i] = d.cards[nextCard];
+        nextCard++;        
+        }
+    s.hand.numCards = inHandSize;
+    for( int i=0; i<inHandSize; i++ ) {
+        s.hand.cards[i] = d.cards[nextCard];
+        nextCard++;
+        }
+
+    return s;
+    }
+
+
+// finds situation with equity in band
+BombPotSituation findBombPotSituationWithEquity( int inHandSize,
+                                                 int inNumTotalPlayers,
+                                                 float inLowEquity,
+                                                 float inHighEquity,
+                                                 float *outEquity ) {
+
+    while( true ) {
+        BombPotSituation s = getRandomBombPotSituation( inHandSize );
+
+        float roughEquity = computeWinEquity(
+            &( s.flopTop ), &( s.flopBottom ),
+            &( s.hand ),
+            inNumTotalPlayers, 20 );
+
+        if( roughEquity >= inLowEquity &&
+            roughEquity <= inHighEquity ) {
+            // our rough/quick equity calculation makes this a candidate
+
+            float finerEquity = computeWinEquity(
+                &( s.flopTop ), &( s.flopBottom ),
+                &( s.hand ),
+                inNumTotalPlayers, 200 );
+
+            if( finerEquity >= inLowEquity &&
+                finerEquity <= inHighEquity ) {
+
+            
+                // do more sims to verify equity is really in the desired band
+                float fineEquity = computeWinEquity(
+                    &( s.flopTop ), &( s.flopBottom ),
+                    &( s.hand ),
+                    inNumTotalPlayers, 2000 );
+
+                if( fineEquity >= inLowEquity &&
+                    fineEquity <= inHighEquity ) {
+                    *outEquity = fineEquity;
+                    return s;
+                    }
+                }       
+            // else try again
+            }
+        }
+    }
+
+
+
+
 
 int main( int inNumArgs, const char **inArgs ) {
     
     srand( time( NULL ) );
+    //srand( 3974987 );
 
-    if( inNumArgs != 2 ) {
+    if( inNumArgs != 2 && inNumArgs != 3 ) {
         usage();
         }
 
+    if( inNumArgs == 3 ) {
+        int handSize = 0;
+        int numPlayers = 0;
+
+        sscanf( inArgs[1], "%d", &handSize );
+        sscanf( inArgs[2], "%d", &numPlayers );
+
+        // 10 equity bands
+        for( int b=0; b<100; b+= 5 ) {
+
+            float low = b;
+            float high = b + 5;
+
+            float equity;
+            BombPotSituation s = findBombPotSituationWithEquity( handSize,
+                                                                 numPlayers,
+                                                                 low, high,
+                                                                 &equity );
+            char *catTop = categorizeHand( &( s.hand ),
+                                           &( s.flopTop ) );
+            char *catBot = categorizeHand( &( s.hand ),
+                                           &( s.flopBottom ) );
+
+            printf( "\n\nEquity in band %.0f%% - %.0f%% (%.1f%%):\n",
+                    low, high,
+                    equity );
+            printf( "  Board:\n   " );
+            print( &( s.flopTop ) );
+            printf( "\n   " );
+            print( &( s.flopBottom ) );
+            printf( "\n  Hand:\n   " );
+            print( &( s.hand ) );
+            printf( "\n" );
+
+            if( catTop != NULL ) {
+                printf( "  On top board: %s\n", catTop );
+                delete [] catTop;
+                }
+            if( catBot != NULL ) {
+                printf( "  On bottom board: %s\n", catBot );
+                delete [] catBot;
+                }
+            }
+        
+        
+        
+        return 0;
+        }
+    
+
+    
     FILE *f = fopen( inArgs[1], "r" );
 
     if( f == NULL ) {
