@@ -786,8 +786,14 @@ int countStraightFillTwo( char inRankPresentMap[14] ) {
 // cards, 3 board cards, 2 cards to come)
 // This categorizes draws too
 
+// if in____DrawOnly is true, we only describe draws for hands that
+// are not straights or flushes (we don't describe one or two pair,
+// for example).  If both are true, we describe both  
+
 // string destroyed by caller
-char *categorizeHand( CardSet *inFiveCardHand ) {
+char *categorizeHand( CardSet *inFiveCardHand, char inStraightDrawOnly,
+                      char inFlushDrawOnly,
+                      char *outIsFlushOrBetter, char *outIsStraightOrBetter ) {
     char isFlush = false;
     char isStraight = false;
 
@@ -883,6 +889,10 @@ char *categorizeHand( CardSet *inFiveCardHand ) {
         maxRank = 3;
         }
 
+    *outIsFlushOrBetter = isFlush;
+
+    *outIsStraightOrBetter = isStraight || isFlush;
+
 
     char *buffer = new char[100];
     
@@ -930,16 +940,27 @@ char *categorizeHand( CardSet *inFiveCardHand ) {
 
     const char *extraB = "";
     if( isOpenEndedStraightDraw ) {
-        extraA = " with Open-ended Straight Draw";
+        extraB = " with Open-ended Straight Draw";
         }
     else if( isGutshotStraightDraw ) {
-        extraA = " with with Gutshot Straight Draw";
+        extraB = " with with Gutshot Straight Draw";
         }
     else if( isBackdoorStraightDraw ) {
-        extraA = " with with Backdoor Straight Draw";
+        extraB = " with with Backdoor Straight Draw";
         }
 
-
+    if( inStraightDrawOnly && inFlushDrawOnly ) {
+        snprintf( buffer, 100, "%s%s", extraA, extraB );
+        return buffer;
+        }
+    else if( inFlushDrawOnly ) {
+        snprintf( buffer, 100, "%s", extraA );
+        return buffer;
+        }
+    else if( inStraightDrawOnly ) {
+        snprintf( buffer, 100, "%s", extraB );
+        return buffer;
+        }
 
 
     
@@ -981,6 +1002,9 @@ char *categorizeHand( CardSet *inFiveCardHand ) {
     
     
     if( maxRankCount == 4 ) {
+        *outIsStraightOrBetter = true;
+        *outIsFlushOrBetter = true;
+        
         snprintf( buffer, 100, "Quad %c's", numToRank( maxOccurringRank ) );
         
         return buffer;
@@ -991,7 +1015,9 @@ char *categorizeHand( CardSet *inFiveCardHand ) {
         
         if( numRanksOccurring == 2 ) {
             // full house
-            
+            *outIsStraightOrBetter = true;
+            *outIsFlushOrBetter = true;
+
             // check if underfull or overfull
             const char *fullType = "overfull";
             
@@ -1170,6 +1196,23 @@ char *categorizeHand( CardSet *inHand, CardSet *inBoard ) {
                 }
             }
         }
+
+    // cards not in our best 2
+    int k, l;
+    if( bestI == 0 && bestJ == 1 ) {
+        k = 2;
+        l = 3;
+        }
+    else if( bestI == 1 && bestJ == 2 ) {
+        k = 0;
+        l = 3;
+        }
+    else if( bestI == 2 && bestJ == 3 ) {
+        k = 0;
+        l = 1;
+        }
+    
+    
     
     CardSet c;
     c.numCards = 5;
@@ -1179,7 +1222,37 @@ char *categorizeHand( CardSet *inHand, CardSet *inBoard ) {
     c.cards[3] = inBoard->cards[1];
     c.cards[4] = inBoard->cards[2];
 
-    return categorizeHand( &c );
+    char straightOrBetter = false;
+    char flushOrBetter = false;
+    
+    char *mainDes = categorizeHand( &c, false, false,
+                                    &flushOrBetter,
+                                    &straightOrBetter );
+
+    if( !flushOrBetter ) {
+        // run again with our alternate pair of hold cards
+        
+        c.cards[0] = inHand->cards[k];
+        c.cards[1] = inHand->cards[l];
+    
+        char *drawDes = categorizeHand( &c,
+                                        ! flushOrBetter,
+                                        ! straightOrBetter,
+                                        &flushOrBetter,
+                                        &straightOrBetter );
+
+        char *buffer = new char[200];
+
+        snprintf( buffer, 200, "%s%s", mainDes, drawDes );
+
+        delete [] mainDes;
+        delete [] drawDes;
+        return buffer;
+        }
+    else {
+        return mainDes;
+        }
+    
     }
 
 
