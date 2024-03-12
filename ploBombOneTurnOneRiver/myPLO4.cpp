@@ -703,27 +703,77 @@ int countSuitHits( CardSet *inSet, char inSuit ) {
 
 
 
-
-char isStraightPresent( char inRankPresentMap[14] ) {
+char isStraightPresent( char inRankPresentMap[14],
+                        int inRequireR1, int inRequireR2 ) {
     
     int seqCount = 0;
+    char r1Hit = false;
+    char r2Hit = false;
+    int r1HitAgo = 0;
+    int r2HitAgo = 0;
     
     for( int i=0; i<14; i++ ) {
+        if( r1Hit ) {
+            r1HitAgo ++;
+            }
+        if( r2Hit ) {
+            r2HitAgo ++;
+            }
+        
         if( inRankPresentMap[i] ) {
+            if( i == 0 || i == 13 ) {
+                // A rank
+                if( inRequireR1 == 12 ) {
+                    r1Hit = true;
+                    r1HitAgo = 0;
+                    }
+                if( inRequireR2 == 12 ) {
+                    r2Hit = true;
+                    r2HitAgo = 0;
+                    }
+                }
+            else {
+                // non-A rank
+                int r = i - 1;
+                if( inRequireR1 == r ) {
+                    r1Hit = true;
+                    r1HitAgo = 0;
+                    }
+                if( inRequireR2 == r ) {
+                    r2Hit = true;
+                    r2HitAgo = 0;
+                    }
+                }
+            
             seqCount ++;
             if( seqCount == 5 ) {
-                return true;
+                if( r1Hit && r2Hit ) {
+                    return true;
+                    }
+                else if( r1HitAgo < 4 && r2HitAgo < 4 ) {
+                    // decrement sequence count, and continue looking
+                    // for both to be hit
+                    seqCount --;
+                    }
+                else {
+                    // reached 5, but one that we've hit is already too
+                    // far away
+                    return false;
+                    }
                 }
             }
         else {
             seqCount = 0;
+            r1Hit = false;
+            r2Hit = false;
             }
         }
     return false;
     }
 
 
-int countStraightFillOne( char inRankPresentMap[14] ) {
+int countStraightFillOne( char inRankPresentMap[14],
+                          int inRequireR1, int inRequireR2 ) {
     
     int countStraights = 0;
     
@@ -733,7 +783,9 @@ int countStraightFillOne( char inRankPresentMap[14] ) {
             // try filling it, and see if there's a straight now
             inRankPresentMap[i] = true;
             
-            char straightNow = isStraightPresent( inRankPresentMap );
+            char straightNow = isStraightPresent( inRankPresentMap,
+                                                  inRequireR1,
+                                                  inRequireR2 );
             
             if( straightNow ) {
                 countStraights ++;
@@ -749,7 +801,8 @@ int countStraightFillOne( char inRankPresentMap[14] ) {
 
 
 
-int countStraightFillTwo( char inRankPresentMap[14] ) {
+int countStraightFillTwo( char inRankPresentMap[14],
+                        int inRequireR1, int inRequireR2 ) {
     
     int countStraights = 0;
     
@@ -761,7 +814,9 @@ int countStraightFillTwo( char inRankPresentMap[14] ) {
                 inRankPresentMap[i] = true;
                 inRankPresentMap[j] = true;
                 
-                char straightNow = isStraightPresent( inRankPresentMap );
+                char straightNow = isStraightPresent( inRankPresentMap,
+                                                      inRequireR1,
+                                                      inRequireR2 );
             
                 if( straightNow ) {
                     countStraights ++;
@@ -854,42 +909,58 @@ char *categorizeHand( CardSet *inFiveCardHand, char inStraightDrawOnly,
             maxRank = i;
             }
         }
-    
-    isStraight = isStraightPresent( rankPresentMap );
-    
-    int countStraightDraws = countStraightFillOne( rankPresentMap );
-    
-    int countStraightBackdoorDraws = countStraightFillTwo( rankPresentMap );
-    
 
+    
     char isOpenEndedStraightDraw = false;
     char isGutshotStraightDraw = false;
     
     char isBackdoorStraightDraw = false;
-    
-    if( ! isStraight ){
-        if( countStraightDraws > 0 ) {
-            
-            if( countStraightDraws > 1 ) {
-                isOpenEndedStraightDraw = true;
-                }
-            else {
-                isGutshotStraightDraw = true;
-                }
-            }
-        else if( countStraightBackdoorDraws > 0 ) {
-            isBackdoorStraightDraw = true;
-            }
-        }
+ 
+
+
+    int r1 = getRankNum( inFiveCardHand->cards[0] );
+    int r2 = getRankNum( inFiveCardHand->cards[1] );
     
 
-    if( isStraight && maxRank == 12 &&
-        ! rankPresent( inFiveCardHand, 11 ) ) {
-        // straight with an A in it, but no K
-        // 5 must actually be the max rank
-        maxRank = 3;
+    if( r1 != r2 ) {
+        // can only have straights and straight draws
+        // if our hole cards are different
+
+        
+        isStraight = isStraightPresent( rankPresentMap, r1, r2 );
+    
+        int countStraightDraws = countStraightFillOne( rankPresentMap,
+                                                       r1, r2 );
+        
+        int countStraightBackdoorDraws =
+            countStraightFillTwo( rankPresentMap, r1, r2 );
+        
+        
+        if( ! isStraight ){
+            if( countStraightDraws > 0 ) {
+                
+                if( countStraightDraws > 1 ) {
+                    isOpenEndedStraightDraw = true;
+                    }
+                else {
+                    isGutshotStraightDraw = true;
+                    }
+                }
+            else if( countStraightBackdoorDraws > 0 ) {
+                isBackdoorStraightDraw = true;
+                }
+            }
+        
+
+        if( isStraight && maxRank == 12 &&
+            ! rankPresent( inFiveCardHand, 11 ) ) {
+            // straight with an A in it, but no K
+            // 5 must actually be the max rank
+            maxRank = 3;
+            }
         }
 
+    
     *outIsFlushOrBetter = isFlush;
 
     *outIsStraightOrBetter = isStraight || isFlush;
