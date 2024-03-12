@@ -20,6 +20,10 @@ g++ -g -I../include -o myPLO4 myPLO4.cpp ../libphevalplo4.a ../libphevalplo5.a .
 
 
 
+static const char allRanks[13] = { '2', '3', '4', '5', '6', '7', '8', '9',
+                                   'T', 'J', 'Q', 'K', 'A' };
+
+
 // const strings for all possible cards in hand
 // used when reading CardSet from file to avoid allocating memory
 static const char *allCards[52] = {
@@ -589,6 +593,567 @@ CardSet readFlopFromFile( FILE *inFile, char *outSuccess ) {
     
     return c;
     }
+
+
+
+char getRank( const char *inCard ) {
+    return inCard[0];
+    }
+
+char getSuit( const char *inCard ) {
+    return inCard[1];
+    }
+
+
+// 2 = 0
+// 3 = 1
+// 4 = 2
+// ...
+// K = 11
+// A = 12
+int getRankNum( char inRank, char inAceLow = false ) {
+    char r = getRank( inCard );
+
+    if( inAceLow ) {
+        if( r <= '9' ) {
+            return ( r - '1' );
+            }
+        switch( r ) {
+            case 'T':
+                return 9;
+            case 'J':
+                return 10;
+            case 'Q':
+                return 11;
+            case 'K':
+                return 12;
+            case 'A':
+                return 0;
+            }
+        }
+    else {
+        
+        if( r <= '9' ) {
+            return ( r - '1' ) - 1;
+            }
+        switch( r ) {
+            case 'T':
+                return 8;
+            case 'J':
+                return 9;
+            case 'Q':
+                return 10;
+            case 'K':
+                return 11;
+            case 'A':
+                return 12;
+            }
+        }
+    return 0;
+    }
+
+
+char numToRank( int inRankNum ) {
+    return allRanks[ inRankNum ];
+    }
+
+
+
+
+char rankPresent( CardSet *inSet, int inRankNumber ) {
+    for( int i=0; i<inSet->numCards; i++ ) {
+        int r = getRankNum( inSet->cards[i] );
+        
+        if( r == inRankNumber ) {
+            return true;
+            }
+        }
+    
+    return false;
+    }
+
+
+int countRankOccurence( CardSet *inSet, int inRankNumber ) {
+    int count = 0;
+    for( int i=0; i<inSet->numCards; i++ ) {
+        int r = getRankNum( inSet->cards[i] );
+        
+        if( r == inRankNumber ) {
+            count++;
+            }
+        }
+    
+    return count;
+    }
+
+
+
+int countSuitHits( CardSet *inSet, char inSuit ) {
+    int count = 0;
+    
+    for( int i=0; i<inSet->numCards; i++ ) {
+        char s = getSuit( inSet->cards[i] );
+        if( s == inSuit ) {
+            count++;
+            }
+        }
+    
+    return count;
+    }
+
+
+
+
+char isStraightPresent( char inRankPresentMap[14] ) {
+    
+    int seqCount = 0;
+    
+    for( int i=0; i<14; i++ ) {
+        if( inRankPresentMap[i] ) {
+            seqCount ++;
+            if( seqCount == 5 ) {
+                return true;
+                }
+            }
+        else {
+            seqCount = 0;
+            }
+        }
+    return false;
+    }
+
+
+int countStraightFillOne( char inRankPresentMap[14] ) {
+    
+    int countStraights = 0;
+    
+    for( int i=0; i<14; i++ ) {
+        if( ! inRankPresentMap[i] ) {
+            // empty spot
+            // try filling it, and see if there's a straight now
+            inRankPresentMap[i] = true;
+            
+            char straightNow = isStraightPresent( inRankPresentMap );
+            
+            if( straightNow ) {
+                countStraights ++;
+                }
+
+            // empty it again
+            inRankPresentMap[i] = false;
+            }
+        }
+    
+    return countStraights;
+    }
+
+
+
+int countStraightFillTwo( char inRankPresentMap[14] ) {
+    
+    int countStraights = 0;
+    
+    for( int i=0; i<14; i++ ) {
+        for( int j=i+1; j<14; j++ ) {
+            if( ! inRankPresentMap[i] && ! inRankPresentMap[j] ) {
+                // two empty spots
+                // try filling both, and see if there's a straight now
+                inRankPresentMap[i] = true;
+                inRankPresentMap[j] = true;
+                
+                char straightNow = isStraightPresent( inRankPresentMap );
+            
+                if( straightNow ) {
+                    countStraights ++;
+                    }
+                
+                // empty both again
+                inRankPresentMap[i] = false;
+                inRankPresentMap[j] = false;
+                }
+            }
+        
+        }
+    return countStraights;
+    }
+
+
+
+
+
+    
+// custom hand categorization code, assuming a 5-card hand (two hole
+// cards, 3 board cards, 2 cards to come)
+// This categorizes draws too
+
+// string destroyed by caller
+char *categorizeHand( CardSet *inFiveCardHand ) {
+    char isFlush = false;
+    char isStraight = false;
+
+    char isFlushDraw = false;
+    
+    char isBackdoorFlushDraw = false;
+
+    // since this is omaha, look at both hole cards for flush
+    char possibleFlushSuit = '?';
+    
+    if( getSuit( inFiveCardHand->cards[3] ) ==
+        getSuit( inFiveCardHand->cards[4] ) ) {
+    
+        possibleFlushSuit = getSuit( inFiveCardHand->cards[3] ) ;
+        }
+    
+    int suitHits = countSuitHits( inFiveCardHand, possibleFlushSuit );
+    
+    switch( suitHits ) {
+        case 5:
+            isFlush = true;
+            break;
+        case 4:
+            isFlushDraw = true;
+            break;
+        case 3:
+            isBackdoorFlushDraw = true;
+            break;
+        }
+    
+
+
+    // flags for where rank present
+    // A at top and bottom
+    char rankPresentMap[14];
+
+    for( int i=0; i<14; i++ ) {
+        rankPresentMap[i] = false;
+        }
+    
+
+    if( rankPresent( inFiveCardHand, 12 ) ) {
+        // A present
+        rankPresentMap[0] = true;
+        rankPresentMap[13] = true;
+        }
+    
+    for( int i=0; i<12; i++ ) {
+        rankPresentMap[ i + 1 ] = rankPresent( inFiveCardHand, i );
+        }
+    
+    int countStraights = countStraights( rankPresentMap );
+    
+    int countStraightDraws = countStraightFillOne( rankPresentMap );
+    
+    int countStraightBackdoorDraws = countStraightFillTwo( rankPresentMap );
+    
+
+    char isOpenEndedStraightDraw = false;
+    char isGutshotStraightDraw = false;
+    
+    char isBackdoorStraightDraw = false;
+    
+    
+    if( countStraights > 0 ) {
+        isStraight = true;
+        }
+    else {
+        if( countStraightDraws > 0 ) {
+            
+            if( countStraightDraws > 1 ) {
+                isOpenEndedStraightDraw = true;
+                }
+            else {
+                isGutshotStraightDraw = true;
+                }
+            }
+        else if( countStraightBackdoorDraws > 0 ) {
+            isBackdoorStraightDraw = true;
+            }
+        }
+    
+
+
+
+    char *buffer = new char[100];
+    
+    if( isStraight && ! isFlush ) {
+        const char *extra = "";
+        if( isBackdoorFlushDraw ) {
+            extra = " with Backdoor Flush Draw";
+            }
+        else if( isFlushDraw ) {
+            extra = " with Flush Draw";
+            }
+        
+        snprintf( buffer, 100, "%c-high Straight%s", 
+                  numToRank( maxRank ), exta );
+        
+        return buffer;
+        }
+    
+    if( isFlush && ! isStraight ) {
+        snprintf( buffer, 100, "%c-high Flush", 
+                  numToRank( maxRank ) );
+        
+        return buffer;
+        }
+    if( isFlush && isStraight ) {
+        snprintf( buffer, 100, "%c-high Straight Flush", 
+                  numToRank( maxRank ) );
+        
+        return buffer;
+        }
+    
+    // flushes and straights never have duplicate ranks (never have pairs)
+    
+    // now look for things with duplicate ranks (quads, full houses, sets,
+    // two pair, 
+    
+    // these can also be other draws (if not quads or full houses)
+    const char *extraA = "";
+    if( isBackdoorFlushDraw ) {
+        extraA = " with Backdoor Flush Draw";
+        }
+    else if( isFlushDraw ) {
+        extraA = " with Flush Draw";
+        }
+
+    const char *extraB = "";
+    if( isOpenEndedStraightDraw ) {
+        extraA = " with Open-ended Straight Draw";
+        }
+    else if( isGutshotStraightDraw ) {
+        extraA = " with with Gutshot Straight Draw";
+        }
+    else if( isBackdoorStraightDraw ) {
+        extraA = " with with Backdoor Straight Draw";
+        }
+
+
+
+
+    
+    int rankCountMap[13];
+
+    int numRanksOccurring = 0;
+
+    int maxRankCount = 0;
+    int maxOccurringRank = -1;
+    
+    int secondMaxRankCount = 0;
+    int secondMaxOccurringRank = -1;
+    
+    int highestRank = 0;
+
+    for( int i=0; i<13; i++ ) {
+        rankCountMap[i] = countRankOccurence( inFiveCardHand, i );
+        
+        if( rankCountMap[i] > maxRankCount ) {
+            // demote previous to second
+            secondMaxRankCount = maxRankCount;
+            secondMaxOccurringRank = i;
+            
+            maxRankCount = rankCountMap[i];
+            maxOccurringRank = numToRank( i );
+            }
+        else if( rankCountMap[i] > secondMaxRankCount ) {
+            secondMaxRankCount = rankCountMap[i];
+            secondMaxOccurringRank = i;
+            }
+
+        if( rankCountMap[i] > 0 ) {
+            numRanksOccurring ++;
+            if( i > highestRank ) {
+                highestRank = i;
+                }
+            }
+        }
+    
+    
+    if( maxRankCount == 4 ) {
+        snprintf( buffer, 100, "Quad %c's", numToRank( maxOccurringRank ) );
+        
+        return buffer;
+        }
+    
+    if( maxRankCount == 3 ) {
+        // either full house or set
+        
+        if( numRanksOccurring == 2 ) {
+            // full house
+            
+            // check if underfull or overfull
+            const char *fullType = "overfull";
+            
+            if( secondMaxOccurringRank > maxOccurringRank ) {
+                fullType = "underfull";
+                }
+            
+            snprintf( buffer, 100, "%c's full of %c's (%s)", 
+                      numToRank( maxOccurringRank ),
+                      numToRank( secondMaxOccurringRank ), fullType );
+        
+            return buffer;
+            }
+        else {
+            // set
+            snprintf( buffer, 100, "Set of %c's%s%s", 
+                      numToRank( maxOccurringRank ),
+                      extraA, extraB );
+            return buffer;
+            }    
+        }
+    else if( maxRankCount == 2 ) {
+        // one or two pair
+        if( numRanksOccurring == 2 ) {
+            // two pair
+            snprintf( buffer, 100, "Two Pair, %c's and %c's%s%s", 
+                      numToRank( maxOccurringRank ),
+                      numToRank( secondMaxOccurringRank ),
+                      extraA, extraB );
+            }
+        else {
+            // one pair
+            snprintf( buffer, 100, "One Pair of %c's%s%s", 
+                      numToRank( maxOccurringRank ),
+                      extraA, extraB );
+            }
+        }
+    else {
+        // no pair
+        // what is the highest card?
+        
+        snprintf( buffer, 100, "%c High%s%s", 
+                      numToRank( highestRank ),
+                      extraA, extraB );
+        }
+        
+    }
+
+
+
+// gets string for best hand you can make with a 4, 5, or 6-card hand
+// plus a 3 (flop) or 5-card (flop, turn, river) board
+// Includes descriptions of draws for hand+flop
+//
+// string destroyed by caller
+char *categorizeHand( CardSet *inHand, CardSet *inBoard ) {
+
+    // if board has 5 cards, then we use library categorization code
+    // since draws irrelevant
+    if( inBoard->numCards == 5 ) {
+        phevaluator::Rank rank;
+        
+        if( inHand->numCards == 4 ) {
+            rank =
+                phevaluator::EvaluatePlo4Cards( inBoard->cards[0],
+                                                inBoard->cards[1],
+                                                inBoard->cards[2],
+                                                inBoard->cards[3],
+                                                inBoard->cards[5],
+                                                inHand->cards[0],
+                                                inHand->cards[1],
+                                                inHand->cards[2],
+                                                inHand->cards[3] );
+            }
+        else if( inHand->numCards == 5 ) {
+            rank =
+                phevaluator::EvaluatePlo5Cards( inBoard->cards[0],
+                                                inBoard->cards[1],
+                                                inBoard->cards[2],
+                                                inBoard->cards[3],
+                                                inBoard->cards[5],
+                                                inHand->cards[0],
+                                                inHand->cards[1],
+                                                inHand->cards[2],
+                                                inHand->cards[3],
+                                                inHand->cards[4] );
+            }
+        else if( inHand->numCards == 6 ) {
+            rank =
+                phevaluator::EvaluatePlo6Cards( inBoard->cards[0],
+                                                inBoard->cards[1],
+                                                inBoard->cards[2],
+                                                inBoard->cards[3],
+                                                inBoard->cards[5],
+                                                inHand->cards[0],
+                                                inHand->cards[1],
+                                                inHand->cards[2],
+                                                inHand->cards[3],
+                                                inHand->cards[4],
+                                                inHand->cards[5] );
+            }
+        
+        const char* des = describe_rank( rank.value() );
+        char *buffer = new char[100];
+
+        snprintf( buffer, 100, "%s", des );
+        
+        return buffer;
+        }
+    else if( inBoard->numCards != 3 ) {
+        // if board has 4 (or not 3) cards, we just don't support this
+        
+        char *buffer = new char[100];
+
+        snprintf( buffer, 100, 
+                  "Boards with %d cards not supported",
+                  inBoard->numCards );
+        
+        return buffer;
+        }
+    
+    
+
+
+    
+
+
+    // if board has 3 cards, then we want to use our categorization code
+    // to look at draws too
+
+
+    // first, find highest-rank 2-card subset of hole cards that go
+    // along with the board to make the best hand
+
+    int bestI = -1;
+    int bestJ = -1;
+    
+    int bestValue = 999999;
+    
+    for( int i=0; i<inHand->numCards; i++ ) {
+        const char *cardI = inHand->cards[i];
+        
+        for( int j=i+1; j<inHand->numCards; j++ ) {
+            // test pair of cards from spot i and j in hand
+            
+            const char *cardJ = inHand->cards[j];
+            
+            Rank r = phevaluator::EvaluateCards( cardI, cardJ,
+                                                 inBoard->cards[0],
+                                                 inBoard->cards[1],
+                                                 inBoard->cards[2] );
+            int v = r.value();
+            
+            if( v < bestValue ) {
+                bestValue = v;
+                bestI = i;
+                bestJ = j;
+                }
+            }
+        }
+    
+    CardSet c;
+    c.numCards = 5;
+    c.cards[0] = inHand->cards[bestI];
+    c.cards[1] = inHand->cards[bestJ];
+    c.cards[2] = inBoard->cards[0];
+    c.cards[3] = inBoard->cards[1];
+    c.cards[4] = inBoard->cards[2];
+
+    return categorizeHand( &c );
+    }
+
+
 
 
 
