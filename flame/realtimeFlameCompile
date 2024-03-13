@@ -1,2 +1,2 @@
-g++ -g -o realtimeFlame -lpthread -lSDL -I../../.. realtimeFlame.cpp ../../../minorGems/graphics/linux/ScreenGraphicsLinux.cpp ../../../minorGems/system/linux/ThreadLinux.cpp
+g++ -g -o realtimeFlame -I../.. realtimeFlame.cpp ../../minorGems/graphics/linux/ScreenGraphicsLinux.cpp ../../minorGems/system/linux/ThreadLinux.cpp ../../minorGems/system/unix/TimeUnix.cpp  -lpthread -lSDL
 
