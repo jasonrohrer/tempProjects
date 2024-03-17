@@ -447,12 +447,7 @@ Result simWinner( CardSet *inFlopTop, CardSet *inFlopBot,
                     printf( "         " );
                     }
                 
-                int bestRank = handRanksTop[i];
-                if( bestRank > handRanksBottom[i] ) {
-                    bestRank = handRanksBottom[i];
-                    }
-                
-                const char *des = describe_rank( bestRank );
+                const char *des = describe_rank( bestHandValues[i] );
                 
                 printf( "    %s", des );
 
