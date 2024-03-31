@@ -469,6 +469,8 @@ void usage() {
     printf( "myPLO4 handFile.txt\n\n" );
     printf( "OR Usage:\n\n" );
     printf( "myPLO4 handSize numPlayers\n\n" );
+    printf( "OR Usage:\n\n" );
+    printf( "myPLO4 badBeat card1 card2 card3 card4 card5\n\n" );
     exit( 1 );
     }
 
@@ -1521,7 +1523,143 @@ int main( int inNumArgs, const char **inArgs ) {
         usage();
         }
 
-    if( inNumArgs == 3 ) {
+
+    if( inNumArgs == 7 && strcmp( inArgs[1], "badBeat" ) == 0 ) {
+        
+        phevaluator::Rank rankToBeat = phevaluator::EvaluateCards(
+            inArgs[2], inArgs[3], inArgs[4], inArgs[5], inArgs[6] );
+        
+        printf( "Hand to beat = %s %s %s %s %s, rank = %d\n",
+                inArgs[2], inArgs[3], inArgs[4], inArgs[5], inArgs[6],
+                rankToBeat.value() );
+        
+        int runCount = 0;
+        
+        int countBetterOccurred = 0;
+        
+        CardSet playerHands[9];
+        CardSet board;
+
+        int rankValues[9];
+
+        while( runCount < 1000 ) {
+            Deck d;
+            setupFreshDeck( &d );
+            shuffle( &d );
+            
+
+            int cardI = 0;
+            
+            // deal to players
+            for( int p=0; p<9; p++ ) {
+                playerHands[9].numCards = 2;
+                for( int c=0; c<2; c++ ) {
+                    playerHands[p].cards[c] = d.cards[cardI];
+                    cardI++;
+                    }
+                }
+            
+            // deal board
+            board.numCards = 5;
+            for( int c=0; c<5; c++ ) {
+                board.cards[c] = d.cards[cardI];
+                cardI++;
+                }
+            
+            // bigger or equal to
+            int numBiggerThanMinRank = 0;
+            char playersBiggerThanMinRank[9];
+
+            for( int p=0; p<9; p++ ) {
+                playersBiggerThanMinRank[p] = false;
+                
+                phevaluator::Rank rank = 
+                    phevaluator::EvaluateCards(
+                        playerHands[p].cards[0],
+                        playerHands[p].cards[1],
+                        board.cards[0],
+                        board.cards[1],
+                        board.cards[2],
+                        board.cards[3],
+                        board.cards[4] );
+                 
+                int val = rank.value();
+
+                if( val >= rankToBeat ) {
+                    
+                    // make sure both hole cards play
+                    int bestValWithBoth = 9999999;
+                    
+                    // loop over cards from board to skip
+                    for( int s1=0; s1<5; s1++ ) {
+                        for( int s2=s1+1; s2<5; s2++ ) {
+                            
+                            const char *testBoard[5];
+                            
+                            memcpy( testBoard, board, sizeof( char * ) * 5 );
+                            
+                            testBoard[s1] = playerHands[p].cards[0];
+                            testBoard[s2] = playerHands[p].cards[1];
+                            
+                            phevaluator::Rank testRank = 
+                                phevaluator::EvaluateCards(
+                                    testBoard[0],
+                                    testBoard[1],
+                                    testBoard[2],
+                                    testBoard[3],
+                                    testBoard[4] );
+                            
+                            int testValue = testRank.value();
+                            
+                            if( testValue < bestValWithBoth ) {
+                                bestValWithBoth = testValue;
+                                }
+                            }
+                        }
+                    
+                    if( bestValWithBoth == val ) {
+                        // best val the same when both hole cards play
+                        // so we can count this
+                        numGreaterThanMinRank++;
+                        
+                        playersBiggerThanMinRank[p] = true;
+                        }
+                    }
+                }
+            
+            if( numGreaterThanMinRank == 1 ) {
+                countBetterOccurred ++;
+                }
+            if( numGreaterThanMinRank > 1 ) {
+                printf( "Bad beat occured on run %d\n", runCount );
+                
+                printf( "\nBoard:  " );
+                print( & board );
+                printf( "\n\nQualifying hands:\n" );
+                
+                for( int p=0; p<9; p++ ) {
+                    if( playersBiggerThanMinRank[p] ) {
+                        printf( "Seat %d:  ", p + 1 );
+                        
+                        print( & playerHands[p] );
+                        printf( "\n" );
+                        }
+                    }
+                
+                break;
+                }
+            
+
+            runCount++;
+            }
+        
+        
+        printf( "%d runs occurred where 1 hand qualified\n", 
+                countBetterOccurred );
+
+        return 0;
+        }
+    else if( inNumArgs == 3 ) {
         int handSize = 0;
         int numPlayers = 0;
 
