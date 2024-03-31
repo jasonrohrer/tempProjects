@@ -1514,128 +1514,150 @@ BombPotSituation findBombPotSituationWithEquity( int inHandSize,
 
 
 
-int main( int inNumArgs, const char **inArgs ) {
+int runUntilBadBeat( int inRankToBeat ) {
     
-    srand( time( NULL ) );
-    //srand( 3974987 );
-
-    if( inNumArgs != 2 && inNumArgs != 3 ) {
-        usage();
-        }
-
-
-    if( inNumArgs == 7 && strcmp( inArgs[1], "badBeat" ) == 0 ) {
+    int runCount = 0;
         
-        phevaluator::Rank rankToBeat = phevaluator::EvaluateCards(
-            inArgs[2], inArgs[3], inArgs[4], inArgs[5], inArgs[6] );
+    int countBetterOccurred = 0;
+    
+    CardSet playerHands[9];
+    CardSet board;
+    
+    int rankValues[9];
         
-        printf( "Hand to beat = %s %s %s %s %s, rank = %d\n",
-                inArgs[2], inArgs[3], inArgs[4], inArgs[5], inArgs[6],
-                rankToBeat.value() );
-        
-        int runCount = 0;
-        
-        int countBetterOccurred = 0;
-        
-        CardSet playerHands[9];
-        CardSet board;
-
-        int rankValues[9];
-
-        while( runCount < 1000 ) {
-            Deck d;
-            setupFreshDeck( &d );
-            shuffle( &d );
+    while( runCount < 100000 ) {
+        Deck d;
+        setupFreshDeck( &d );
+        shuffle( &d );
             
 
-            int cardI = 0;
+        int cardI = 0;
             
-            // deal to players
-            for( int p=0; p<9; p++ ) {
-                playerHands[9].numCards = 2;
-                for( int c=0; c<2; c++ ) {
-                    playerHands[p].cards[c] = d.cards[cardI];
-                    cardI++;
-                    }
-                }
-            
-            // deal board
-            board.numCards = 5;
-            for( int c=0; c<5; c++ ) {
-                board.cards[c] = d.cards[cardI];
+        // deal to players
+        for( int p=0; p<9; p++ ) {
+            playerHands[p].numCards = 2;
+            for( int c=0; c<2; c++ ) {
+                playerHands[p].cards[c] = d.cards[cardI];
                 cardI++;
                 }
+            }
             
-            // bigger or equal to
-            int numBiggerThanMinRank = 0;
-            char playersBiggerThanMinRank[9];
+        // deal board
+        board.numCards = 5;
+        for( int c=0; c<5; c++ ) {
+            board.cards[c] = d.cards[cardI];
+            cardI++;
+            }
             
-            int playerValues[9];
+        // bigger or equal to
+        int numBiggerThanMinRank = 0;
+        char playersBiggerThanMinRank[9];
             
-            for( int p=0; p<9; p++ ) {
-                playersBiggerThanMinRank[p] = false;
+        int playerValues[9];
+            
+        for( int p=0; p<9; p++ ) {
+            playersBiggerThanMinRank[p] = false;
                 
-                phevaluator::Rank rank = 
-                    phevaluator::EvaluateCards(
-                        playerHands[p].cards[0],
-                        playerHands[p].cards[1],
-                        board.cards[0],
-                        board.cards[1],
-                        board.cards[2],
-                        board.cards[3],
-                        board.cards[4] );
+            phevaluator::Rank rank = 
+                phevaluator::EvaluateCards(
+                    playerHands[p].cards[0],
+                    playerHands[p].cards[1],
+                    board.cards[0],
+                    board.cards[1],
+                    board.cards[2],
+                    board.cards[3],
+                    board.cards[4] );
                  
-                int val = rank.value();
+            int val = rank.value();
 
-                playerValues[p] = val;
+            playerValues[p] = val;
 
                 
-                if( val >= rankToBeat ) {
+            if( val <= inRankToBeat ) {
                     
-                    // make sure both hole cards play
-                    int bestValWithBoth = 9999999;
+                // make sure both hole cards play
+                int bestValWithBoth = 9999999;
                     
-                    // loop over cards from board to skip
-                    for( int s1=0; s1<5; s1++ ) {
-                        for( int s2=s1+1; s2<5; s2++ ) {
+                // loop over cards from board to skip
+                for( int s1=0; s1<5; s1++ ) {
+                    for( int s2=s1+1; s2<5; s2++ ) {
                             
-                            const char *testBoard[5];
+                        const char *testBoard[5];
                             
-                            memcpy( testBoard, board, sizeof( char * ) * 5 );
+                        memcpy( testBoard,
+                                board.cards, sizeof( char * ) * 5 );
                             
-                            testBoard[s1] = playerHands[p].cards[0];
-                            testBoard[s2] = playerHands[p].cards[1];
+                        testBoard[s1] = playerHands[p].cards[0];
+                        testBoard[s2] = playerHands[p].cards[1];
                             
-                            phevaluator::Rank testRank = 
-                                phevaluator::EvaluateCards(
-                                    testBoard[0],
-                                    testBoard[1],
-                                    testBoard[2],
-                                    testBoard[3],
-                                    testBoard[4] );
+                        phevaluator::Rank testRank = 
+                            phevaluator::EvaluateCards(
+                                testBoard[0],
+                                testBoard[1],
+                                testBoard[2],
+                                testBoard[3],
+                                testBoard[4] );
                             
-                            int testValue = testRank.value();
+                        int testValue = testRank.value();
                             
-                            if( testValue < bestValWithBoth ) {
-                                bestValWithBoth = testValue;
-                                }
+                        if( testValue < bestValWithBoth ) {
+                            bestValWithBoth = testValue;
+                            }
+                        }
+                    }
+                    
+                if( bestValWithBoth == val ) {
+                    // best val the same when both hole cards play
+
+
+                    char badQuads = false;
+                    
+                    // but if we have QUADS, we need to do another test
+                    // need to make sure both hole cards are part of quads
+                    if( val <= 166 && val > 10 ) {
+                        // don't run this test on straight flushes
+                        // which are value 10 and lower
+
+                        if( playerHands[p].cards[0][0]  !=
+                            playerHands[p].cards[1][0] ) {
+                            // hole cards have different rank chars
+                            // not part of quads
+                            badQuads = true;
                             }
                         }
                     
-                    if( bestValWithBoth == val ) {
-                        // best val the same when both hole cards play
-                        // so we can count this
-                        numGreaterThanMinRank++;
+
+                    if( ! badQuads ) {
+                        // we can count this
+                        numBiggerThanMinRank++;
                         
                         playersBiggerThanMinRank[p] = true;
                         }
                     }
                 }
+            }
             
-            if( numGreaterThanMinRank == 1 ) {
-                countBetterOccurred ++;
+        if( numBiggerThanMinRank >= 1 ) {
+            countBetterOccurred ++;
+            }
+        if( numBiggerThanMinRank >= 2 ) {
+            // make sure they aren't tied
+            int val1 = -1;
+            int val2 = -1;
+
+            for( int p=0; p<9; p++ ) {
+                if( playersBiggerThanMinRank[p] ) {
+                    if( val1 == -1 ) {
+                        val1 = playerValues[p];
+                        }
+                    else if( val2 == -1 ) {
+                        val2 = playerValues[p];
+                        }
+                    }
                 }
-            if( numGreaterThanMinRank > 1 ) {
+
+            if( val1 != val2 ) {
+                
                 printf( "Bad beat occured on run %d\n", runCount );
                 
                 printf( "\nBoard:  " );
@@ -1649,21 +1671,60 @@ int main( int inNumArgs, const char **inArgs ) {
                         print( & playerHands[p] );
                         printf( "     " );
                         const char *des = describe_rank( playerValues[p] );
-                        printf( "%s\n", des );
+                        printf( "%s, rank=%d\n", des, playerValues[p] );
                         }
                     }
                 
                 break;
                 }
+            }
             
 
-            runCount++;
-            }
+        runCount++;
+        }
         
         
-        printf( "%d runs occurred where 1 hand qualified\n", 
-                countBetterOccurred );
+    printf( "%d runs occurred where 1 hand qualified\n", 
+            countBetterOccurred );
 
+    return runCount;
+    }
+
+
+
+
+
+int main( int inNumArgs, const char **inArgs ) {
+    
+    srand( time( NULL ) );
+    //srand( 3974987 );
+
+    if( inNumArgs != 2 && inNumArgs != 3 && inNumArgs != 7) {
+        usage();
+        }
+
+
+    if( inNumArgs == 7 && strcmp( inArgs[1], "badBeat" ) == 0 ) {
+        
+        int rankToBeat = phevaluator::EvaluateCards(
+            inArgs[2], inArgs[3], inArgs[4], inArgs[5], inArgs[6] ).value();
+        
+        printf( "Hand to beat = %s %s %s %s %s, rank = %d, %s\n",
+                inArgs[2], inArgs[3], inArgs[4], inArgs[5], inArgs[6],
+                rankToBeat, describe_rank( rankToBeat ) );
+
+        int numFullRuns = 100;
+
+        float runningAverage = 0;
+
+        for( int i=0; i<numFullRuns; i++ ) {
+            int numRuns = runUntilBadBeat( rankToBeat );
+
+            runningAverage += numRuns / (float)numFullRuns;
+            }
+
+        printf( "Average num runs until bad beat:  %f\n", runningAverage );
+        
         return 0;
         }
     else if( inNumArgs == 3 ) {
