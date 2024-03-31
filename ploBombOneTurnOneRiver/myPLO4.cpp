@@ -1569,7 +1569,9 @@ int main( int inNumArgs, const char **inArgs ) {
             // bigger or equal to
             int numBiggerThanMinRank = 0;
             char playersBiggerThanMinRank[9];
-
+            
+            int playerValues[9];
+            
             for( int p=0; p<9; p++ ) {
                 playersBiggerThanMinRank[p] = false;
                 
@@ -1585,6 +1587,9 @@ int main( int inNumArgs, const char **inArgs ) {
                  
                 int val = rank.value();
 
+                playerValues[p] = val;
+
+                
                 if( val >= rankToBeat ) {
                     
                     // make sure both hole cards play
@@ -1642,7 +1647,9 @@ int main( int inNumArgs, const char **inArgs ) {
                         printf( "Seat %d:  ", p + 1 );
                         
                         print( & playerHands[p] );
-                        printf( "\n" );
+                        printf( "     " );
+                        const char *des = describe_rank( playerValues[p] );
+                        printf( "%s\n", des );
                         }
                     }
                 
