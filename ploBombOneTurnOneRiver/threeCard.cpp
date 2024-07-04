@@ -1,14 +1,14 @@
 /*
 To compile:
 
-git clone https://github.com/HenryRLee/PokerHandEvaluator.git
+git clone https://github.com/jasonrohrer/PokerHandEvaluator.git
 cd PokerHandEvaluator/cpp
-make libphevalplo4.a libphevalplo5.a libphevalplo6.a
+make libpheval.a
 
 cp threeCard.cpp PokerHandEvaluator/cpp/examples
 cd examples
 
-g++ -g -I../include -o threeCard threeCard.cpp ../libpheval.a ../libphevalplo4.a ../libphevalplo5.a ../libphevalplo6.a
+g++ -g -I../include -o threeCard threeCard.cpp ../libpheval.a
 */
 
 
@@ -19,7 +19,7 @@ g++ -g -I../include -o threeCard threeCard.cpp ../libpheval.a ../libphevalplo4.a
 #include <string.h>
 
 // this is provided by phevaluator library, but not in the header
-int evaluate_8cards(int a, int b, int c, int d, int e, int f, int g);
+int evaluate_8cards(int a, int b, int c, int d, int e, int f, int g, int h);
 
 
 
@@ -251,7 +251,8 @@ static Deck copy( Deck *inDeck ) {
 
 // -1 for A, 1 for B
 // 0 for tie
-int simWinner( CardSet *inHandA, CardSet *inHandB ) {
+int simWinner( CardSet *inHandA, CardSet *inHandB,
+               char inPrintResult = false ) {
     Deck d;
     setupFreshDeck( &d );
     remove( &d, inHandA );
@@ -260,29 +261,54 @@ int simWinner( CardSet *inHandA, CardSet *inHandB ) {
     shuffle( &d );
     
     int rankA = evaluate_8cards(
-        (Card)( inHandA->cards[0] ),
-        (Card)( inHandA->cards[1] ),
-        (Card)( inHandA->cards[2] ),
-        (Card)( d.cards[0] ),
-        (Card)( d.cards[1] ),
-        (Card)( d.cards[2] ),
-        (Card)( d.cards[3] ),
-        (Card)( d.cards[4] ) );
+        (phevaluator::Card)( inHandA->cards[0] ),
+        (phevaluator::Card)( inHandA->cards[1] ),
+        (phevaluator::Card)( inHandA->cards[2] ),
+        (phevaluator::Card)( d.cards[0] ),
+        (phevaluator::Card)( d.cards[1] ),
+        (phevaluator::Card)( d.cards[2] ),
+        (phevaluator::Card)( d.cards[3] ),
+        (phevaluator::Card)( d.cards[4] ) );
 
     int rankB = evaluate_8cards(
-        (Card)( inHandB->cards[0] ),
-        (Card)( inHandB->cards[1] ),
-        (Card)( inHandB->cards[2] ),
-        (Card)( d.cards[0] ),
-        (Card)( d.cards[1] ),
-        (Card)( d.cards[2] ),
-        (Card)( d.cards[3] ),
-        (Card)( d.cards[4] ) );
+        (phevaluator::Card)( inHandB->cards[0] ),
+        (phevaluator::Card)( inHandB->cards[1] ),
+        (phevaluator::Card)( inHandB->cards[2] ),
+        (phevaluator::Card)( d.cards[0] ),
+        (phevaluator::Card)( d.cards[1] ),
+        (phevaluator::Card)( d.cards[2] ),
+        (phevaluator::Card)( d.cards[3] ),
+        (phevaluator::Card)( d.cards[4] ) );
 
-    if( rankA.value() < rankB.value() ) {
+    if( inPrintResult ) {
+        int bestRank = rankA;
+        CardSet *bestHand = inHandA;
+        
+        if( rankB < rankA ) {
+            bestRank = rankB;
+            bestHand = inHandB;
+            }
+        
+        printf( "Board: " );
+        for( int i=0; i<5; i++ ) {
+            printf( "%s ", d.cards[i] );
+            }
+        printf( "\n" );
+        printf( "Winner: " );
+        print( bestHand );
+        
+        const char *des = describe_rank( bestRank );
+                
+        printf( "\n    %s", des );
+        
+        printf( "\n" );
+        }
+    
+    
+    if( rankA < rankB ) {
         return -1;
         }
-    else if( rankA.value() > rankB.value() ) {
+    else if( rankA > rankB ) {
         return 1;
         }
     else {
@@ -299,7 +325,7 @@ int main() {
     srand( time( NULL ) );
      
     CardSet handA = makeHand( "Ac", "Ah", "Ad" );
-    CardSet handB = makeHand( "Kc", "Kh", "Kd" );
+    CardSet handB = makeHand( "9c", "8c", "7c" );
     
 
     int numSims = 100000;
@@ -333,4 +359,8 @@ int main() {
     printf( "wins %.1f%%\n", 100 * (float)bWinCount / (float)numSims );
     
     printf( "Tie %.1f%%\n",  100 * (float)tieCount / (float)numSims );
+
+    
+    printf( "\nExample run-out:" );
+    simWinner( &handA, &handB, true );
     }
