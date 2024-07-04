@@ -245,20 +245,20 @@ int simWinner( CardSet *inHandA, CardSet *inHandB ) {
     phevaluator::Rank rankA = 
         phevaluator::EvaluateCards(
             inHandA->cards[0],
-            d->cards[0],
-            d->cards[1],
-            d->cards[2],
-            d->cards[3],
-            d->cards[4] );
+            d.cards[0],
+            d.cards[1],
+            d.cards[2],
+            d.cards[3],
+            d.cards[4] );
 
     phevaluator::Rank rankB = 
         phevaluator::EvaluateCards(
             inHandB->cards[0],
-            d->cards[0],
-            d->cards[1],
-            d->cards[2],
-            d->cards[3],
-            d->cards[4] );
+            d.cards[0],
+            d.cards[1],
+            d.cards[2],
+            d.cards[3],
+            d.cards[4] );
     
 
     if( rankA.value() < rankB.value() ) {
@@ -277,12 +277,14 @@ int simWinner( CardSet *inHandA, CardSet *inHandB ) {
 
 
 int main() {
-    
-    CardSet handA = makeHand( "Ac" );
-    CardSet handB = makeHand( "Kh" );
+
+    srand( time( NULL ) );
+     
+    CardSet handA = makeHand( "5c" );
+    CardSet handB = makeHand( "4h" );
     
 
-    int numSims = 10000;
+    int numSims = 100000;
 
     int aWinCount = 0;
     
@@ -303,14 +305,14 @@ int main() {
     int bWinCount = numSims - aWinCount - tieCount;
     
     printf( "Hand " );
-    print( handA );
+    print( &handA );
     
-    printf( "wins %.1%%\n", 100 * (float)aWinCount / (float)numSims );
+    printf( "wins %.1f%%\n", 100 * (float)aWinCount / (float)numSims );
     
     printf( "Hand " );
-    print( handB );
+    print( &handB );
     
-    printf( "wins %.1%%\n", 100 * (float)bWinCount / (float)numSims );
+    printf( "wins %.1f%%\n", 100 * (float)bWinCount / (float)numSims );
     
-    printf( "Tie %.1%%\n",  100 * (float)tieCount / (float)numSims );
+    printf( "Tie %.1f%%\n",  100 * (float)tieCount / (float)numSims );
     }
