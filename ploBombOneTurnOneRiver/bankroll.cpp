@@ -3,22 +3,23 @@
 #include <stdio.h>
 
 
-static int randRange( int inLow, int inHigh ) {
+static float randRange( int inLow, int inHigh ) {
     // code found here:
     // https://c-faq.com/lib/randrange.html
-    return inLow + rand() / (RAND_MAX / (inHigh - inLow + 1) + 1);
+    return (float)( inLow + rand() ) / 
+        (float)(RAND_MAX / (inHigh - inLow + 1) + 1);
     }
 
 
-#define NUM_PLAYERS 200
+#define NUM_PLAYERS 500
 
 
 int main() {
     srand( time( NULL ) );
     
-    int startBalance = 11000;
+    int startBalance = 1500;
 
-    int wager = 500;
+    int wager = 1500;
 
     int bankrolls[NUM_PLAYERS];
     
@@ -27,9 +28,9 @@ int main() {
     
     char busted[NUM_PLAYERS];
 
-    int winFraction = 36;
+    float winFraction = 90;
 
-    int winAmount = 4;
+    int winAmount = 2;
 
     int numHands = 100000;
 
@@ -47,7 +48,7 @@ int main() {
         
         for( int p=0; p< NUM_PLAYERS; p++ ) {
             
-            int roll = randRange( 0, 100 );
+            float roll = randRange( 0, 100 );
             
             bankrolls[p] -= wager;
             
@@ -77,9 +78,9 @@ int main() {
         }
     
     printf( "Starting bankroll $%d, wager $%d, "
-            "win fraction %d/100, percent busted %f\n",
-            startBalance, wager, winFraction, 
-            numBusted / (float)NUM_PLAYERS );
+            "win fraction %.2f%%, players in hand %d, percent busted %.1f%%\n",
+            startBalance, wager, winFraction, winAmount,
+            100 * numBusted / (float)NUM_PLAYERS );
     
             
     return 0;
