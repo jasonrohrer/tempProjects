@@ -1,6 +1,10 @@
 gcc -o makeCode makeCode.c 
 
+gcc -o makeCodeNoFunctions makeCodeNoFunctions.c 
+
 gcc -o makeCode_jai makeCode_jai.c 
+
+gcc -o makeCodeNoFunctions_jai makeCodeNoFunctions_jai.c 
 
 
 
@@ -9,15 +13,34 @@ gcc -o makeCode_jai makeCode_jai.c
 ./makeCode_jai > testCode.jai
 
 
+./makeCodeNoFunctions > testCodeNoFunctions.c
+
+./makeCodeNoFunctions_jai > testCodeNoFunctions.jai
+
+
+testName=testCodeNoFunctions
+
+
 echo
 echo
 echo "Compiling test c code with tcc"
 
-wc testCode.c
+wc ${testName}.c
 
-tcc -g -o testCode_tcc testCode.c
+tcc -g -o ${testName}_tcc ${testName}.c
 
-time tcc -g -o testCode_tcc testCode.c
+time tcc -g -o ${testName}_tcc ${testName}.c
+
+
+echo
+echo
+echo "Compiling test c code with clang"
+
+wc ${testName}.c
+
+clang -g -o ${testName}_clang ${testName}.c
+
+time clang -g -o ${testName}_clang ${testName}.c
 
 
 
@@ -25,11 +48,11 @@ echo
 echo
 echo "Compiling test c code with gcc"
 
-wc testCode.c
+wc ${testName}.c
 
-gcc -g -o testCode_gcc testCode.c
+gcc -g -o ${testName}_gcc ${testName}.c
 
-time gcc -O0 -g -o testCode_gcc testCode.c
+time gcc -O0 -g -o ${testName}_gcc ${testName}.c
 
 
 
@@ -39,11 +62,11 @@ echo
 echo
 echo "Compiling test jai code with jai"
 
-wc testCode.jai
+wc ${testName}.jai
 
-~/Downloads/jai/bin/jai-linux -x64 -exe testCode_jai testCode.jai
+~/Downloads/jai/bin/jai-linux -x64 -exe ${testName}_jai ${testName}.jai
 
-time ~/Downloads/jai/bin/jai-linux -x64 -exe testCode_jai testCode.jai
+time ~/Downloads/jai/bin/jai-linux -x64 -exe ${testName}_jai ${testName}.jai
 
 
 echo
@@ -51,10 +74,10 @@ echo
 echo "Comparing outputs of three versions:"
 
 echo -n "tcc:  "
-./testCode_tcc
+./${testName}_tcc
 
 echo -n "gcc:  "
-./testCode_gcc
+./${testName}_gcc
 
 echo -n "jai:  "
-./testCode_jai
+./${testName}_jai
