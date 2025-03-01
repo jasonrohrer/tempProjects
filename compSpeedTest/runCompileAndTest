@@ -1,0 +1,9 @@
+gcc -o makeCode makeCode.c 
+
+./makeCode > testCode.c
+
+wc testCode.c
+
+tcc -g -o testCode testCode.c
+
+time tcc -g -o testCode testCode.c
