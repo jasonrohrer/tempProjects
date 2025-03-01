@@ -1,16 +1,16 @@
 
-if [ "$#" -ne 1 ]; then
-	echo "Must supply path to mounted flash drive"
+if [ "$#" -ne 2 ]; then
+	echo "Must supply path to mounted flash drive and starting file number"
 	exit
 fi
 
 echo "Flash drive path = $1"
 
-time f3write $1 | tee /dev/stderr
+time f3write --start-at=$2 $1 | tee /dev/stderr
 
 
 
-readResult=`time f3read $1 | tee /dev/stderr`
+readResult=`time f3read --start-at=$2 $1 | tee /dev/stderr`
 
 # will return 1 if there are 0 bad sectors
 # will return 0 if there are some bad sectors
