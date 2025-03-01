@@ -6,17 +6,17 @@ int main() {
     int numLoops = 4000;
     int i, j;
 
-    printf( "#include <stdio.h>\n" );
+    printf( "#import \"Basic\";\n\n" );
     
     
     for( i=0; i<numFunctions; i++ ) {
-        printf( "long long int function_%i( long long int inX ) { return inX + %i; }\n\n",
+        printf( "function_%i :: ( inX : int ) -> int { return inX + %i; }\n\n",
                 i, i );
         }
     
-    printf( "int main() {\n\n" );
+    printf( "main :: () {\n\n" );
 
-    printf( "long long int x = 0;\n\n" );
+    printf( "x : int = 0;\n\n" );
 
     for( j=0; j<numLoops; j++ ) {
         for( i=0; i<numFunctions; i++ ) {
@@ -24,7 +24,8 @@ int main() {
             }
         }
     
-    printf( "printf( \"Result = %%lld\\n\", x );\n\n}\n" );
+    printf( "print( \"Result = %%\\n\", x );" );
+    printf( "\n\n}\n" );
     
 
     return 0;

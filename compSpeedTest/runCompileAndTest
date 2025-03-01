@@ -1,9 +1,60 @@
 gcc -o makeCode makeCode.c 
 
+gcc -o makeCode_jai makeCode_jai.c 
+
+
+
 ./makeCode > testCode.c
+
+./makeCode_jai > testCode.jai
+
+
+echo
+echo
+echo "Compiling test c code with tcc"
 
 wc testCode.c
 
-tcc -g -o testCode testCode.c
+tcc -g -o testCode_tcc testCode.c
 
-time tcc -g -o testCode testCode.c
+time tcc -g -o testCode_tcc testCode.c
+
+
+
+echo
+echo
+echo "Compiling test c code with gcc"
+
+wc testCode.c
+
+gcc -g -o testCode_gcc testCode.c
+
+time gcc -g -o testCode_gcc testCode.c
+
+
+
+
+
+echo
+echo
+echo "Compiling test jai code with jai"
+
+wc testCode.jai
+
+~/Downloads/jai/bin/jai-linux -exe testCode_jai testCode.jai
+
+time ~/Downloads/jai/bin/jai-linux -exe testCode_jai testCode.jai
+
+
+echo
+echo
+echo "Comparing outputs of three versions:"
+
+echo -n "tcc:  "
+./testCode_tcc
+
+echo -n "gcc:  "
+./testCode_gcc
+
+echo -n "jai:  "
+./testCode_jai
