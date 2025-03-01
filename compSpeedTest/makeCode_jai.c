@@ -3,7 +3,7 @@
 int main() {
 
     int numFunctions = 10;
-    int numLoops = 4000;
+    int numLoops = 16000;
     int i, j;
 
     printf( "#import \"Basic\";\n\n" );
