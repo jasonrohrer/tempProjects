@@ -17,7 +17,7 @@ main :: () {
 	// z : = testF( 5 );
 
 	fileName : = "testIn.png";
-	fileNameOut : = "testBlurred.png";
+	fileNameOut : = "testBlurred_jai.png";
 	
 	imageData : *u8 = stbi_load( fileName.data, *w, *h, *c, 0 );
 
