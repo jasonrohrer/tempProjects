@@ -73,7 +73,6 @@ main :: () {
 				}
 				for chan : 0 .. c - 1 {
 					blurData[ y * w * c + x * c + chan ] = cast(u8) ( valSums[chan] / boxPixels );
-					//blurData[ y * w * c + x * c + chan ] = imageData[ y * w * c + x * c + chan ];
 				}
 			}
 		}
