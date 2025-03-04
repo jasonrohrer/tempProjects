@@ -26,10 +26,10 @@ main :: () {
 
 		numColorVals : = w * h * c;
 		
-		blurData : = NewArray( numColorVals, u8 );
+		blurData : = NewArray( numColorVals, u8, initialized=false );
 		defer array_free( blurData );
 		
-		valSums : = NewArray( c, int );
+		valSums : = NewArray( c, int, initialized=false );
 		defer array_free( valSums );
 		
 		boxR : = 40;
