@@ -31,7 +31,7 @@ void usage() {
 
 
 
-#define NUM_LIGHTS 2
+#define NUM_LIGHTS 1
 
 int pixelsR[NUM_LIGHTS][MAX_PIXELS];
 int pixelsG[NUM_LIGHTS][MAX_PIXELS];
@@ -41,8 +41,11 @@ unsigned char outPNGBuffer[ NUM_LIGHTS * MAX_PIXELS * 3 ];
 
 
 
-int lightPixelCoordsX[ NUM_LIGHTS ] = { 116, 239 };
-int lightPixelCoordsY[ NUM_LIGHTS ] = { 66, 73 };
+//int lightPixelCoordsX[ NUM_LIGHTS ] = { 116, 239 };
+//int lightPixelCoordsY[ NUM_LIGHTS ] = { 66, 73 };
+
+int lightPixelCoordsX[ NUM_LIGHTS ] = { 116 };
+int lightPixelCoordsY[ NUM_LIGHTS ] = { 66 };
 
 
 int main( int inNumArgs, const char *inArgs[] ) {

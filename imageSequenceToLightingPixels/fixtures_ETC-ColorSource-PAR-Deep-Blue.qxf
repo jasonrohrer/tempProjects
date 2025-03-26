@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE FixtureDefinition>
+<FixtureDefinition xmlns="http://www.qlcplus.org/FixtureDefinition">
+ <Creator>
+  <Name>OFL – https://open-fixture-library.org/etc/colorsource-par-deep-blue</Name>
+  <Version>1.3.1</Version>
+  <Author>Felix Edelmann</Author>
+ </Creator>
+ <Manufacturer>ETC</Manufacturer>
+ <Model>ColorSource PAR Deep Blue</Model>
+ <Type>Color Changer</Type>
+ <Channel Name="Intensity" Preset="IntensityDimmer"/>
+ <Channel Name="Red" Preset="IntensityRed"/>
+ <Channel Name="Green" Preset="IntensityGreen"/>
+ <Channel Name="Indigo" Preset="IntensityIndigo"/>
+ <Channel Name="Lime" Preset="IntensityLime"/>
+ <Channel Name="Strobe">
+  <Group Byte="0">Shutter</Group>
+  <Capability Min="0" Max="0">No function</Capability>
+  <Capability Min="1" Max="254" Preset="StrobeFreqRange" Res1="1" Res2="33">Strobe 1…33Hz</Capability>
+  <Capability Min="255" Max="255">No function</Capability>
+ </Channel>
+ <Mode Name="5 Channel (Default)">
+  <Channel Number="0">Intensity</Channel>
+  <Channel Number="1">Red</Channel>
+  <Channel Number="2">Green</Channel>
+  <Channel Number="3">Indigo</Channel>
+  <Channel Number="4">Strobe</Channel>
+ </Mode>
+ <Mode Name="Direct">
+  <Channel Number="0">Intensity</Channel>
+  <Channel Number="1">Red</Channel>
+  <Channel Number="2">Green</Channel>
+  <Channel Number="3">Indigo</Channel>
+  <Channel Number="4">Lime</Channel>
+  <Channel Number="5">Strobe</Channel>
+ </Mode>
+ <Mode Name="1 Channel">
+  <Channel Number="0">Intensity</Channel>
+ </Mode>
+ <Mode Name="RGB">
+  <Channel Number="0">Red</Channel>
+  <Channel Number="1">Green</Channel>
+  <Channel Number="2">Indigo</Channel>
+ </Mode>
+ <Physical>
+  <Bulb Type="40 Lumileds LUXEON Z LED" Lumens="2429" ColourTemperature="0"/>
+  <Dimensions Weight="3.77" Width="203" Height="310" Depth="240"/>
+  <Lens Name="Other" DegreesMin="14.5" DegreesMax="14.5"/>
+  <Focus Type="Fixed" PanMax="0" TiltMax="0"/>
+  <Technical DmxConnector="5-pin" PowerConsumption="90"/>
+ </Physical>
+</FixtureDefinition>
