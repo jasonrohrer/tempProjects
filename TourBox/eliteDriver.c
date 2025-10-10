@@ -1,6 +1,8 @@
 #include <libusb-1.0/libusb.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+
 
 #define VID 0xC251
 #define PID 0x2005
@@ -54,6 +56,17 @@ int main(void){
       r = libusb_bulk_transfer(h, EP_IN, inbuf, sizeof(inbuf), &x, TO);
       printf("IN r=%d xfer=%d\n", r, x);
       for(int i=0;i<x;i++) printf("%02X ", inbuf[i]); puts("");
+
+      FILE *commandOutput = popen( "xprop -id $(xprop -root -f _NET_ACTIVE_WINDOW 0x \" \\$0\\n\" _NET_ACTIVE_WINDOW | awk '{print $2}') WM_NAME | awk -F'=' '{print $2}' | sed 's/\"//g'", "r" );
+      if( commandOutput != NULL ) {
+
+          char buffer[1024];
+          if( fgets( buffer, sizeof( buffer ), commandOutput ) != NULL ) {
+              printf( "active window = %s\n", buffer );
+              }
+          pclose( commandOutput );
+          }
+      
       }
 
 
