@@ -7,7 +7,7 @@
 
 
 int main(void){
-    const char *path = "/dev/ttyACM0";
+    const char *path = "/dev/ttyACM1";
 
     int fileDescriptor = open( path, O_RDWR | O_SYNC );
 
@@ -65,8 +65,10 @@ int main(void){
         }
 
     printf( "Read %d bytes from TourBox device (expecting 26)\n", bytesRead );
+
+    int i;
     
-    for( int i=0; i<bytesRead; i++ ) {
+    for( i=0; i<bytesRead; i++ ) {
         printf( "%02X ", inputBuffer[i] );
         }
     printf( "\n" );
@@ -98,8 +100,9 @@ int main(void){
   
   // Try to read a series of responses
 
+  int z;
   
-  for( int z=0; z<100; z++ ) {    
+  for( z=0; z<100; z++ ) {    
       bytesRead = read( fileDescriptor, inputBuffer,
                         sizeof( inputBuffer ) - 1 );
       
@@ -111,7 +114,7 @@ int main(void){
       
       printf( "Read %d bytes from TourBox device\n", bytesRead );
       
-      for( int i=0; i<bytesRead; i++ ) {
+      for( i=0; i<bytesRead; i++ ) {
         printf( "%02X ", inputBuffer[i] );
           }
       printf( "\n" );

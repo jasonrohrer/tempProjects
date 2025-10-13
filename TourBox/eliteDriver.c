@@ -32,7 +32,9 @@ int main(void){
   uint8_t inbuf[512];
   r = libusb_bulk_transfer(h, EP_IN, inbuf, sizeof(inbuf), &x, TO);
   printf("IN r=%d xfer=%d\n", r, x);
-  for(int i=0;i<x;i++) printf("%02X ", inbuf[i]); puts("");
+  int i;
+  
+  for(i=0;i<x;i++) printf("%02X ", inbuf[i]); puts("");
 
   // now send 94 config bytes
   uint8_t outConfig[] = { 0xb5, 0x00, 0x5d, 0x4, 0x08,
@@ -50,12 +52,12 @@ int main(void){
   
   // Try to read a series of responses
 
-  
-  for( int z=0; z<100; z++ ) {    
+  int z;
+  for( z=0; z<100; z++ ) {    
       uint8_t inbuf[512];
       r = libusb_bulk_transfer(h, EP_IN, inbuf, sizeof(inbuf), &x, TO);
       printf("IN r=%d xfer=%d\n", r, x);
-      for(int i=0;i<x;i++) printf("%02X ", inbuf[i]); puts("");
+      for(i=0;i<x;i++) printf("%02X ", inbuf[i]); puts("");
 
       FILE *commandOutput = popen( "xprop -id $(xprop -root -f _NET_ACTIVE_WINDOW 0x \" \\$0\\n\" _NET_ACTIVE_WINDOW | awk '{print $2}') WM_NAME | awk -F'=' '{print $2}' | sed 's/\"//g'", "r" );
       if( commandOutput != NULL ) {
