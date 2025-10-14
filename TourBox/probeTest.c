@@ -45,7 +45,7 @@ int main(void){
       0x4d, 0x00, 0x4e, 0x00, 0x4f, 0x00, 0x50, 0x00, 0x51, 0x00, 0x52, 0x00, 0x53, 0x00, 0x54, 0x00,
       0xa8, 0x00, 0xa9, 0x00, 0xaa, 0x00, 0xab, 0x00, 0xfe };
   x=0;
-
+  /*
   int try;
   for( try = 4; try < 94; try += 2 ) {
       printf( "Setting byte %d\n", try );
@@ -61,7 +61,31 @@ int main(void){
 
       getchar();
       }
-  
+  */
+  outConfig[4] = 0x08;
+  int try;
+  for( try=0; try < 16; try++ ) {
+      printf( "Setting upper four bits of byte 4 to %d\n", try );
+      outConfig[4] = 0x08 | try << 4;
+      
+      r = libusb_bulk_transfer(h, EP_OUT, outConfig, sizeof(outConfig), &x, TO);
+      printf("OUT r=%d xfer=%d\n", r, x);
+
+      printf( "Turn knob to test\n" );
+      int z;
+      for( z=0; z<10; z++ ) {    
+          uint8_t inbuf[512];
+          r = libusb_bulk_transfer(h, EP_IN, inbuf, sizeof(inbuf), &x, TO);
+          printf("IN r=%d xfer=%d\n", r, x);
+          for(i=0;i<x;i++) printf("%02X ", inbuf[i]); puts("");
+          }
+      
+      printf( "Enter for next: " );
+
+      getchar();
+      
+      }
+   
   
   
   // Try to read a series of responses
