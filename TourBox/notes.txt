@@ -1,6 +1,6 @@
 94-byte setup message sent from host to tourbox
 
-bytes 4 through 92 (even bytes only) set haptics and fire speed for each knob/dial/wheel, where each one can be modified by holding down a button while turning.  Buttons include holding down each knob/dial/wheel.  For example:
+bytes 4 through 92 (even bytes only) set haptics and fire speed for each knob/dial/scroll, where each one can be modified by holding down a button while turning.  Buttons include holding down each knob/dial/scroll.  For example:
 
 Knob
 Knob + side
@@ -12,13 +12,13 @@ Knob + down
 Knob + left
 Knob + right
 Knob + diag
-Knob + A
-Knob + B
+Knob + c1
+Knob + c2
 Knob + pressed Knob
-Knob + pressed Wheel
+Knob + pressed Scroll
 Knob + pressed Dial
 
-15 slots per knob/dial/wheel = 45 slots total
+15 slots per knob/dial/scroll = 45 slots total
 
 The order that these slots are mapped is arbitrary and a bit strange.
 The mapping is shown in the Gnumeric spread sheet.
