@@ -11,7 +11,7 @@ Knob + up
 Knob + down
 Knob + left
 Knob + right
-Knob + diag
+Knob + tour
 Knob + c1
 Knob + c2
 Knob + pressed Knob
