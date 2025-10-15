@@ -40,3 +40,82 @@ haptics strength.
 
 And if you set top two bits to 11, it turns haptics off.
 If you set bottom two bits to 11, it turns rotational triggering off completely.
+
+
+
+8-bit codes:
+
+There are 17 possible controls, encoded by the lowest 6 bits
+
+These ids are:
+000000  00 tall
+000001  01 side
+000010  02 top
+000011  03 short
+000100  04 knob turn
+000101  05
+000110  06
+000111  07
+001000  08
+001001  09 scroll turn
+001010  0A scroll press
+001011  0B 
+001100  0C
+001101  0D
+001110  0E
+001111  0F dial turn
+010000  10 up
+010001  11 down
+010010  12 left
+010011  13 right
+010100  14
+010101  15
+010110  16
+010111  17
+011000  18
+011001  19
+011010  1A
+011011  1B
+011100  1C
+011101  1D
+011110  1E
+011111  1F
+100000  20
+100001  21
+100010  22 c1
+100011  23 c2
+100100  24
+100101  25
+100110  26
+100111  27
+101000	28
+101001  29
+101010  2A tour
+101011  2B
+101100  2C
+101101  2D
+101110  2E
+101111  2F
+110000  30
+110001  31
+110010  32
+110011  33
+110100  34
+110101  35
+110110  36
+110111  37 knob press
+111000  38 dial press
+111001  39
+111010  3A
+111011  3B
+111100  3C
+111101  3D
+111110  3E
+111111  3F
+ 
+The top two bits encode press/release or left/right
+
+00  press
+10  release
+00  rot left
+01  rot right

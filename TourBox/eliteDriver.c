@@ -9,7 +9,7 @@
 #define IFACE 1     // <-- set to your Vendor-Specific interface number
 #define EP_OUT 0x02 // <-- set from lsusb -v
 #define EP_IN  0x82 // <-- set from lsusb -v
-#define TO 500
+#define TO 50000
 
 int main(void){
   libusb_context* ctx=NULL; libusb_device_handle* h=NULL;
