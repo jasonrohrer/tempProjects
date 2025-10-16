@@ -16,3 +16,18 @@ printf "int keyCodes[NUM_KEY_CODES] = {\n" >> codeArray.txt
 head -c-2 codeArrayTemp.txt >> codeArray.txt
 
 echo " };" >> codeArray.txt
+
+rm codeArrayTemp.txt
+
+
+cat keyCodeList.txt | sed "s/\([A-Z_]*\)/\"\1\",/" > stringArrayTemp.txt
+
+
+printf "const char *keyCodeStrings[NUM_KEY_CODES] = {\n" > stringArray.txt
+
+# remove final comma
+head -c-2 stringArrayTemp.txt >> stringArray.txt
+
+echo " };" >> stringArray.txt
+
+rm stringArrayTemp.txt
