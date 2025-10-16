@@ -1,7 +1,7 @@
 cat /usr/include/linux/input.h | grep "#define KEY_" | sed "s/\t.*//g" | sed "s/#define //" > keyCodeList.txt
 
 
-cat keyCodeList.txt | sed "s/\([A-Z_]*\)/\1,/" > codeArrayTemp.txt
+cat keyCodeList.txt | sed "s/\([A-Z0-9_]*\)/    \1,/" > codeArrayTemp.txt
 
 numCodes="$( wc -l keyCodeList.txt | sed 's/ .*//' )"
 
@@ -20,7 +20,7 @@ echo " };" >> codeArray.txt
 rm codeArrayTemp.txt
 
 
-cat keyCodeList.txt | sed "s/\([A-Z_]*\)/\"\1\",/" > stringArrayTemp.txt
+cat keyCodeList.txt | sed "s/\([A-Z0-9_]*\)/    \"\1\",/" > stringArrayTemp.txt
 
 
 printf "const char *keyCodeStrings[NUM_KEY_CODES] = {\n" > stringArray.txt
