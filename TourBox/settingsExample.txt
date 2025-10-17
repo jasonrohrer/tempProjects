@@ -1,0 +1,165 @@
+# lines that start with # are ignored as comments
+
+# comments can ONLY start at the beginning of a line
+
+
+
+# settings for a new application start with a phrase in quotes
+# which is a pattern that occurs in the window for that application when
+# it is brought to the foreground
+# a line starting settings for a new applicaiton must start with "
+
+"Mozilla Firefox"
+
+
+# TourBox controls are as follows
+# TALL  SHORT  SIDE  TOP  UP  DOWN  LEFT  RIGHT  C1  C2  TOUR
+# KNOB_CCW  KNOB_CW  KNOB_PRESS
+# DIAL_CCW  DIAL_CW  DIAL_PRESS
+# SCROLL_DOWN  SCROLL_UP  SCROLL_PRESS
+
+# CCW and CW are counter-clockwise and clockwise for knob and dial
+# C1 and C2 are the little round buttons above Tall and Short
+# Tour is the moon-shaped button southwest of the Knob
+
+
+# TourBox inputs are either single inputs or 2-input combos
+
+# Command outputs are single keys, key combinations, or sequences of single keys
+# and key combinations.  Each output key is a KEY_ macro name.  The full list
+# of possible output key macros is in keyCodeList.txt
+
+
+# single input mapping to single key
+# when Top is pressed, output a left arrow key
+
+TOP  KEY_UP
+
+
+
+# single input mapping to a two-key combo
+# the combo will be issued simultaneously
+# thus, the order that the combo is listed doesn't matter
+# when Short is pressed, it will output the standard Undo key command
+
+SHORT  KEY_LEFTCTRL KEY_Z
+
+
+
+
+# single input mapping to a sequence of combos and single keys
+# > means send one key or combo before moving on to the next
+# when C1 is pressed, access the Search History option from the History
+# menu in Firefox, which has no direct key shortcut
+# we Alt-S to open the menu, and then arrow down 3 times before pressing Enter
+
+C1   KEY_LEFTALT KEY_S  >  KEY_DOWN  >  KEY_DOWN  >  KEY_DOWN  >  KEY_ENTER
+
+
+
+# a sequence printable keys can also be listed as a string,
+# which will be typed one-by-one
+
+# have C2 open a new tab and go to www.google.com
+
+C2  KEY_LEFTCTRL KEY_T > "www.google.com" > KEY_ENTER
+
+
+
+# Combo input mapping to a key combination
+# While holding down Side, if we press C1, we go back one page
+
+SIDE C1  KEY_LEFTALT KEY_LEFT
+
+
+
+# For Knob/Dial/Scroll, we can also change the haptic and rotation speed
+# settings, and this can be changed per direction and per combo.
+
+# For example, KNOB_CW can have one haptic and rotation speed setting
+# while the SIDE KNOB_CW combo can have a different haptic and rotation
+# speed setting.  I.e., by holding down SIDE while turning the Knob
+# we can not only output a different key sequence than when just turning the
+# Knob by itself, but we can also have a different haptic strength and
+# and different rotation speed.
+# Rotation speed is how fast repeat commands are issued when the widget
+# is turned farther in the same direction.
+# Fast rotation means 30 outputs per rotation.
+# Medium rotation means 15 outputs per rotation.
+# Slow rotation means means 10 outputs per rotation.
+# (These speeds are built-in to the TourBox hardware.)
+
+# rotational controls default to Strong haptics and Fast rotations
+# for rotational actions that have outputs assigned
+
+# if a rotational control has NO output assigned, haptics will be Off
+# thus, if you feel haptics for a control, it is outputting something
+
+# Haptics are controlled with the H0  H1  or H2  modifiers for
+# Off, Weak, or Strong haptics
+
+# Rotation speed is controlled with R0  R1  or R2  modifiers for
+# Slow, Medium, or Fast rotation
+
+
+
+# Knob with default Strong haptics and Fast rotation
+# set it to control zoom in/out in Firefox
+
+KNOB_CW   KEY_LEFTCTRL KEY_LEFTSHIFT KEY_EQUAL
+KNOB_CCW  KEY_LEFTCTRL KEY_MINUS
+
+
+
+# If we modify the Knob with a Side-button combo (Side held while Knob
+# turned), we might want different Haptics and Rotation speed so that
+# the modified knob feels different (so we have feedback that we have
+# changed modes)
+
+# have our modified Knob use Weak haptics and Slow rotation
+# when modified with Side, the Knob switches tabs in Firefox
+
+SIDE KNOB_CW   H1 R0  KEY_LEFTCTRL KEY_TAB
+SIDE KNOB_CCW  H1 R0  KEY_LEFTCTRL KEY_LEFTSHIFT KEY_TAB
+
+
+
+# note that ANY button can be used to modify a Knob/Dial/Wheel and change
+# its haptcs, rotation speed, and output, even pressing the Knob/Dial/Wheel
+# itself (or pressing a Dial can modify a Knob)
+# The OEM driver from TourBox doesn't expose this functionality, but it
+# is there
+
+# have the Knob behave differently when it is pressed and turned
+# Use Weak haptics and Medium rotation speed
+# Have Firefox jump from link to link in the page
+
+KNOB_PRESS KNOB_CW  H1 R1  KEY_TAB
+KNOB_PRESS KNOB_CW  H1 R1  KEY_LEFTSHIFT KEY_TAB
+
+
+
+
+
+
+
+# now we can start a new section for a different application
+# in this case, we switch to these settings whenever the window has "emacs:"
+# in the title
+
+# Note the first application with a string that matches is the one that is
+# used.  Application order in the settings file matters.
+
+# This can be a problem if emacs has a file open called "Firefox.txt", for
+# example (which is why the longer phrase "Mozilla Firefox" is used above)
+
+# emacs puts a : in the window title.  Use this to be as specific as possible
+
+
+
+"emacs:"
+
+
+# have the Tall button save the current file in emacs
+
+TALL  KEY_LEFTCTRL X > KEY_LEFTCTRL S
