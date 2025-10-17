@@ -113,9 +113,9 @@ These ids are:
 111110  3E
 111111  3F
  
-The top two bits encode press/release or left/right
+The top two bits encode press/release or CCW/CW (or Down/Up for scroll)
 
 00  press
 10  release
-00  rot left
-01  rot right
+00  rot CCW (Down)
+01  rot CW (Up)
