@@ -1,0 +1,1 @@
+gcc -std=c89 -o tourBoxEliteDriver tourBoxEliteDriver.c -lusb-1.0
