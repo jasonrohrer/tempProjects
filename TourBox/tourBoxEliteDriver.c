@@ -859,6 +859,7 @@ char equal( const char *inStringA, const char *inStringB ) {
     }
 
 
+
 /* maps a string like "KEY_A" to a uinput keycode like KEY_A */
 /* returns -1 if there's no mapping */
 int getKeyCodeFromString( char *inString ) {
@@ -893,6 +894,8 @@ int main( int inNumArgs, const char **inArgs ) {
     uint8_t inputBuffer[ 512 ];
     
 
+    // NEXT
+    // Start parsing settings file
     
     
     
