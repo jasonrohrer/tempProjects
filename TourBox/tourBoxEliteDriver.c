@@ -24,6 +24,16 @@
 #define USB_TIMEOUT 50000
 
 
+/* equal test for strings */
+/* returns 1 if two strings are equal, 0 if not */
+char equal( const char *inStringA, const char *inStringB );
+
+
+/* maps a string like "KEY_A" to a uinput keycode like KEY_A */
+/* returns -1 if there's no mapping */
+int getKeyCodeFromString( char *inString );
+
+
 
 #define NUM_KEY_CODES 403
 
@@ -839,7 +849,7 @@ const char *keyCodeStrings[NUM_KEY_CODES] = {
     "KEY_CNT" };
 
 
-/* returns 1 if two strings are equal, 0 if not */
+
 char equal( const char *inStringA, const char *inStringB ) {
     int i = 0;
     while( inStringA[i] != '\0' && inStringB[i] != '\0' ) {
@@ -860,8 +870,6 @@ char equal( const char *inStringA, const char *inStringB ) {
 
 
 
-/* maps a string like "KEY_A" to a uinput keycode like KEY_A */
-/* returns -1 if there's no mapping */
 int getKeyCodeFromString( char *inString ) {
     int i;
     
@@ -889,13 +897,62 @@ int main( int inNumArgs, const char **inArgs ) {
 
     int numTransfered;
     
-    uint8_t initMessage[] = { 0x55, 0x00, 0x07, 0x88, 0x94, 0x00, 0x1a, 0xfe };
+    unsigned char initMessage[] =
+        { 0x55, 0x00, 0x07, 0x88, 0x94, 0x00, 0x1a, 0xfe };
 
-    uint8_t inputBuffer[ 512 ];
+    unsigned char inputBuffer[ 512 ];
+
+    const char *settingsFileName;
+
+    FILE *settingsFile;
+
+    char fileLineBuffer[ 512 ];
+
+    char readLine = 1;
     
+    /*
+    NEXT
+    Start parsing settings file
+    */
+    
+    if( inNumArgs < 2 ) {
+        printf( "Expecting settings file as argument\n" );
+        return 1;
+        }
+    settingsFileName = inArgs[1];
 
-    // NEXT
-    // Start parsing settings file
+    printf( "Using settings file '%s'\n", settingsFileName );
+
+
+    settingsFile = fopen( settingsFileName, "r" );
+
+    if( settingsFile == NULL ) {
+        printf( "Failed to open settings file\n" );
+        return 1;
+        }
+
+    
+    while( readLine ) {
+        char *result;
+
+        readLine = 0;
+        
+        result =
+            fgets( fileLineBuffer, sizeof( fileLineBuffer ), settingsFile );
+        
+        if( result != NULL ) {
+            readLine = 1;
+
+            /* skip empty or comment line */
+            if( fileLineBuffer[0] == '#' ||
+                fileLineBuffer[0] == '\n' ||
+                fileLineBuffer[0] == '\r' ||
+                fileLineBuffer[0] == '\0' ) {
+                continue;
+                }
+            printf( "%s", fileLineBuffer );
+            }
+        }
     
     
     
@@ -943,7 +1000,6 @@ int main( int inNumArgs, const char **inArgs ) {
                                       &numTransfered, USB_TIMEOUT );
     
     printf( "USB IN result=%d transfered=%d\n", usbResult, numTransfered );
-    int i;
 
     
     return 0;
