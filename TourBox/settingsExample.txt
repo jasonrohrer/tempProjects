@@ -13,8 +13,9 @@
 # it is brought to the foreground
 # a line starting settings for a new applicaiton must start with "
 # these application-matching string patterns can be at most 80 characters long
-# there can be at most 256 different applications defined in one settings file
-
+# there can be at most 64 different applications defined in one settings file
+# Additional applications beyond the limit of 64 in one settings file
+# will produce an error message at runtime and will be ignored
 "Mozilla Firefox"
 
 
@@ -31,9 +32,18 @@
 
 # TourBox inputs are either single inputs or 2-input combos
 
+# Note that only button presses can be used in the first step of a combo
+# (scroll, knob, and dial turns cannot be used).
+# thus, there are 14x20 = 280 possible combos
+
+
 # Command outputs are single keys, key combinations, or sequences of single keys
 # and key combinations.  Each output key is a KEY_ macro name.  The full list
 # of possible output key macros is in keyCodeList.txt
+
+
+
+
 
 
 # single input mapping to single key
@@ -69,6 +79,19 @@ C1   KEY_LEFTALT KEY_S  >  KEY_DOWN  >  KEY_DOWN  >  KEY_DOWN  >  KEY_ENTER
 # have C2 open a new tab and go to www.google.com
 
 C2  KEY_LEFTCTRL KEY_T > "www.google.com" > KEY_ENTER
+
+
+# NOTE
+#
+# Sequences of key outputs can be up to 64 commands long.
+# Commands can bey individual KEY_ codes, > symbols to send a combo,
+# or individual keys in a quoted printable ASCII key sequence
+# for example, the following sequence includes 10 commands:
+#   KEY_SHIFT KEY_UP > "hello" > KEY_ENTER
+#
+# Sequences of commands longer than 64 will produce an error message
+# at runtime and will be ignored
+
 
 
 

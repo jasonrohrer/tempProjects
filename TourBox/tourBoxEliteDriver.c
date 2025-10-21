@@ -25,12 +25,148 @@
 #define USB_TIMEOUT 50000
 
 
+#define NUM_TOURBOX_CONTROLS 20
+#define NUM_TOURBOX_PRESS_CONTROLS 14
+
+/* each command arrives from TourBox as 8 bits
+   lowest 6 bits encode which control was interacted with
+*/
+
+#define TALL          0x00
+#define SIDE          0x01
+#define TOP           0x02
+#define SHORT         0x03
+#define KNOB_TURN     0x04
+#define SCROLL_TURN   0x09
+#define SCROLL_PRESS  0x0A
+#define DIAL_TURN     0x0F
+#define UP            0x10
+#define DOWN          0x11
+#define LEFT          0x12
+#define RIGHT         0x13
+#define C1            0x22
+#define C2            0x23
+#define TOUR          0x2A
+#define KNOB_PRESS    0x37
+#define DIAL_PRESS    0x38
+
+#define PRESS         0x80
+#define RELEASE       0x00
+#define CCW_DOWN      0x00
+#define CW_UP         0x40
+
+#define SCROLL_DOWN   ( SCROLL_TURN  | CCW_DOWN )
+#define SCROLL_UP     ( SCROLL_TURN  | CW_UP )
+#define KNOB_CCW      ( KNOB_TURN    | CCW_DOWN )
+#define KNOB_CW       ( KNOB_TURN    | CW_UP )
+#define DIAL_CCW      ( DIAL_TURN    | CCW_DOWN )
+#define DIAL_CW       ( DIAL_TURN    | CW_UP )
+
+
+unsigned char tourBoxControlCodes[ NUM_TOURBOX_CONTROLS ] = {
+    TALL,
+    SIDE,
+    TOP,
+    SHORT,
+    KNOB_CCW,
+    KNOB_CW,
+    SCROLL_DOWN,
+    SCROLL_UP,
+    SCROLL_PRESS,
+    DIAL_CCW,
+    DIAL_CW,
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+    C1,
+    C2,
+    TOUR,
+    KNOB_PRESS,
+    DIAL_PRESS 
+    };
+
+unsigned char tourBoxPressControlCodes[ NUM_TOURBOX_PRESS_CONTROLS ] = {
+    TALL,
+    SIDE,
+    TOP,
+    SHORT,
+    SCROLL_PRESS,
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+    C1,
+    C2,
+    TOUR,
+    KNOB_PRESS,
+    DIAL_PRESS 
+    };
+
+const char *tourBoxControlNames[ NUM_TOURBOX_CONTROLS ] = {
+    "TALL",
+    "SIDE",
+    "TOP",
+    "SHORT",
+    "KNOB_CCW",
+    "KNOB_CW",
+    "SCROLL_DOWN",
+    "SCROLL_UP",
+    "SCROLL_PRESS",
+    "DIAL_CCW",
+    "DIAL_CW",
+    "UP",
+    "DOWN",
+    "LEFT",
+    "RIGHT",
+    "C1",
+    "C2",
+    "TOUR",
+    "KNOB_PRESS",
+    "DIAL_PRESS" 
+    };
+
+
+typedef struct KeyPressCombo {
+        int numKeys;
+        int keys[6];
+    } KeyPressCombo;
+
+
+
+typedef struct CommandMapping {
+        int sequenceLength;
+        KeyPressCombo sequence[64];
+    } CommandMapping;
+        
+
 typedef struct ApplicationMapping {
         char name[81];
+
+        
+        /*
+          first index is the main control being manipulated
+           
+          second index is another control already held down
+              as a modifier,
+              or no other control held down (final spot)
+        */
+        int keyCodeSequenceLength[ NUM_TOURBOX_CONTROLS ]
+                                 [ NUM_TOURBOX_PRESS_CONTROLS + 1 ];
+
+        /* up to 64 uinput KEY codes, separated by KEY_RESERVED to
+           send batches of keys as a simultaneous combo
+        */
+        int keyCodeSquence[ NUM_TOURBOX_CONTROLS ]
+                          [ NUM_TOURBOX_PRESS_CONTROLS + 1 ]
+                          [64];
+        
     } ApplicationMapping;
 
 
-ApplicationMapping appMappings[256];
+#define MAX_NUM_APPS  64
+
+ApplicationMapping appMappings[MAX_NUM_APPS];
 
 int numAppMappings = 0;
 
@@ -47,10 +183,9 @@ int getKeyCodeFromString( char *inString );
 
 
 
-#define NUM_KEY_CODES 403
+#define NUM_KEY_CODES 402
 
 int keyCodes[NUM_KEY_CODES] = {
-    KEY_RESERVED,
     KEY_ESC,
     KEY_1,
     KEY_2,
@@ -456,7 +591,6 @@ int keyCodes[NUM_KEY_CODES] = {
 
 
 const char *keyCodeStrings[NUM_KEY_CODES] = {
-    "KEY_RESERVED",
     "KEY_ESC",
     "KEY_1",
     "KEY_2",
@@ -861,6 +995,12 @@ const char *keyCodeStrings[NUM_KEY_CODES] = {
     "KEY_CNT" };
 
 
+/* use KEY_RESERVED to represent a SEND (send combo of keys) in our
+   key sequences */
+#define SEND_KEY_COMBO   KEY_RESERVED
+
+
+
 
 char equal( const char *inStringA, const char *inStringB ) {
     int i = 0;
@@ -921,7 +1061,9 @@ int main( int inNumArgs, const char **inArgs ) {
     char fileLineBuffer[ 512 ];
 
     char readLine = 1;
-    
+
+    int lineCount = 0;
+        
     /*
     NEXT
     Start parsing settings file
@@ -936,12 +1078,13 @@ int main( int inNumArgs, const char **inArgs ) {
     printf( "Using settings file '%s'\n", settingsFileName );
 
 
-    settingsFile = fopen( settingsFileName, "r" );
+     settingsFile = fopen( settingsFileName, "r" );
 
     if( settingsFile == NULL ) {
         printf( "Failed to open settings file\n" );
         return 1;
         }
+
 
     
     while( readLine ) {
@@ -958,6 +1101,7 @@ int main( int inNumArgs, const char **inArgs ) {
             
             /* we read a valid line, continue loop */
             readLine = 1;
+            lineCount++;
 
             /* eat whitespace at start of line */
             while( fileLineBuffer[nextCharPos] == ' '
@@ -980,6 +1124,16 @@ int main( int inNumArgs, const char **inArgs ) {
                 /* start of a new app mapping */
                 unsigned int numCharsScanned = 0;
                 ApplicationMapping *m;
+
+                if( numAppMappings >= MAX_NUM_APPS ) {
+                    printf( "\nWARNING:\n"
+                            "Reached application limit of %d, and "
+                            "encountered another application definition "
+                            "on line %d.  "
+                            "Skipping rest of settings file.\n\n",
+                            MAX_NUM_APPS, lineCount );
+                    break;
+                    }
                 
                 /* skip starting " */
                 nextCharPos++;
@@ -1004,10 +1158,27 @@ int main( int inNumArgs, const char **inArgs ) {
                 numAppMappings++;
                 }
             else {
-                /* continue app mapping */
+                /* not starting a new applicaiton block, continue app mapping */
+                ApplicationMapping *m;
+                
+                if( numAppMappings == 0 ) {
+                    printf( "\nWARNING:\n"
+                            "Skipping mapping line that occurs before an"
+                            " application (window tile phrase in quotes)"
+                            " is defined:\n\n    %s\n",
+                            &( fileLineBuffer[nextCharPos ] ) );
+                    continue;
+                    }
+                
+                /* keep loading mappings into our most recent application */
+                m = &( appMappings[ numAppMappings - 1 ] );
+
+                printf( "Adding line for applicaiton \"%s\": %s\n",
+                        m->name, &( fileLineBuffer[nextCharPos ] ) );
+
+                /* fixme:  process the line and add it to mapping */
                 }
-            
-            /* fixme */
+
             }
         }
     
