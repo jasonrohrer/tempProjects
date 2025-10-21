@@ -2,12 +2,18 @@
 
 # comments can ONLY start at the beginning of a line
 
+# whitespace at the start of a line (spaces and tabs) are ignored
+   # so you can indent things
+   # however you want
+
 
 
 # settings for a new application start with a phrase in quotes
 # which is a pattern that occurs in the window for that application when
 # it is brought to the foreground
 # a line starting settings for a new applicaiton must start with "
+# these application-matching string patterns can be at most 80 characters long
+# there can be at most 256 different applications defined in one settings file
 
 "Mozilla Firefox"
 

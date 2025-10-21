@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
 
 
 /* the VID and PID of a TourBox Elite */
@@ -22,6 +23,17 @@
 /* found with lsusb -v */
 #define EP_IN  0x82 
 #define USB_TIMEOUT 50000
+
+
+typedef struct ApplicationMapping {
+        char name[81];
+    } ApplicationMapping;
+
+
+ApplicationMapping appMappings[256];
+
+int numAppMappings = 0;
+
 
 
 /* equal test for strings */
@@ -935,22 +947,67 @@ int main( int inNumArgs, const char **inArgs ) {
     while( readLine ) {
         char *result;
 
+        /* end loop unless we read a valid line */
         readLine = 0;
         
         result =
             fgets( fileLineBuffer, sizeof( fileLineBuffer ), settingsFile );
         
         if( result != NULL ) {
+            int nextCharPos = 0;
+            
+            /* we read a valid line, continue loop */
             readLine = 1;
 
+            /* eat whitespace at start of line */
+            while( fileLineBuffer[nextCharPos] == ' '
+                   ||
+                   fileLineBuffer[nextCharPos] == '\t' ) {
+                nextCharPos++;
+                }
+            
+            
             /* skip empty or comment line */
-            if( fileLineBuffer[0] == '#' ||
-                fileLineBuffer[0] == '\n' ||
-                fileLineBuffer[0] == '\r' ||
-                fileLineBuffer[0] == '\0' ) {
+            if( fileLineBuffer[nextCharPos] == '#' ||
+                fileLineBuffer[nextCharPos] == '\n' ||
+                fileLineBuffer[nextCharPos] == '\r' ||
+                fileLineBuffer[nextCharPos] == '\0' ) {
                 continue;
                 }
-            printf( "%s", fileLineBuffer );
+            /*printf( "%s", fileLineBuffer );*/
+
+            if( fileLineBuffer[nextCharPos] == '"' ) {
+                /* start of a new app mapping */
+                unsigned int numCharsScanned = 0;
+                ApplicationMapping *m;
+                
+                /* skip starting " */
+                nextCharPos++;
+
+                m = &( appMappings[ numAppMappings ] );
+
+                while( numCharsScanned < sizeof( m->name ) - 1
+                       &&
+                       fileLineBuffer[ nextCharPos ] != '"'
+                       &&
+                       fileLineBuffer[ nextCharPos ] != '\0' ) {
+
+                    m->name[ numCharsScanned ] =
+                        fileLineBuffer[ nextCharPos ];
+
+                    nextCharPos++;
+                    numCharsScanned++;
+                    }
+                m->name[ numCharsScanned ] = '\0';
+
+                printf( "Processing mappings for \"%s\"\n", m->name );
+                numAppMappings++;
+                }
+            else {
+                /* continue app mapping */
+                }
+            
+            /* fixme */
             }
         }
     
@@ -1001,6 +1058,8 @@ int main( int inNumArgs, const char **inArgs ) {
     
     printf( "USB IN result=%d transfered=%d\n", usbResult, numTransfered );
 
+    sleep( 10 );
+    
     
     return 0;
     }
