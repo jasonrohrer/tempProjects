@@ -2,6 +2,8 @@
 /* #include <stdio.h> */
 
 /* turns out that stb_vorbis.c isn't even c89 compatible */
+/* neither is libvorbis (not even if code is directly included,
+   because it depends on stdint at least */
 
 /* proving that stdarg doesn't require stdlib to link it */
 #include <stdarg.h>
@@ -26,6 +28,10 @@ int sum_integers(int count, ...) {
     return sum;
 }
 
+
+/* proving that minivorbis doesn't require stdlib to link it */
+/* nope */
+/* #include "minivorbis.h" */
 
 
 int main( void ) {
