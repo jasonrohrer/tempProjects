@@ -180,6 +180,11 @@ SIDE TOP KNOB_TURN_CW  KEY_LEFT
 # a 4-control combo
 SIDE TOP SHORT KNOB_TURN_CW  KEY_LEFT
 
+# an invalid control 
+BLAH  KEY_LEFT
+
+# an missing TourBox control
+KEY_LEFT_SHIFT KEY_LEFT
 
 
 
