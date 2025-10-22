@@ -176,6 +176,7 @@ int stringToPressControlIndex( const char *inString ) {
     }
 
 
+#define MAX_KEY_SEQUENCE_STEPS  64
 
 typedef struct ApplicationMapping {
         char name[81];
@@ -196,7 +197,7 @@ typedef struct ApplicationMapping {
         */
         int keyCodeSquence[ NUM_TOURBOX_CONTROLS ]
                           [ NUM_TOURBOX_PRESS_CONTROLS + 1 ]
-                          [64];
+                          [ MAX_KEY_SEQUENCE_STEPS ];
         
     } ApplicationMapping;
 
@@ -214,7 +215,7 @@ int numAppMappings = 0;
 
 /* maps a string like "KEY_A" to a uinput keycode like KEY_A */
 /* returns -1 if there's no mapping */
-int getKeyCodeFromString( char *inString );
+int stringToKeyCode( char *inString );
 
 
 
@@ -1057,8 +1058,13 @@ char equal( const char *inStringA, const char *inStringB ) {
 
 
 
-int getKeyCodeFromString( char *inString ) {
+int stringToKeyCode( char *inString ) {
     int i;
+
+    /* special case, bare > maps to KEY_RESERVED */
+    if( equal( inString, ">" ) ) {
+        return KEY_RESERVED;
+        }
     
     for( i=0; i<NUM_KEY_CODES; i++ ) {
         if( equal( inString, keyCodeStrings[i] ) ) {
@@ -1082,19 +1088,35 @@ char *getNextTourboxCodeIndexAndAdvance( char *inSourceString,
                                          int *outCodeIndex );
 
 
+/* from a source string, parse the next KEY_ code string,
+   or '>', which maps to KEY_RESERVED, or -1 on failue
+   and return a pointer to the next advanced spot in the string (beyond
+   the parsed control code string)
+   if no valid KEY_ code name (or > ) is found, along with -1,
+   the return position in inSourceString is not advanced */
+char *getNextKeyCodeAndAdvance( char *inSourceString, int *outKeyCode );
+
+
+
 /* is a control code index pointing to a code that is a valid code
    in tourBoxPressControlCodes? */
 char isPressCode( int inTourBoxControlCodeIndex );
 
 
-/* reads next space/tab/end -delimited token from inSourceString
+/* reads next space/tab/>/end -delimited token from inSourceString
    returns pointer to spot after token in inSourceString
    fills outTokenBuffer pointer with a pointer to a static
    buffer where parsed token is stored
    cannot interleave calls, as there is only one static buffer
    Token can be at most 63 chars long.  Longer tokens will be truncated
    but the returned pointer into inSourceString will still be beyond
-   the end of the too-long token.  */
+   the end of the too-long token.
+   Note that the '>' counts as the end of a token,
+   since we might have token sequences jammed together with > between
+   with no spaces.
+   If our scan position STARTS with > (or whitespace followed by >),
+   however, we simply return that single character as our token.
+*/
 char *getNextTokenAndAdvance( char *inSourceString,
                               char **outTokenBuffer );
 
@@ -1117,6 +1139,26 @@ char *getNextTourboxCodeIndexAndAdvance( char *inSourceString,
     }
 
 
+
+char *getNextKeyCodeAndAdvance( char *inSourceString,
+                                int *outKeyCode ) {
+    char *tokenPointer;
+    char *nextSpot;
+    
+    nextSpot = getNextTokenAndAdvance( inSourceString, &tokenPointer );
+
+    *outKeyCode = stringToKeyCode( tokenPointer );
+
+    if( *outKeyCode == -1 ){
+        /* rewind string position */
+        return inSourceString;
+        }
+    
+    return nextSpot;
+    }
+
+
+
 char tokenBuffer[64];
 
 char *getNextTokenAndAdvance( char *inSourceString,
@@ -1132,10 +1174,23 @@ char *getNextTokenAndAdvance( char *inSourceString,
         i++;
         }
 
+    if( inSourceString[i] == '>' ) {
+        /* special case, our next token is > */
+        tokenBuffer[0] = '>';
+        tokenBuffer[1] = '\0';
+        *outTokenBuffer = tokenBuffer;
+
+        return &( inSourceString[ i + 1 ] );
+        }
+    
+    
     postSpaceIndex = i;
 
     while( inSourceString[ postSpaceIndex ] != ' ' &&
            inSourceString[ postSpaceIndex ] != '\t' &&
+           inSourceString[ postSpaceIndex ] != '>' &&
+           inSourceString[ postSpaceIndex ] != '\n' &&
+           inSourceString[ postSpaceIndex ] != '\r' &&
            inSourceString[ postSpaceIndex ] != '\0' ) {
 
         if( bufferPos < sizeof( tokenBuffer ) - 1 ) {
@@ -1302,6 +1357,10 @@ int main( int inNumArgs, const char **inArgs ) {
                 int nextCodeIndexA = -1;
                 int nextCodeIndexB = -1;
                 int nextCodeIndexC = -1;
+                int nextSequenceStep = 0;
+                int nextKeyCode = -1;
+                char gotKeyCode = 1;
+                char parseError = 0;
                 
                 if( numAppMappings == 0 ) {
                     printf( "\nWARNING:\n"
@@ -1319,7 +1378,7 @@ int main( int inNumArgs, const char **inArgs ) {
                         m->name, &( fileLineBuffer[ nextCharPos ] ) );
 
                 
-                /* fixme:  process the line and add it to mapping */
+                /* process the line and add it to mapping */
 
                 nextParsePos = &( fileLineBuffer[ nextCharPos ] );
 
@@ -1375,6 +1434,87 @@ int main( int inNumArgs, const char **inArgs ) {
                         lineCount, &( fileLineBuffer[ nextCharPos ] ) );
                     continue;
                     }
+                
+                if( nextCodeIndexB == -1 ) {
+                    /* no second code
+                       map it into the "no code" index at the end */
+                    nextCodeIndexB = NUM_TOURBOX_CONTROLS;
+                    }
+
+                while( gotKeyCode ) {
+                    gotKeyCode = 0;
+                    
+                    nextParsePos =
+                        getNextKeyCodeAndAdvance( nextParsePos,
+                                                  &nextKeyCode );
+                    if( nextKeyCode != -1 ) {
+                        if( nextSequenceStep >= MAX_KEY_SEQUENCE_STEPS ) {
+                            printf(
+                                "\nWARNING:\n"
+                                "Skipping mapping line %d that has more than "
+                                "%d sequence steps:"
+                                "\n\n    %s\n",
+                                lineCount, MAX_KEY_SEQUENCE_STEPS,
+                                &( fileLineBuffer[ nextCharPos ] ) );
+                            m->keyCodeSequenceLength
+                                [ nextCodeIndexA ]
+                                [ nextCodeIndexB ] = 0;
+                            parseError = 1;
+                            break;
+                            }
+                        
+                        m->keyCodeSquence
+                            [ nextCodeIndexA ]
+                            [ nextCodeIndexB ]
+                            [ nextSequenceStep ] = nextKeyCode;
+
+                        nextSequenceStep++;
+                        
+                        m->keyCodeSequenceLength
+                            [ nextCodeIndexA ]
+                            [ nextCodeIndexB ] = nextSequenceStep;
+                        gotKeyCode = 1;
+                        }
+                    else {
+                        /* fixme, this is place-holder, since
+                           it treats quoted strings as errors */
+                        char *badToken;
+                        
+                        getNextTokenAndAdvance( nextParsePos,
+                                                &badToken );
+
+                        if( ! equal( badToken, "" ) ) {
+                            /* didn't make it to end of line and parse
+                               an empty token */
+                            printf(
+                                "\nWARNING:\n"
+                                "Skipping mapping line %d that has invalid "
+                                "key code [%s]:"
+                                "\n\n    %s\n",
+                                lineCount, badToken,
+                                &( fileLineBuffer[ nextCharPos ] ) );
+                        
+                            m->keyCodeSequenceLength
+                                [ nextCodeIndexA ]
+                                [ nextCodeIndexB ] = 0;
+                            parseError = 1;
+                            break;
+                            }
+                        }
+                    }
+
+                if( parseError ) {
+                    /* skip doing anything else with this line */
+                    continue;
+                    }
+                else {
+                    printf( "Mappling line has a sequence of %d KEY_ codes "
+                            "and > separators\n",
+                            m->keyCodeSequenceLength[ nextCodeIndexA ]
+                            [ nextCodeIndexB ] );
+                    }
+                
+                                
                 }
 
             }
