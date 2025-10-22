@@ -55,12 +55,12 @@
 #define CCW_DOWN      0x00
 #define CW_UP         0x40
 
-#define SCROLL_DOWN   ( SCROLL_TURN  | CCW_DOWN )
-#define SCROLL_UP     ( SCROLL_TURN  | CW_UP )
-#define KNOB_CCW      ( KNOB_TURN    | CCW_DOWN )
-#define KNOB_CW       ( KNOB_TURN    | CW_UP )
-#define DIAL_CCW      ( DIAL_TURN    | CCW_DOWN )
-#define DIAL_CW       ( DIAL_TURN    | CW_UP )
+#define SCROLL_TURN_DOWN   ( SCROLL_TURN  | CCW_DOWN )
+#define SCROLL_TURN_UP     ( SCROLL_TURN  | CW_UP )
+#define KNOB_TURN_CCW      ( KNOB_TURN    | CCW_DOWN )
+#define KNOB_TURN_CW       ( KNOB_TURN    | CW_UP )
+#define DIAL_TURN_CCW      ( DIAL_TURN    | CCW_DOWN )
+#define DIAL_TURN_CW       ( DIAL_TURN    | CW_UP )
 
 
 unsigned char tourBoxControlCodes[ NUM_TOURBOX_CONTROLS ] = {
@@ -68,13 +68,13 @@ unsigned char tourBoxControlCodes[ NUM_TOURBOX_CONTROLS ] = {
     SIDE,
     TOP,
     SHORT,
-    KNOB_CCW,
-    KNOB_CW,
-    SCROLL_DOWN,
-    SCROLL_UP,
+    KNOB_TURN_CCW,
+    KNOB_TURN_CW,
+    SCROLL_TURN_DOWN,
+    SCROLL_TURN_UP,
     SCROLL_PRESS,
-    DIAL_CCW,
-    DIAL_CW,
+    DIAL_TURN_CCW,
+    DIAL_TURN_CW,
     UP,
     DOWN,
     LEFT,
@@ -108,13 +108,13 @@ const char *tourBoxControlNames[ NUM_TOURBOX_CONTROLS ] = {
     "SIDE",
     "TOP",
     "SHORT",
-    "KNOB_CCW",
-    "KNOB_CW",
-    "SCROLL_DOWN",
-    "SCROLL_UP",
+    "KNOB_TURN_CCW",
+    "KNOB_TURN_CW",
+    "SCROLL_TURN_DOWN",
+    "SCROLL_TURN_UP",
     "SCROLL_PRESS",
-    "DIAL_CCW",
-    "DIAL_CW",
+    "DIAL_TURN_CCW",
+    "DIAL_TURN_CW",
     "UP",
     "DOWN",
     "LEFT",
@@ -127,18 +127,55 @@ const char *tourBoxControlNames[ NUM_TOURBOX_CONTROLS ] = {
     };
 
 
-typedef struct KeyPressCombo {
-        int numKeys;
-        int keys[6];
-    } KeyPressCombo;
+/* equal test for strings */
+/* returns 1 if two strings are equal, 0 if not */
+char equal( const char *inStringA, const char *inStringB );
+
+
+/* returns index into tourBoxControlCodes
+   returns -1 on no match */
+int stringToControlIndex( const char *inString );
+
+
+/* returns index into more limited tourBoxPressControlCodes
+   returns -1 on no match */
+int stringToPressControlIndex( const char *inString );
 
 
 
-typedef struct CommandMapping {
-        int sequenceLength;
-        KeyPressCombo sequence[64];
-    } CommandMapping;
-        
+int stringToControlIndex( const char *inString ) {
+    int i;
+    for( i=0; i<NUM_TOURBOX_CONTROLS; i++ ) {
+        if( equal( inString, tourBoxControlNames[i] ) ) {
+            return i;
+            }
+        }
+    return -1;
+    }
+
+
+
+int stringToPressControlIndex( const char *inString ) {
+    int i;
+    int code;
+    int fullIndex = stringToControlIndex( inString );
+
+    if( fullIndex == -1 ) {
+        return -1;
+        }
+
+    code = tourBoxControlCodes[ fullIndex ];
+    
+    /* see if it matches a press control code */
+    for( i=0; i<NUM_TOURBOX_PRESS_CONTROLS; i++ ) {
+        if( tourBoxPressControlCodes[i] == code ) {
+            return i;
+            }
+        }
+    return -1;
+    }
+
+
 
 typedef struct ApplicationMapping {
         char name[81];
@@ -172,9 +209,7 @@ int numAppMappings = 0;
 
 
 
-/* equal test for strings */
-/* returns 1 if two strings are equal, 0 if not */
-char equal( const char *inStringA, const char *inStringB );
+
 
 
 /* maps a string like "KEY_A" to a uinput keycode like KEY_A */
@@ -1037,7 +1072,109 @@ int getKeyCodeFromString( char *inString ) {
 
 
 
+/* from a source string, parse the next tourbox control code string,
+   map it to an index in tourBoxControlCodes, or -1 on failure
+   and return a pointer to the next advanced spot in the string (beyond
+   the parsed control code string)
+   if no valid tourBoxControlCodeName is found, along with -1,
+   the return position in inSourceString is not advanced */
+char *getNextTourboxCodeIndexAndAdvance( char *inSourceString,
+                                         int *outCodeIndex );
 
+
+/* is a control code index pointing to a code that is a valid code
+   in tourBoxPressControlCodes? */
+char isPressCode( int inTourBoxControlCodeIndex );
+
+
+/* reads next space/tab/end -delimited token from inSourceString
+   returns pointer to spot after token in inSourceString
+   fills outTokenBuffer pointer with a pointer to a static
+   buffer where parsed token is stored
+   cannot interleave calls, as there is only one static buffer
+   Token can be at most 63 chars long.  Longer tokens will be truncated
+   but the returned pointer into inSourceString will still be beyond
+   the end of the too-long token.  */
+char *getNextTokenAndAdvance( char *inSourceString,
+                              char **outTokenBuffer );
+
+
+char *getNextTourboxCodeIndexAndAdvance( char *inSourceString,
+                                         int *outCodeIndex ) {
+    char *tokenPointer;
+    char *nextSpot;
+    
+    nextSpot = getNextTokenAndAdvance( inSourceString, &tokenPointer );
+
+    *outCodeIndex = stringToControlIndex( tokenPointer );
+
+    if( *outCodeIndex == -1 ){
+        /* rewind string position */
+        return inSourceString;
+        }
+    
+    return nextSpot;
+    }
+
+
+char tokenBuffer[64];
+
+char *getNextTokenAndAdvance( char *inSourceString,
+                              char **outTokenBuffer ) {
+    unsigned int i = 0;
+    unsigned int postSpaceIndex;
+
+    unsigned int bufferPos = 0;
+    
+    /* skip spaces or tabs */
+    while( inSourceString[i] == ' ' ||
+           inSourceString[i] == '\t' ) {
+        i++;
+        }
+
+    postSpaceIndex = i;
+
+    while( inSourceString[ postSpaceIndex ] != ' ' &&
+           inSourceString[ postSpaceIndex ] != '\t' &&
+           inSourceString[ postSpaceIndex ] != '\0' ) {
+
+        if( bufferPos < sizeof( tokenBuffer ) - 1 ) {
+            tokenBuffer[ bufferPos ] =  inSourceString[ postSpaceIndex ];
+            bufferPos++;
+            }
+        
+        postSpaceIndex++;
+        }
+
+    /* terminate buffer
+       even if we got to buffer limit before reading entire string
+       we skipped the rest of the string above, so we're still
+       in a good spot to parse the *next* token after that
+       so in that case, our buffer will contain an invalid
+       code name, since none are longer than 63 chars */
+
+    tokenBuffer[ bufferPos ] = '\0';
+    
+           
+    *outTokenBuffer = tokenBuffer;
+
+    return &( inSourceString[ postSpaceIndex ] );
+    }
+
+
+
+char isPressCode( int inTourBoxControlCodeIndex ) {
+    int i;
+    int code = tourBoxControlCodes[ inTourBoxControlCodeIndex ];
+    
+    /* see if it matches a press control code */
+    for( i=0; i<NUM_TOURBOX_PRESS_CONTROLS; i++ ) {
+        if( tourBoxPressControlCodes[i] == code ) {
+            return 1;
+            }
+        }
+    return 0;
+    }
 
 
 
@@ -1161,12 +1298,17 @@ int main( int inNumArgs, const char **inArgs ) {
                 /* not starting a new applicaiton block, continue app mapping */
                 ApplicationMapping *m;
                 
+                char *nextParsePos;
+                int nextCodeIndexA = -1;
+                int nextCodeIndexB = -1;
+                int nextCodeIndexC = -1;
+                
                 if( numAppMappings == 0 ) {
                     printf( "\nWARNING:\n"
-                            "Skipping mapping line that occurs before an"
+                            "Skipping mapping on line %d that occurs before an"
                             " application (window tile phrase in quotes)"
                             " is defined:\n\n    %s\n",
-                            &( fileLineBuffer[nextCharPos ] ) );
+                            lineCount, &( fileLineBuffer[nextCharPos ] ) );
                     continue;
                     }
                 
@@ -1174,9 +1316,65 @@ int main( int inNumArgs, const char **inArgs ) {
                 m = &( appMappings[ numAppMappings - 1 ] );
 
                 printf( "Adding line for applicaiton \"%s\": %s\n",
-                        m->name, &( fileLineBuffer[nextCharPos ] ) );
+                        m->name, &( fileLineBuffer[ nextCharPos ] ) );
 
+                
                 /* fixme:  process the line and add it to mapping */
+
+                nextParsePos = &( fileLineBuffer[ nextCharPos ] );
+
+                nextParsePos =
+                    getNextTourboxCodeIndexAndAdvance( nextParsePos,
+                                                       &nextCodeIndexA );
+
+                if( nextCodeIndexA == -1 ) {
+                    printf( "\nWARNING:\n"
+                            "Skipping mapping line %d that starts with "
+                            "an invalid TourBox control code:"
+                            "\n\n    %s\n",
+                            lineCount, &( fileLineBuffer[ nextCharPos ] ) );
+                    continue;
+                    }
+                
+                if( isPressCode( nextCodeIndexA ) ) {
+                    /* press codes can be a modifier for another
+                       code in a 2-code combo */
+                    nextParsePos =
+                        getNextTourboxCodeIndexAndAdvance( nextParsePos,
+                                                           &nextCodeIndexB );
+                    }
+                else {
+                    /* make sure there's no additional code, if
+                       nextCodeIndexA is NOT a press code
+                       because non-press codes can't lead a 2-code combo */
+                    nextParsePos =
+                        getNextTourboxCodeIndexAndAdvance( nextParsePos,
+                                                           &nextCodeIndexB );
+                    if( nextCodeIndexB != -1 ) {
+                        printf(
+                            "\nWARNING:\n"
+                            "Skipping mapping line %d that starts with "
+                            "a turn (not press) code leading a 2-code combo:"
+                            "\n\n    %s\n",
+                            lineCount, &( fileLineBuffer[ nextCharPos ] ) );
+                        continue;
+                        }
+                    }
+
+                /* we've parsed either 1 or 2 codes into A and B
+                   make sure there's not a 3rd code after that */
+                nextParsePos =
+                    getNextTourboxCodeIndexAndAdvance( nextParsePos,
+                                                       &nextCodeIndexC );
+                if( nextCodeIndexC != -1 ) {
+                    printf(
+                        "\nWARNING:\n"
+                        "Skipping mapping line %d that starts with "
+                        "a 3-code combo (only 2-code combos permitted):"
+                        "\n\n    %s\n",
+                        lineCount, &( fileLineBuffer[ nextCharPos ] ) );
+                    continue;
+                    }
                 }
 
             }

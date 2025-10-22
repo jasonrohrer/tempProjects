@@ -21,9 +21,9 @@
 
 # TourBox controls are as follows
 # TALL  SHORT  SIDE  TOP  UP  DOWN  LEFT  RIGHT  C1  C2  TOUR
-# KNOB_CCW  KNOB_CW  KNOB_PRESS
-# DIAL_CCW  DIAL_CW  DIAL_PRESS
-# SCROLL_DOWN  SCROLL_UP  SCROLL_PRESS
+# KNOB_TURN_CCW  KNOB_TURN_CW  KNOB_PRESS
+# DIAL_TURN_CCW  DIAL_TURN_CW  DIAL_PRESS
+# SCROLL_TURN_DOWN  SCROLL_TURN_UP  SCROLL_PRESS
 
 # CCW and CW are counter-clockwise and clockwise for knob and dial
 # C1 and C2 are the little round buttons above Tall and Short
@@ -32,8 +32,8 @@
 
 # TourBox inputs are either single inputs or 2-input combos
 
-# Note that only button presses can be used in the first step of a combo
-# (scroll, knob, and dial turns cannot be used).
+# Note that only button PRESSES can be used in the first step of a combo
+# (scroll, knob, and dial TURNS cannot be used).
 # thus, there are 14x20 = 280 possible combos
 
 
@@ -105,8 +105,8 @@ SIDE C1  KEY_LEFTALT KEY_LEFT
 # For Knob/Dial/Scroll, we can also change the haptic and rotation speed
 # settings, and this can be changed per direction and per combo.
 
-# For example, KNOB_CW can have one haptic and rotation speed setting
-# while the SIDE KNOB_CW combo can have a different haptic and rotation
+# For example, KNOB_TURN_CW can have one haptic and rotation speed setting
+# while the SIDE KNOB_TURN_CW combo can have a different haptic and rotation
 # speed setting.  I.e., by holding down SIDE while turning the Knob
 # we can not only output a different key sequence than when just turning the
 # Knob by itself, but we can also have a different haptic strength and
@@ -135,8 +135,8 @@ SIDE C1  KEY_LEFTALT KEY_LEFT
 # Knob with default Strong haptics and Fast rotation
 # set it to control zoom in/out in Firefox
 
-KNOB_CW   KEY_LEFTCTRL KEY_LEFTSHIFT KEY_EQUAL
-KNOB_CCW  KEY_LEFTCTRL KEY_MINUS
+KNOB_TURN_CW   KEY_LEFTCTRL KEY_LEFTSHIFT KEY_EQUAL
+KNOB_TURN_CCW  KEY_LEFTCTRL KEY_MINUS
 
 
 
@@ -148,8 +148,8 @@ KNOB_CCW  KEY_LEFTCTRL KEY_MINUS
 # have our modified Knob use Weak haptics and Slow rotation
 # when modified with Side, the Knob switches tabs in Firefox
 
-SIDE KNOB_CW   H1 R0  KEY_LEFTCTRL KEY_TAB
-SIDE KNOB_CCW  H1 R0  KEY_LEFTCTRL KEY_LEFTSHIFT KEY_TAB
+SIDE KNOB_TURN_CW   H1 R0  KEY_LEFTCTRL KEY_TAB
+SIDE KNOB_TURN_CCW  H1 R0  KEY_LEFTCTRL KEY_LEFTSHIFT KEY_TAB
 
 
 
@@ -163,8 +163,22 @@ SIDE KNOB_CCW  H1 R0  KEY_LEFTCTRL KEY_LEFTSHIFT KEY_TAB
 # Use Weak haptics and Medium rotation speed
 # Have Firefox jump from link to link in the page
 
-KNOB_PRESS KNOB_CW  H1 R1  KEY_TAB
-KNOB_PRESS KNOB_CW  H1 R1  KEY_LEFTSHIFT KEY_TAB
+KNOB_PRESS KNOB_TURN_CW  H1 R1  KEY_TAB
+KNOB_PRESS KNOB_TURN_CW  H1 R1  KEY_LEFTSHIFT KEY_TAB
+
+
+
+
+# some bad mappings that will be skipped with error messages
+
+# a TURN control leading a 2-button combo
+KNOB_TURN_CW TOP  KEY_LEFT
+
+# a 3-control combo
+SIDE TOP KNOB_TURN_CW  KEY_LEFT
+
+# a 4-control combo
+SIDE TOP SHORT KNOB_TURN_CW  KEY_LEFT
 
 
 
