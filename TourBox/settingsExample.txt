@@ -74,11 +74,21 @@ C1   KEY_LEFTALT KEY_S  >  KEY_DOWN  >  KEY_DOWN  >  KEY_DOWN  >  KEY_ENTER
 
 
 # a sequence printable keys can also be listed as a string,
+# delimited by double quotes,
 # which will be typed one-by-one
+# Note that the string cannot contain a " character
 
 # have C2 open a new tab and go to www.google.com
 
 C2  KEY_LEFTCTRL KEY_T > "www.google.com" > KEY_ENTER
+
+
+
+# have SIDE plus C2 type a phrase with quotes in it
+
+SIDE C2  "She said, " > KEY_LEFTSHIFT KEY_APOSTROPHE > "Hello!" > KEY_LEFTSHIFT KEY_APOSTROPHE
+
+
 
 
 # NOTE

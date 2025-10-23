@@ -1218,6 +1218,162 @@ char *getNextTokenAndAdvance( char *inSourceString,
 
 
 
+/* returns \0 if called on an empty string */
+char getLastChar( char *inString );
+
+    
+
+char getLastChar( char *inString ) {
+    int i;
+    if( inString[0] == '\0' ) {
+        return '\0';
+        }
+    
+    while( inString[i] != '\0' ) {
+        i++;
+        }
+    return inString[ i - 1 ];
+    }
+
+
+
+typedef struct KeyCodePair {
+        int first;
+        /* second can be -1 for a single-code (non-pair) */
+        int second;
+    } KeyCodePair;
+
+
+/* gets a key code pair needed to type a given printable character
+   returns -1, -1 as the pair if the inChar isn't printable */
+KeyCodePair getKeyCodePair( char inChar );
+
+
+KeyCodePair getKeyCodePair( char inChar ) {
+    KeyCodePair pair = { -1, -1 };
+
+    /* fixme */
+    if( inChar >= 'a' && inChar <= 'z' ) {
+        char codeString[6] = "KEY_X";
+        /* convert to upper and put at end of KEY_ */
+        inChar = (char)( inChar - 'a' );
+        inChar = (char)( inChar + 'A' );
+        codeString[5] = inChar;
+        pair.first = stringToKeyCode( codeString );
+        }
+    else if( inChar >= 'A' && inChar <= 'Z' ) {
+        char codeString[6] = "KEY_X";
+        /* put directly at end of KEY_ */
+        codeString[5] = inChar;
+        pair.first = stringToKeyCode( codeString );
+        }
+    else if( inChar >= '0' && inChar <= '9' ) {
+        char codeString[6] = "KEY_X";
+        /* put directly at end of KEY_ */
+        codeString[5] = inChar;
+        pair.first = stringToKeyCode( codeString );
+        }
+    else {
+        switch( inChar ) {
+            case '.':
+                pair.first = KEY_DOT;
+                break;
+            case ',':
+                pair.first = KEY_COMMA;
+                break;
+            case '/':
+                pair.first = KEY_SLASH;
+                break;
+            case ';':
+                pair.first = KEY_SEMICOLON;
+                break;
+            case '\'':
+                pair.first = KEY_APOSTROPHE;
+                break;
+            case '-':
+                pair.first = KEY_MINUS;
+                break;
+            case '=':
+                pair.first = KEY_EQUAL;
+                break;
+            case '[':
+                pair.first = KEY_LEFTBRACE;
+                break;
+            case ']':
+                pair.first = KEY_RIGHTBRACE;
+                break;
+            case '\\':
+                pair.first = KEY_BACKSLASH;
+                break;
+            case '!':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_1;
+                break;
+            case '@':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_2;
+                break;
+            case '#':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_3;
+                break;
+            case '$':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_4;
+                break;
+            case '%':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_5;
+                break;
+            case '^':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_6;
+                break;
+                /* fixme:  more SHIFT key cases */
+            }   
+                
+        }
+    
+    
+    return pair;
+    }
+
+
+/* counts how many KEY_ codes, including KEY_RESERVED between each keystroke,
+   are needed to type a given string of printable characters
+   inString must start with a " and end with a "
+   returns -1 if a non-printable character is encountered
+*/
+int countKeyCodeSequence( char *inString );
+
+
+int countKeyCodeSequence( char *inString ) {
+    int i = 1;
+    int count = 0;
+
+    while( inString[i] != '"' && inString[i] != '\0' ) {
+        KeyCodePair p = getKeyCodePair( inString[i] );
+
+        if( p.first == -1 ) {
+            return -1;
+            }
+        /* for KEY_RESERVED plus the first key in the pair */
+        count += 2;
+
+        if( p.second != -1 ) {
+            /* for the second key in the pair */
+            count++;
+            }
+        }
+
+    return count;
+    }
+
+
+
+
+
+
 char isPressCode( int inTourBoxControlCodeIndex ) {
     int i;
     int code = tourBoxControlCodes[ inTourBoxControlCodeIndex ];
@@ -1478,13 +1634,94 @@ int main( int inNumArgs, const char **inArgs ) {
                     else {
                         /* fixme, this is place-holder, since
                            it treats quoted strings as errors */
-                        char badToken[128];
+                        char nextToken[128];
                         
                         getNextTokenAndAdvance( nextParsePos,
-                                                badToken,
-                                                sizeof( badToken ) );
+                                                nextToken,
+                                                sizeof( nextToken ) );
 
-                        if( ! equal( badToken, "" ) ) {
+                        if( nextToken[0] == '"' &&
+                            getLastChar( nextToken ) == '"' ) {
+                            
+                            /* a quoted string */
+                            
+                            int tokenPos = 1;
+
+                            int keyCodeCount =
+                                countKeyCodeSequence( nextToken );
+
+                            if( keyCodeCount == -1 ) {
+                                printf(
+                                    "\nWARNING:\n"
+                                    "Skipping mapping line %d that has "
+                                    "quoted string with non-printable "
+                                    "character [%s]:"
+                                    "\n\n    %s\n",
+                                    lineCount, nextToken,
+                                    &( fileLineBuffer[ nextCharPos ] ) );
+
+                                parseError = 1;
+                                
+                                m->keyCodeSequenceLength
+                                    [ nextCodeIndexA ]
+                                    [ nextCodeIndexB ] = 0;
+                                break;
+                                }
+                            else if( nextSequenceStep + keyCodeCount >
+                                MAX_KEY_SEQUENCE_STEPS ) {
+                                
+                                printf(
+                                    "\nWARNING:\n"
+                                    "Skipping mapping line %d that has more "
+                                    "than %d sequence steps (due to quoted "
+                                    "string [%s] "
+                                    "that itself requires %d sequence steps):"
+                                    "\n\n    %s\n",
+                                    lineCount, MAX_KEY_SEQUENCE_STEPS,
+                                    nextToken, keyCodeCount,
+                                    &( fileLineBuffer[ nextCharPos ] ) );
+
+                                parseError = 1;
+                                
+                                m->keyCodeSequenceLength
+                                    [ nextCodeIndexA ]
+                                    [ nextCodeIndexB ] = 0;
+                                break;
+                                }
+                            
+                            /* all chars are printable in quoted string
+                               AND we have enough room to type them */
+                            while( nextToken[ tokenPos ] != '"' ) {
+                                KeyCodePair pair =
+                                    getKeyCodePair( nextToken[ tokenPos ] );
+
+                                m->keyCodeSquence
+                                    [ nextCodeIndexA ]
+                                    [ nextCodeIndexB ]
+                                    [ nextSequenceStep ] = KEY_RESERVED;
+                                nextSequenceStep++;
+                                
+                                m->keyCodeSquence
+                                    [ nextCodeIndexA ]
+                                    [ nextCodeIndexB ]
+                                    [ nextSequenceStep ] = pair.first;
+                                nextSequenceStep++;
+
+                                if( pair.second != -1 ) {
+                                    m->keyCodeSquence
+                                        [ nextCodeIndexA ]
+                                        [ nextCodeIndexB ]
+                                        [ nextSequenceStep ] = pair.second;
+                                    nextSequenceStep++;
+                                    }
+                                
+                                tokenPos++;
+                                }
+                            }
+                        else if( ! equal( nextToken, "" ) ) {
+                            /* NOT a quoted string, and still an invalid
+                               KEY_ code or > */
+                            
                             /* didn't make it to end of line and parse
                                an empty token */
                             printf(
@@ -1492,7 +1729,7 @@ int main( int inNumArgs, const char **inArgs ) {
                                 "Skipping mapping line %d that has invalid "
                                 "key code [%s]:"
                                 "\n\n    %s\n",
-                                lineCount, badToken,
+                                lineCount, nextToken,
                                 &( fileLineBuffer[ nextCharPos ] ) );
                         
                             m->keyCodeSequenceLength
