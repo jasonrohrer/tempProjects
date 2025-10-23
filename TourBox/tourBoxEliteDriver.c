@@ -1105,10 +1105,9 @@ char isPressCode( int inTourBoxControlCodeIndex );
 
 /* reads next space/tab/>/end -delimited token from inSourceString
    returns pointer to spot after token in inSourceString
-   fills outTokenBuffer pointer with a pointer to a static
-   buffer where parsed token is stored
-   cannot interleave calls, as there is only one static buffer
-   Token can be at most 63 chars long.  Longer tokens will be truncated
+   fills inTokenBuffer with token, ending with \0
+   Token can be at most inBufferLength - 1 chars long.
+   Longer tokens will be truncated
    but the returned pointer into inSourceString will still be beyond
    the end of the too-long token.
    Note that the '>' counts as the end of a token,
@@ -1118,17 +1117,20 @@ char isPressCode( int inTourBoxControlCodeIndex );
    however, we simply return that single character as our token.
 */
 char *getNextTokenAndAdvance( char *inSourceString,
-                              char **outTokenBuffer );
+                              char *inTokenBuffer,
+                              unsigned int inBufferLength );
 
 
 char *getNextTourboxCodeIndexAndAdvance( char *inSourceString,
                                          int *outCodeIndex ) {
-    char *tokenPointer;
     char *nextSpot;
+    char token[16];
     
-    nextSpot = getNextTokenAndAdvance( inSourceString, &tokenPointer );
+    nextSpot = getNextTokenAndAdvance( inSourceString,
+                                       token,
+                                       sizeof( token ) );
 
-    *outCodeIndex = stringToControlIndex( tokenPointer );
+    *outCodeIndex = stringToControlIndex( token );
 
     if( *outCodeIndex == -1 ){
         /* rewind string position */
@@ -1142,12 +1144,14 @@ char *getNextTourboxCodeIndexAndAdvance( char *inSourceString,
 
 char *getNextKeyCodeAndAdvance( char *inSourceString,
                                 int *outKeyCode ) {
-    char *tokenPointer;
     char *nextSpot;
+    char token[32];
     
-    nextSpot = getNextTokenAndAdvance( inSourceString, &tokenPointer );
+    nextSpot = getNextTokenAndAdvance( inSourceString,
+                                       token,
+                                       sizeof( token ) );
 
-    *outKeyCode = stringToKeyCode( tokenPointer );
+    *outKeyCode = stringToKeyCode( token );
 
     if( *outKeyCode == -1 ){
         /* rewind string position */
@@ -1159,10 +1163,10 @@ char *getNextKeyCodeAndAdvance( char *inSourceString,
 
 
 
-char tokenBuffer[64];
 
 char *getNextTokenAndAdvance( char *inSourceString,
-                              char **outTokenBuffer ) {
+                              char *inTokenBuffer,
+                              unsigned int inBufferLength ) {
     unsigned int i = 0;
     unsigned int postSpaceIndex;
 
@@ -1176,9 +1180,8 @@ char *getNextTokenAndAdvance( char *inSourceString,
 
     if( inSourceString[i] == '>' ) {
         /* special case, our next token is > */
-        tokenBuffer[0] = '>';
-        tokenBuffer[1] = '\0';
-        *outTokenBuffer = tokenBuffer;
+        inTokenBuffer[0] = '>';
+        inTokenBuffer[1] = '\0';
 
         return &( inSourceString[ i + 1 ] );
         }
@@ -1193,8 +1196,8 @@ char *getNextTokenAndAdvance( char *inSourceString,
            inSourceString[ postSpaceIndex ] != '\r' &&
            inSourceString[ postSpaceIndex ] != '\0' ) {
 
-        if( bufferPos < sizeof( tokenBuffer ) - 1 ) {
-            tokenBuffer[ bufferPos ] =  inSourceString[ postSpaceIndex ];
+        if( bufferPos < inBufferLength - 1 ) {
+            inTokenBuffer[ bufferPos ] =  inSourceString[ postSpaceIndex ];
             bufferPos++;
             }
         
@@ -1208,10 +1211,7 @@ char *getNextTokenAndAdvance( char *inSourceString,
        so in that case, our buffer will contain an invalid
        code name, since none are longer than 63 chars */
 
-    tokenBuffer[ bufferPos ] = '\0';
-    
-           
-    *outTokenBuffer = tokenBuffer;
+    inTokenBuffer[ bufferPos ] = '\0';
 
     return &( inSourceString[ postSpaceIndex ] );
     }
@@ -1478,10 +1478,11 @@ int main( int inNumArgs, const char **inArgs ) {
                     else {
                         /* fixme, this is place-holder, since
                            it treats quoted strings as errors */
-                        char *badToken;
+                        char badToken[128];
                         
                         getNextTokenAndAdvance( nextParsePos,
-                                                &badToken );
+                                                badToken,
+                                                sizeof( badToken ) );
 
                         if( ! equal( badToken, "" ) ) {
                             /* didn't make it to end of line and parse
