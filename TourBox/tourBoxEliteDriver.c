@@ -1658,9 +1658,10 @@ int main( int inNumArgs, const char **inArgs ) {
                            it treats quoted strings as errors */
                         char nextToken[128];
                         
-                        getNextTokenAndAdvance( nextParsePos,
-                                                nextToken,
-                                                sizeof( nextToken ) );
+                        nextParsePos =
+                            getNextTokenAndAdvance( nextParsePos,
+                                                    nextToken,
+                                                    sizeof( nextToken ) );
 
                         if( nextToken[0] == '"' &&
                             getLastChar( nextToken ) == '"' ) {
@@ -1757,6 +1758,7 @@ int main( int inNumArgs, const char **inArgs ) {
                                 
                                 tokenPos++;
                                 }
+                            gotKeyCode = 1;
                             }
                         else if( ! equal( nextToken, "" ) ) {
                             /* NOT a quoted string, and still an invalid
