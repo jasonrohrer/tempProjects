@@ -218,6 +218,10 @@ int numAppMappings = 0;
 int stringToKeyCode( char *inString );
 
 
+/* maps key codes to their string name, or NULL on no match */
+const char *keyCodeToString( int inKeyCode );
+
+
 
 #define NUM_KEY_CODES 402
 
@@ -1075,6 +1079,22 @@ int stringToKeyCode( char *inString ) {
     }
 
 
+const char *keyCodeToString( int inKeyCode ) {
+    int i;
+
+    /* special case */
+    if( inKeyCode == KEY_RESERVED ) {
+        return "KEY_RESERVED";
+        }
+    
+    for( i=0; i<NUM_KEY_CODES; i++ ) {
+        if( keyCodes[i] == inKeyCode ) {
+            return keyCodeStrings[i];
+            }
+        }
+    return NULL;
+    }
+
 
 
 
@@ -1258,19 +1278,19 @@ KeyCodePair getKeyCodePair( char inChar ) {
         /* convert to upper and put at end of KEY_ */
         inChar = (char)( inChar - 'a' );
         inChar = (char)( inChar + 'A' );
-        codeString[5] = inChar;
+        codeString[4] = inChar;
         pair.first = stringToKeyCode( codeString );
         }
     else if( inChar >= 'A' && inChar <= 'Z' ) {
         char codeString[6] = "KEY_X";
         /* put directly at end of KEY_ */
-        codeString[5] = inChar;
+        codeString[4] = inChar;
         pair.first = stringToKeyCode( codeString );
         }
     else if( inChar >= '0' && inChar <= '9' ) {
         char codeString[6] = "KEY_X";
         /* put directly at end of KEY_ */
-        codeString[5] = inChar;
+        codeString[4] = inChar;
         pair.first = stringToKeyCode( codeString );
         }
     else {
@@ -1364,6 +1384,8 @@ int countKeyCodeSequence( char *inString ) {
             /* for the second key in the pair */
             count++;
             }
+        
+        i++;
         }
 
     return count;
@@ -1695,11 +1717,25 @@ int main( int inNumArgs, const char **inArgs ) {
                                 KeyCodePair pair =
                                     getKeyCodePair( nextToken[ tokenPos ] );
 
-                                m->keyCodeSquence
+                                /* make sure we have a > (KEY_RESERVED)
+                                   before each character
+                                   so they are separate keystrokes
+                                   We might have a > in there already
+                                   BEFORE our quoted string started */
+                                if( nextSequenceStep == 0
+                                    ||
+                                    m->keyCodeSquence
                                     [ nextCodeIndexA ]
                                     [ nextCodeIndexB ]
-                                    [ nextSequenceStep ] = KEY_RESERVED;
-                                nextSequenceStep++;
+                                    [ nextSequenceStep - 1 ] != KEY_RESERVED ) {
+                                    
+                                    m->keyCodeSquence
+                                        [ nextCodeIndexA ]
+                                        [ nextCodeIndexB ]
+                                        [ nextSequenceStep ] = KEY_RESERVED;
+                                    nextSequenceStep++;
+                                    }
+                                
                                 
                                 m->keyCodeSquence
                                     [ nextCodeIndexA ]
@@ -1714,6 +1750,10 @@ int main( int inNumArgs, const char **inArgs ) {
                                         [ nextSequenceStep ] = pair.second;
                                     nextSequenceStep++;
                                     }
+
+                                m->keyCodeSequenceLength
+                                    [ nextCodeIndexA ]
+                                    [ nextCodeIndexB ] = nextSequenceStep;
                                 
                                 tokenPos++;
                                 }
@@ -1746,10 +1786,25 @@ int main( int inNumArgs, const char **inArgs ) {
                     continue;
                     }
                 else {
-                    printf( "Mappling line has a sequence of %d KEY_ codes "
+                    int k=0;
+                    
+                    printf( "Mapping line has a sequence of %d KEY_ codes "
                             "and > separators\n",
                             m->keyCodeSequenceLength[ nextCodeIndexA ]
                             [ nextCodeIndexB ] );
+                    printf( "Full key code list:  " );
+                    for( k=0;
+                         k< m->keyCodeSequenceLength[ nextCodeIndexA ]
+                             [ nextCodeIndexB ];
+                         k++ ) {
+                        const char *kS = keyCodeToString(
+                            m->keyCodeSquence
+                            [ nextCodeIndexA ]
+                            [ nextCodeIndexB ]
+                            [ k ] );
+                        printf( "%s ", kS );
+                        }
+                    printf( "\n\n" );
                     }
                 
                                 
