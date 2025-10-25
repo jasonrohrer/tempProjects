@@ -198,6 +198,14 @@ typedef struct ApplicationMapping {
         int keyCodeSquence[ NUM_TOURBOX_CONTROLS ]
                           [ NUM_TOURBOX_PRESS_CONTROLS + 1 ]
                           [ MAX_KEY_SEQUENCE_STEPS ];
+
+        /* 0, 1, 2 for Off, Weak, Strong haptics */
+        int hapticStrength[ NUM_TOURBOX_CONTROLS ]
+                          [ NUM_TOURBOX_PRESS_CONTROLS + 1 ];
+        
+        /* 0, 1, 2 for Slow, Medium, Fast rotation */
+        int rotationSpeed[ NUM_TOURBOX_CONTROLS ]
+                         [ NUM_TOURBOX_PRESS_CONTROLS + 1 ];
         
     } ApplicationMapping;
 
@@ -1536,7 +1544,8 @@ int main( int inNumArgs, const char **inArgs ) {
                 /* start of a new app mapping */
                 unsigned int numCharsScanned = 0;
                 ApplicationMapping *m;
-
+                int h,k;
+                
                 if( numAppMappings >= MAX_NUM_APPS ) {
                     printf( "\nWARNING:\n"
                             "Reached application limit of %d, and "
@@ -1567,6 +1576,17 @@ int main( int inNumArgs, const char **inArgs ) {
                 m->name[ numCharsScanned ] = '\0';
 
                 printf( "Processing mappings for \"%s\"\n", m->name );
+
+                for( h=0; h<NUM_TOURBOX_CONTROLS; h++ ) {
+                    for( k=0; k<NUM_TOURBOX_PRESS_CONTROLS + 1; k++ ) {
+                        /* default for all unmapped controls
+                           rotation slow, haptics off */
+                        m->hapticStrength[h][k] = 0;
+                        m->rotationSpeed[h][k] = 0;
+                        }
+                    }
+                
+                
                 numAppMappings++;
                 }
             else {
@@ -1581,6 +1601,10 @@ int main( int inNumArgs, const char **inArgs ) {
                 int nextKeyCode = -1;
                 char gotKeyCode = 1;
                 char parseError = 0;
+                int hapticStrength = 0;
+                int rotationSpeed = 0;
+                char hapticsFound = 0;
+                char rotationFound = 0;
                 
                 if( numAppMappings == 0 ) {
                     printf( "\nWARNING:\n"
@@ -1660,6 +1684,16 @@ int main( int inNumArgs, const char **inArgs ) {
                        map it into the "no code" index at the end */
                     nextCodeIndexB = NUM_TOURBOX_CONTROLS;
                     }
+                else {
+                    /* a 2-code sequence
+                       in our file, the primary control comes SECOND
+                       but A is our primary control
+                       so swap them */
+                    int nextCodeTemp = nextCodeIndexB;
+                    nextCodeIndexB = nextCodeIndexA;
+                    nextCodeIndexA = nextCodeTemp;
+                    }
+                
 
 
                 /* fixme
@@ -1668,6 +1702,20 @@ int main( int inNumArgs, const char **inArgs ) {
                    if second control is a TURN */
                 
 
+                /* if not defined, default to Strong haptics and Fast
+                   rotation for all mapped TURN controls */
+
+                if( ! isPressCode( nextCodeIndexA ) ) {
+                    /* our primary control is a TURN */
+                    if( ! hapticsFound ) {
+                        hapticStrength = 2;
+                        }
+                    if( ! rotationFound ) {
+                        rotationSpeed = 2;
+                        }
+                    }
+                
+                
                 while( gotKeyCode ) {
                     gotKeyCode = 0;
                     
@@ -1860,9 +1908,17 @@ int main( int inNumArgs, const char **inArgs ) {
                         printf( "%s ", kS );
                         }
                     printf( "\n\n" );
-                    }
-                
-                                
+
+                    /* we actually parsed a valid control with outputs
+                       set haptics and rotation speed
+                       (otherwise, leave them at 0, 0 for unmapped controls */
+                    m->hapticStrength
+                        [ nextCodeIndexA ]
+                        [ nextCodeIndexB ] = hapticStrength;
+                    m->rotationSpeed
+                        [ nextCodeIndexA ]
+                        [ nextCodeIndexB ] = rotationSpeed;
+                    }             
                 }
 
             }
