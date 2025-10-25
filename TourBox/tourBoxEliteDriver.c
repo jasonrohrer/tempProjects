@@ -1322,7 +1322,8 @@ KeyCodePair getKeyCodePair( char inChar ) {
         char codeString[6] = "KEY_X";
         /* put directly at end of KEY_ */
         codeString[4] = inChar;
-        pair.first = stringToKeyCode( codeString );
+        pair.first = KEY_LEFTSHIFT;
+        pair.second = stringToKeyCode( codeString );
         }
     else if( inChar >= '0' && inChar <= '9' ) {
         char codeString[6] = "KEY_X";

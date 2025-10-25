@@ -220,4 +220,4 @@ KEY_LEFT_SHIFT KEY_LEFT
 
 # have the Tall button save the current file in emacs
 
-TALL  KEY_LEFTCTRL X > KEY_LEFTCTRL S
+TALL  KEY_LEFTCTRL KEY_X > KEY_LEFTCTRL KEY_S
