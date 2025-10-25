@@ -1309,7 +1309,7 @@ KeyCodePair getKeyCodePair( char inChar );
 KeyCodePair getKeyCodePair( char inChar ) {
     KeyCodePair pair = { -1, -1 };
 
-    /* fixme */
+
     if( inChar >= 'a' && inChar <= 'z' ) {
         char codeString[6] = "KEY_X";
         /* convert to upper and put at end of KEY_ */
@@ -1322,6 +1322,7 @@ KeyCodePair getKeyCodePair( char inChar ) {
         char codeString[6] = "KEY_X";
         /* put directly at end of KEY_ */
         codeString[4] = inChar;
+        /* send SHIFT 2-key combo */
         pair.first = KEY_LEFTSHIFT;
         pair.second = stringToKeyCode( codeString );
         }
@@ -1660,6 +1661,13 @@ int main( int inNumArgs, const char **inArgs ) {
                     nextCodeIndexB = NUM_TOURBOX_CONTROLS;
                     }
 
+
+                /* fixme
+                   Need to parse optional H0, H1, H2, R0, R1, R2 flags
+                   that might come after tourbox control pair
+                   if second control is a TURN */
+                
+
                 while( gotKeyCode ) {
                     gotKeyCode = 0;
                     
@@ -1695,8 +1703,9 @@ int main( int inNumArgs, const char **inArgs ) {
                         gotKeyCode = 1;
                         }
                     else {
-                        /* fixme, this is place-holder, since
-                           it treats quoted strings as errors */
+                        /* not a straight-up KEY_ code
+                           re-parse and see if it's a quoted string */
+                        
                         char nextToken[128];
                         
                         nextParsePos =
