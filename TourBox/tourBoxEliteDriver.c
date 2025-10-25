@@ -1048,6 +1048,14 @@ const char *keyCodeStrings[NUM_KEY_CODES] = {
 #define SEND_KEY_COMBO   KEY_RESERVED
 
 
+/* modifiers to set haptics strength and rotation speed */
+#define H0 0
+#define H1 1
+#define H2 2
+
+#define R0 3
+#define R1 4
+#define R2 5
 
 
 char equal( const char *inStringA, const char *inStringB ) {
@@ -1116,6 +1124,18 @@ char *getNextTourboxCodeIndexAndAdvance( char *inSourceString,
                                          int *outCodeIndex );
 
 
+
+
+
+
+/* from source string, parse next tourbox modifier (H0, H1, R1, R2, etc.)
+   and return pointer to next advanced spot in string (beyond parsed modifier).
+   If no valid modifiere is found, outModifier is set to -1 and
+   the return position in inSourceString is not advanced */
+char *getNextTourboxModifierAndAdvance( char *inSourceString,
+                                        int *outModifier );
+
+
 /* from a source string, parse the next KEY_ code string,
    or '>', which maps to KEY_RESERVED, or -1 on failue
    and return a pointer to the next advanced spot in the string (beyond
@@ -1170,6 +1190,60 @@ char *getNextTourboxCodeIndexAndAdvance( char *inSourceString,
     
     return nextSpot;
     }
+
+
+char *getNextTourboxModifierAndAdvance( char *inSourceString,
+                                        int *outModifier ) {
+    char *nextSpot;
+    /* long enough to get character AFTER the 2-character pattern that
+       we are looking for.  So we don't mistakenly parse H1A as H1
+    */
+    char token[4];
+    
+    nextSpot = getNextTokenAndAdvance( inSourceString,
+                                       token,
+                                       sizeof( token ) );
+    *outModifier = -1;
+
+    if( token[2] == '\0' ) {
+        /* bad token if it's longer than 2 characters */
+        
+        if( token[0] == 'H' ) {
+            switch( token[1] ) {
+                case '0':
+                    *outModifier = H0;
+                    break;
+                case '1':
+                    *outModifier = H1;
+                    break;
+                case '2':
+                    *outModifier = H2;
+                    break;
+                }
+            }
+        if( token[0] == 'R' ) {
+            switch( token[1] ) {
+                case '0':
+                    *outModifier = R0;
+                    break;
+                case '1':
+                    *outModifier = R1;
+                    break;
+                case '2':
+                    *outModifier = R2;
+                    break;
+                }
+            }
+        }
+
+    
+    if( *outModifier == -1 ){
+        /* rewind string position */
+        return inSourceString;
+        }
+    
+    return nextSpot;
+    } 
 
 
 
@@ -1665,8 +1739,9 @@ int main( int inNumArgs, const char **inArgs ) {
                 char parseError = 0;
                 int hapticStrength = 0;
                 int rotationSpeed = 0;
-                char hapticsFound = 0;
+                char hapticFound = 0;
                 char rotationFound = 0;
+                int nextModifier = -1;
                 
                 if( numAppMappings == 0 ) {
                     printf( "\nWARNING:\n"
@@ -1758,18 +1833,59 @@ int main( int inNumArgs, const char **inArgs ) {
                 
 
 
-                /* fixme
-                   Need to parse optional H0, H1, H2, R0, R1, R2 flags
+                /* Need to parse optional H0, H1, H2, R0, R1, R2 flags
                    that might come after tourbox control pair
                    if second control is a TURN */
+                nextModifier = -1;
+                nextParsePos =
+                    getNextTourboxModifierAndAdvance( nextParsePos,
+                                                      &nextModifier );
+                /* keep parsing these until there are none left
+                   if there are duplicates (H1 followed by H2)
+                   the last one will win */
                 
-
+                while( nextModifier != -1 ) {
+                    switch( nextModifier ) {
+                        case H0:
+                            hapticFound = 1;
+                            hapticStrength = 0;
+                            break;
+                        case H1:
+                            hapticFound = 1;
+                            hapticStrength = 1;
+                            break; 
+                        case H2:
+                            hapticFound = 1;
+                            hapticStrength = 2;
+                            break;
+                        case R0:
+                            rotationFound = 1;
+                            rotationSpeed = 0;
+                            break;
+                        case R1:
+                            rotationFound = 1;
+                            rotationSpeed = 1;
+                            break; 
+                        case R2:
+                            rotationFound = 1;
+                            rotationSpeed = 2;
+                            break;
+                        }
+                    
+                    nextModifier = -1;    
+                    nextParsePos =
+                        getNextTourboxModifierAndAdvance(
+                            nextParsePos,
+                            &nextModifier );
+                    }
+                
+                    
                 /* if not defined, default to Strong haptics and Fast
                    rotation for all mapped TURN controls */
 
                 if( ! isPressCode( nextCodeIndexA ) ) {
                     /* our primary control is a TURN */
-                    if( ! hapticsFound ) {
+                    if( ! hapticFound ) {
                         hapticStrength = 2;
                         }
                     if( ! rotationFound ) {
@@ -1953,10 +2069,19 @@ int main( int inNumArgs, const char **inArgs ) {
                 else {
                     int k=0;
                     
+                    m->hapticStrength[ nextCodeIndexA ]
+                                     [ nextCodeIndexB ] = hapticStrength;
+                    m->rotationSpeed[ nextCodeIndexA ]
+                                    [ nextCodeIndexB ] = rotationSpeed;
+                        
                     printf( "Mapping line has a sequence of %d KEY_ codes "
-                            "and > separators\n",
+                            "and > separators (H%d R%d)\n",
                             m->keyCodeSequenceLength[ nextCodeIndexA ]
-                            [ nextCodeIndexB ] );
+                                                    [ nextCodeIndexB ],
+                            m->hapticStrength[ nextCodeIndexA ]
+                                             [ nextCodeIndexB ],
+                            m->rotationSpeed[ nextCodeIndexA ]
+                                            [ nextCodeIndexB ] );
                     printf( "Full key code list:  " );
                     for( k=0;
                          k< m->keyCodeSequenceLength[ nextCodeIndexA ]

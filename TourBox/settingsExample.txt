@@ -90,6 +90,12 @@ SIDE C2  "She said, " > KEY_LEFTSHIFT KEY_APOSTROPHE > "Hello!" > KEY_LEFTSHIFT 
 
 
 
+# have SIDE plus TOP type a phrase with special characters
+
+SIDE TOP "Hey you #$#@*&!"
+
+
+
 
 # NOTE
 #
@@ -101,6 +107,10 @@ SIDE C2  "She said, " > KEY_LEFTSHIFT KEY_APOSTROPHE > "Hello!" > KEY_LEFTSHIFT 
 #
 # Sequences of commands longer than 64 will produce an error message
 # at runtime and will be ignored
+#
+# Quoted strings often require multiple KEY_ codes per letter
+# since there needs to be a send (>) after each letter, and also
+# SHIFT key codes for capital letters and special symbols.
 
 
 
