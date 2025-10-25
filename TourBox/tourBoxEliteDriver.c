@@ -1126,6 +1126,9 @@ char isPressCode( int inTourBoxControlCodeIndex );
 /* reads next space/tab/>/end -delimited token from inSourceString
    returns pointer to spot after token in inSourceString
    fills inTokenBuffer with token, ending with \0
+   Also parses tokens surrounded by " marks, even if they contain spaces
+   and tabs.  Returned token will start with " and end with " (followed by \0)
+   in that case.
    Token can be at most inBufferLength - 1 chars long.
    Longer tokens will be truncated
    but the returned pointer into inSourceString will still be beyond
@@ -1191,6 +1194,8 @@ char *getNextTokenAndAdvance( char *inSourceString,
     unsigned int postSpaceIndex;
 
     unsigned int bufferPos = 0;
+    char isQuote = 0;
+
     
     /* skip spaces or tabs */
     while( inSourceString[i] == ' ' ||
@@ -1198,6 +1203,7 @@ char *getNextTokenAndAdvance( char *inSourceString,
         i++;
         }
 
+    
     if( inSourceString[i] == '>' ) {
         /* special case, our next token is > */
         inTokenBuffer[0] = '>';
@@ -1205,25 +1211,56 @@ char *getNextTokenAndAdvance( char *inSourceString,
 
         return &( inSourceString[ i + 1 ] );
         }
-    
-    
-    postSpaceIndex = i;
 
-    while( inSourceString[ postSpaceIndex ] != ' ' &&
-           inSourceString[ postSpaceIndex ] != '\t' &&
-           inSourceString[ postSpaceIndex ] != '>' &&
-           inSourceString[ postSpaceIndex ] != '\n' &&
-           inSourceString[ postSpaceIndex ] != '\r' &&
-           inSourceString[ postSpaceIndex ] != '\0' ) {
-
-        if( bufferPos < inBufferLength - 1 ) {
-            inTokenBuffer[ bufferPos ] =  inSourceString[ postSpaceIndex ];
-            bufferPos++;
-            }
+    
+    if( inSourceString[i] == '"' ) {
+        /* start of a quote */
+        isQuote = 1;
         
-        postSpaceIndex++;
+        postSpaceIndex = i + 1;
+
+        inTokenBuffer[0] = '"';
+        bufferPos++;
+        
+        while( inSourceString[ postSpaceIndex ] != '\n' &&
+               inSourceString[ postSpaceIndex ] != '\r' &&
+               inSourceString[ postSpaceIndex ] != '\0' ) {
+
+            if( bufferPos < inBufferLength - 1 ) {
+                inTokenBuffer[ bufferPos ] =  inSourceString[ postSpaceIndex ];
+                bufferPos++;
+                }
+            if( inSourceString[ postSpaceIndex ] == '"' ) {
+                /* closing quote */
+                postSpaceIndex ++;
+                break;
+                }
+
+            postSpaceIndex ++;
+            }
+        }
+    
+    
+    if( ! isQuote ) {
+        postSpaceIndex = i;
+
+        while( inSourceString[ postSpaceIndex ] != ' ' &&
+               inSourceString[ postSpaceIndex ] != '\t' &&
+               inSourceString[ postSpaceIndex ] != '>' &&
+               inSourceString[ postSpaceIndex ] != '\n' &&
+               inSourceString[ postSpaceIndex ] != '\r' &&
+               inSourceString[ postSpaceIndex ] != '\0' ) {
+
+            if( bufferPos < inBufferLength - 1 ) {
+                inTokenBuffer[ bufferPos ] =  inSourceString[ postSpaceIndex ];
+                bufferPos++;
+                }
+        
+            postSpaceIndex++;
+            }
         }
 
+    
     /* terminate buffer
        even if we got to buffer limit before reading entire string
        we skipped the rest of the string above, so we're still
@@ -1295,6 +1332,9 @@ KeyCodePair getKeyCodePair( char inChar ) {
         }
     else {
         switch( inChar ) {
+            case ' ':
+                pair.first = KEY_SPACE;
+                break;
             case '.':
                 pair.first = KEY_DOT;
                 break;
@@ -1722,9 +1762,12 @@ int main( int inNumArgs, const char **inArgs ) {
                                    before each character
                                    so they are separate keystrokes
                                    We might have a > in there already
-                                   BEFORE our quoted string started */
-                                if( nextSequenceStep == 0
-                                    ||
+                                   BEFORE our quoted string started
+                                   Don't insert KEY_RESERVED if our
+                                   quoted string is the first key in our
+                                   output sequence.*/
+                                if( nextSequenceStep != 0
+                                    &&
                                     m->keyCodeSquence
                                     [ nextCodeIndexA ]
                                     [ nextCodeIndexB ]
