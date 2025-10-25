@@ -1366,6 +1366,9 @@ KeyCodePair getKeyCodePair( char inChar ) {
             case '=':
                 pair.first = KEY_EQUAL;
                 break;
+            case '`':
+                pair.first = KEY_GRAVE;
+                break;
             case '[':
                 pair.first = KEY_LEFTBRACE;
                 break;
@@ -1399,7 +1402,66 @@ KeyCodePair getKeyCodePair( char inChar ) {
                 pair.first = KEY_LEFTSHIFT;
                 pair.second = KEY_6;
                 break;
-                /* fixme:  more SHIFT key cases */
+            case '&':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_7;
+                break;
+            case '*':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_8;
+                break;
+            case '(':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_9;
+                break;
+            case ')':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_0;
+                break;
+            case '_':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_MINUS;
+                break;
+            case '+':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_EQUAL;
+                break;
+            case '{':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_LEFTBRACE;
+                break;
+            case '}':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_RIGHTBRACE;
+                break;
+            case '|':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_BACKSLASH;
+                break;
+            case ':':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_SEMICOLON;
+                break;
+            case '"':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_APOSTROPHE;
+                break;
+            case '<':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_COMMA;
+                break;
+            case '>':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_DOT;
+                break;
+            case '?':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_SLASH;
+                break;
+            case '~':
+                pair.first = KEY_LEFTSHIFT;
+                pair.second = KEY_GRAVE;
+                break;
             }   
                 
         }
