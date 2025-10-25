@@ -241,139 +241,139 @@ void populateSetupMap( void ) {
        byteMap.gnumeric */
     
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "NONE" ) ] = 4;
+        [ stringToPressControlIndex( "NONE" ) ] = 4:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "TALL" ) ] = 6;
+        [ stringToPressControlIndex( "TALL" ) ] = 6:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "SHORT" ) ] = 8;
+        [ stringToPressControlIndex( "SHORT" ) ] = 8:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "TOP" ) ] = 10;
+        [ stringToPressControlIndex( "TOP" ) ] = 10:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "SIDE" ) ] = 12;
+        [ stringToPressControlIndex( "SIDE" ) ] = 12:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "NONE" ) ] = 14;
+        [ stringToPressControlIndex( "NONE" ) ] = 14:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "TALL" ) ] = 16;
+        [ stringToPressControlIndex( "TALL" ) ] = 16:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "SHORT" ) ] = 18;
+        [ stringToPressControlIndex( "SHORT" ) ] = 18:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "TOP" ) ] = 20;
+        [ stringToPressControlIndex( "TOP" ) ] = 20:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "SIDE" ) ] = 22;
+        [ stringToPressControlIndex( "SIDE" ) ] = 22:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "NONE" ) ] = 24;
+        [ stringToPressControlIndex( "NONE" ) ] = 24:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "UP" ) ] = 26;
+        [ stringToPressControlIndex( "UP" ) ] = 26:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "DOWN" ) ] = 28;
+        [ stringToPressControlIndex( "DOWN" ) ] = 28:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "LEFT" ) ] = 30;
+        [ stringToPressControlIndex( "LEFT" ) ] = 30:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "RIGHT" ) ] = 32;
+        [ stringToPressControlIndex( "RIGHT" ) ] = 32:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "KNOB_PRESS" ) ] = 34;
+        [ stringToPressControlIndex( "KNOB_PRESS" ) ] = 34:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "SCROLL_PRESS" ) ] = 36;
+        [ stringToPressControlIndex( "SCROLL_PRESS" ) ] = 36:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "DIAL_PRESS" ) ] = 38;
+        [ stringToPressControlIndex( "DIAL_PRESS" ) ] = 38:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "TOUR" ) ] = 40;
+        [ stringToPressControlIndex( "TOUR" ) ] = 40:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "UP" ) ] = 42;
+        [ stringToPressControlIndex( "UP" ) ] = 42:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "DOWN" ) ] = 44;
+        [ stringToPressControlIndex( "DOWN" ) ] = 44:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "LEFT" ) ] = 46;
+        [ stringToPressControlIndex( "LEFT" ) ] = 46:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "RIGHT" ) ] = 48;
+        [ stringToPressControlIndex( "RIGHT" ) ] = 48:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "C1" ) ] = 50;
+        [ stringToPressControlIndex( "C1" ) ] = 50:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "KNOB_TURN" ) ]
-        [ stringToTurnWidgetIndex( "C2" ) ] = 52;
+        [ stringToPressControlIndex( "C2" ) ] = 52:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "SCROLL_PRESS" ) ] = 54;
+        [ stringToPressControlIndex( "SCROLL_PRESS" ) ] = 54:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "KNOB_PRESS" ) ] = 56;
+        [ stringToPressControlIndex( "KNOB_PRESS" ) ] = 56:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "DIAL_PRESS" ) ] = 58;
+        [ stringToPressControlIndex( "DIAL_PRESS" ) ] = 58:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "TOUR" ) ] = 60;
+        [ stringToPressControlIndex( "TOUR" ) ] = 60:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "C1" ) ] = 62;
+        [ stringToPressControlIndex( "C1" ) ] = 62:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "SCROLL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "C2" ) ] = 64;
+        [ stringToPressControlIndex( "C2" ) ] = 64:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "DIAL_PRESS" ) ] = 66;
+        [ stringToPressControlIndex( "DIAL_PRESS" ) ] = 66:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "KNOB_PRESS" ) ] = 68;
+        [ stringToPressControlIndex( "KNOB_PRESS" ) ] = 68:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "SCROLL_PRESS" ) ] = 70;
+        [ stringToPressControlIndex( "SCROLL_PRESS" ) ] = 70:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "TOUR" ) ] = 72;
+        [ stringToPressControlIndex( "TOUR" ) ] = 72:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "UP" ) ] = 74;
+        [ stringToPressControlIndex( "UP" ) ] = 74:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "DOWN" ) ] = 76;
+        [ stringToPressControlIndex( "DOWN" ) ] = 76:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "LEFT" ) ] = 78;
+        [ stringToPressControlIndex( "LEFT" ) ] = 78:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "RIGHT" ) ] = 80;
+        [ stringToPressControlIndex( "RIGHT" ) ] = 80:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "C1" ) ] = 82;
+        [ stringToPressControlIndex( "C1" ) ] = 82:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "C2" ) ] = 84;
+        [ stringToPressControlIndex( "C2" ) ] = 84:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "TALL" ) ] = 86;
+        [ stringToPressControlIndex( "TALL" ) ] = 86:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "SHORT" ) ] = 88;
+        [ stringToPressControlIndex( "SHORT" ) ] = 88:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "TOP" ) ] = 90;
+        [ stringToPressControlIndex( "TOP" ) ] = 90:
 
     tourBoxSetupMap[ stringToTurnWidgetIndex( "DIAL_TURN" ) ]
-        [ stringToTurnWidgetIndex( "SIDE" ) ] = 92;
+        [ stringToPressControlIndex( "SIDE" ) ] = 92;
     }
 
 
@@ -2360,6 +2360,21 @@ int main( int inNumArgs, const char **inArgs ) {
                                       &numTransfered, USB_TIMEOUT );
     
     printf( "USB IN result=%d transfered=%d\n", usbResult, numTransfered );
+
+    /* fixme
+       Start process of looking at active window
+       and switching which TourBox settings profile is active
+       Keep track of active one by putting an Active flag in its
+       ApplicationMapping
+       If the Active one changes, then send a new 94-byte message
+       using tourBoxSetupMap to set the bytes for haptic and rotation settings
+
+       then loop receving single-byte inputs from TourBox
+       We also need to keep track of any button held down
+       so we can trigger two-button combos
+
+       In between inputs, keep checking if active window changed.
+    */
 
     sleep( 10 );
     
