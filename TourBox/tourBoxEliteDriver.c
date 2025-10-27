@@ -27,7 +27,7 @@
 #define EP_OUT 0x02
 /* found with lsusb -v */
 #define EP_IN  0x82 
-#define USB_TIMEOUT 50000
+#define USB_TIMEOUT 500
 
 
 #define NUM_TOURBOX_CONTROLS 20
@@ -391,8 +391,6 @@ void populateSetupMap( void ) {
 
 typedef struct ApplicationMapping {
         char name[81];
-
-        char active;
         
         /*
           first index is the main control being manipulated
@@ -1920,10 +1918,15 @@ ApplicationMapping *getMatchingMapping( const char *inWindowName ) {
 
 
 /* makes inMappig active and sends setup message for it.
-   marks all other mappings as not-active
    returns 1 on success, 0 on failure.*/
 char makeMappingActive( ApplicationMapping *inMapping,
                         libusb_device_handle *inUSB );
+
+
+/* sends default setup message, with haptics turned off for all controls
+   returns 1 on success, 0 on failure.*/
+char sendDefaultSetupMessage( libusb_device_handle *inUSB );
+
 
 
 unsigned char tourBoxSetupMessage[] = {
@@ -1939,6 +1942,48 @@ unsigned char tourBoxSetupMessage[] = {
     0x00, 0x4f, 0x00, 0x50, 0x00, 0x51, 0x00, 0x52,
     0x00, 0x53, 0x00, 0x54, 0x00, 0xa8, 0x00, 0xa9,
     0x00, 0xaa, 0x00, 0xab, 0x00, 0xfe };
+
+
+char sendDefaultSetupMessage( libusb_device_handle *inUSB ) {
+    int t;
+    int p;
+
+    int numSent;
+    int usbResult;
+    char success = 0;
+    unsigned int b;
+    
+    int setupIndex;
+    for( t=0; t < NUM_TOURBOX_TURN_WIDGETS; t++ ) {
+        /* 1 extra mapping (p <=) for turn widget with no modifier */
+        for( p=0; p <= NUM_TOURBOX_PRESS_CONTROLS; p++ ) {
+
+            setupIndex = tourBoxSetupMap[t][p];
+            tourBoxSetupMessage[ setupIndex ] = 0;
+            }
+        }
+    usbResult =
+        libusb_bulk_transfer( inUSB,
+                              EP_OUT,
+                              tourBoxSetupMessage,
+                              sizeof(tourBoxSetupMessage),
+                              &numSent,
+                              USB_TIMEOUT );
+    if( usbResult == 0 &&
+        numSent == sizeof( tourBoxSetupMessage ) ) {
+        success = 1;
+
+        printf( "Sent setup message:\n" );
+        for( b=0; b<sizeof(tourBoxSetupMessage ); b++ ) {
+            printf( "0x%02X ", tourBoxSetupMessage[b] );
+            }
+
+        printf( "\n\n" );
+        }
+    return success;
+    }
+
+
 
 char makeMappingActive( ApplicationMapping *inMapping,
                         libusb_device_handle *inUSB ) {
@@ -1959,9 +2004,7 @@ char makeMappingActive( ApplicationMapping *inMapping,
     for( i=0; i<numAppMappings; i++ ) {
         ApplicationMapping *m = &( appMappings[i] );
         if( m == inMapping ) {
-            m->active = 1;
-            /* fixme
-               Need to send 94-byte setup message */
+            /* send 94-byte setup message */
 
             for( t=0; t < NUM_TOURBOX_TURN_WIDGETS; t++ ) {
                 /* 1 extra mapping (p <=) for turn widget with no modifier */
@@ -2016,9 +2059,6 @@ char makeMappingActive( ApplicationMapping *inMapping,
                 printf( "\n\n" );
                 }
             }
-        else {
-            m->active = 0;
-            }
         }
 
     return success;
@@ -2034,6 +2074,8 @@ int main( int inNumArgs, const char **inArgs ) {
 
     int numTransfered;
     char inputLoopContinue;
+    ApplicationMapping *activeMapping = NULL;
+    char switchResult;
     
     unsigned char initMessage[] =
         { 0x55, 0x00, 0x07, 0x88, 0x94, 0x00, 0x1a, 0xfe };
@@ -2128,7 +2170,6 @@ int main( int inNumArgs, const char **inArgs ) {
                 nextCharPos++;
 
                 m = &( appMappings[ numAppMappings ] );
-                m->active = 0;
                 
                 while( numCharsScanned < sizeof( m->name ) - 1
                        &&
@@ -2606,70 +2647,98 @@ int main( int inNumArgs, const char **inArgs ) {
 
 
     inputLoopContinue = 1;
+
+    switchResult = sendDefaultSetupMessage( usbHandle );
+    if( ! switchResult ) {
+        printf( "Failed to send initial defaul setup message to TourBox "
+                "for application switch to no mapping\n" );
+        inputLoopContinue = 0;
+        }
+
+
     
     while( inputLoopContinue ) {
         char windowBuffer[100];
         char gotWindowName;
         ApplicationMapping *match;
-        char switchResult = 0;
-        
+        char shouldCheckWindowChange = 0;
 
-        /* fixme:
-           only check for active window name change if we timed out
+        /*fixme
+          Next:
+          read single bytes from TourBox and send uinput commands based
+          on active mapping */
+
+        usbResult = libusb_bulk_transfer( usbHandle, EP_IN, inputBuffer,
+                                          sizeof( inputBuffer ),
+                                          &numTransfered,
+                                          USB_TIMEOUT );
+        
+        if( usbResult == 0 && numTransfered == 1 ) {
+            printf( "Read 0x%02X from TourBox\n", inputBuffer[0] );
+            if( activeMapping != NULL ) {
+                /* fixme
+                   trigger uniput commands based on active mapping */
+                }
+            }
+        else if( usbResult == LIBUSB_ERROR_TIMEOUT ) {
+            shouldCheckWindowChange = 1;
+            }
+        else {
+            printf( "Error reading single byte message "
+                    "from TourBox device\n" );
+            inputLoopContinue = 0;
+            }
+        
+        
+        
+        /* only check for active window name change if we timed out
            waiting for a control to be pressed
            this avoids latency of running xprop when user
            is actively pressing controls quickly.
            Most likely, there will be a pause in TourBox input when the
            user is switching windows, allowing our USB read to timeout */
-        
-        gotWindowName =
-            getActiveWindowName( windowBuffer, sizeof( windowBuffer ) );
 
-        if( gotWindowName ) {
-            printf( "Active window is %s\n", windowBuffer );
-            match = getMatchingMapping( windowBuffer );
+        if( shouldCheckWindowChange ) {
+            
+            gotWindowName =
+                getActiveWindowName( windowBuffer, sizeof( windowBuffer ) );
 
-            if( match == NULL ) {
-                /* no mapping for active window */
-                printf( "No mapping for active window.\n" );
-                }
-            else {
-                printf( "Window matches mapping with phrase '%s'\n",
-                        match->name );
-                if( match->active ) {
-                    printf( "Mapping is already active\n" );
-                    }
-                else {
-                    switchResult = makeMappingActive( match, usbHandle );
+            if( gotWindowName ) {
+                printf( "Active window is %s\n", windowBuffer );
+                match = getMatchingMapping( windowBuffer );
 
-                    if( ! switchResult ) {
-                        printf( "Failed to send setup message to TourBox "
-                                "for application switch\n" );
-                        inputLoopContinue = 0;
+                if( match == NULL ) {
+                    /* no mapping for active window */
+                    printf( "No mapping for active window.\n" );
+
+                    if( activeMapping != NULL ) {
+                        switchResult = sendDefaultSetupMessage( usbHandle );
+                        if( ! switchResult ) {
+                            printf( "Failed to send setup message to TourBox "
+                                    "for application switch to no mapping\n" );
+                            inputLoopContinue = 0;
+                            }
                         }
                     }
+                else {
+                    printf( "Window matches mapping with phrase '%s'\n",
+                            match->name );
+                    if( match == activeMapping ) {
+                        printf( "Mapping is already active\n" );
+                        }
+                    else {
+                        switchResult = makeMappingActive( match, usbHandle );
+
+                        if( ! switchResult ) {
+                            printf( "Failed to send setup message to TourBox "
+                                    "for application switch\n" );
+                            inputLoopContinue = 0;
+                            }
+                        }
+                    }
+                activeMapping = match;
                 }
-            
             }
-        
-        
-        
-    /* fixme
-       Start process of looking at active window
-       and switching which TourBox settings profile is active
-       Keep track of active one by putting an Active flag in its
-       ApplicationMapping
-       If the Active one changes, then send a new 94-byte message
-       using tourBoxSetupMap to set the bytes for haptic and rotation settings
-
-       then loop receving single-byte inputs from TourBox
-       We also need to keep track of any button held down
-       so we can trigger two-button combos
-
-       In between inputs, keep checking if active window changed.
-    */
-
-    sleep( 10 );
         }
     
     libusb_release_interface( usbHandle, IFACE);
