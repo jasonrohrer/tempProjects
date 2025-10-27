@@ -412,11 +412,11 @@ typedef struct ApplicationMapping {
                           [ MAX_KEY_SEQUENCE_STEPS ];
 
         /* 0, 1, 2 for Off, Weak, Strong haptics */
-        int hapticStrength[ NUM_TOURBOX_CONTROLS ]
+        int hapticStrength[ NUM_TOURBOX_TURN_WIDGETS ]
                           [ NUM_TOURBOX_PRESS_CONTROLS + 1 ];
         
         /* 0, 1, 2 for Slow, Medium, Fast rotation */
-        int rotationSpeed[ NUM_TOURBOX_CONTROLS ]
+        int rotationSpeed[ NUM_TOURBOX_TURN_WIDGETS ]
                          [ NUM_TOURBOX_PRESS_CONTROLS + 1 ];
         
     } ApplicationMapping;
@@ -427,6 +427,45 @@ typedef struct ApplicationMapping {
 ApplicationMapping appMappings[MAX_NUM_APPS];
 
 int numAppMappings = 0;
+
+
+
+/* takes any control in tourBoxControlCodes
+   returns an index into tourBoxTurnWidgets, or -1 if control code
+   is not a turn widget */
+int controlToTurnWidgetIndex( int inTourboxControl );
+
+
+
+int controlToTurnWidgetIndex( int inTourboxControl ) {
+    int widget = -1;
+    int i;
+    
+    switch( inTourboxControl ) {
+        case KNOB_TURN_CW:
+        case KNOB_TURN_CCW:
+            widget = KNOB_TURN;
+            break;
+        case DIAL_TURN_CW:
+        case DIAL_TURN_CCW:
+            widget = DIAL_TURN;
+            break;
+        case SCROLL_TURN_UP:
+        case SCROLL_TURN_DOWN:
+            widget = SCROLL_TURN;
+            break;
+        }
+
+    if( widget != -1 ) {
+        for( i=0; i<NUM_TOURBOX_TURN_WIDGETS; i++ ) {
+            if( tourBoxTurnWidgets[i] == widget ) {
+                return i;
+                }
+            }
+        }     
+    
+    return -1;
+    }
 
 
 
@@ -1881,25 +1920,108 @@ ApplicationMapping *getMatchingMapping( const char *inWindowName ) {
 
 
 /* makes inMappig active and sends setup message for it.
-   marks all other mappings as not-active */
-void makeMappingActive( ApplicationMapping *inMapping );
+   marks all other mappings as not-active
+   returns 1 on success, 0 on failure.*/
+char makeMappingActive( ApplicationMapping *inMapping,
+                        libusb_device_handle *inUSB );
 
-    
 
-void makeMappingActive( ApplicationMapping *inMapping ) {
+unsigned char tourBoxSetupMessage[] = {
+    0xb5, 0x00, 0x5d, 0x04, 0x00, 0x05, 0x00, 0x06,
+    0x00, 0x07, 0x00, 0x08, 0x00, 0x09, 0x00, 0x0b,
+    0x00, 0x0c, 0x00, 0x0d, 0x00, 0x0e, 0x00, 0x0f,
+    0x00, 0x26, 0x00, 0x27, 0x00, 0x28, 0x00, 0x29,
+    0x00, 0x3b, 0x00, 0x3c, 0x00, 0x3d, 0x00, 0x3e,
+    0x00, 0x3f, 0x00, 0x40, 0x00, 0x41, 0x00, 0x42,
+    0x00, 0x43, 0x00, 0x44, 0x00, 0x45, 0x00, 0x46,
+    0x00, 0x47, 0x00, 0x48, 0x00, 0x49, 0x00, 0x4a,
+    0x00, 0x4b, 0x00, 0x4c, 0x00, 0x4d, 0x00, 0x4e,
+    0x00, 0x4f, 0x00, 0x50, 0x00, 0x51, 0x00, 0x52,
+    0x00, 0x53, 0x00, 0x54, 0x00, 0xa8, 0x00, 0xa9,
+    0x00, 0xaa, 0x00, 0xab, 0x00, 0xfe };
+
+char makeMappingActive( ApplicationMapping *inMapping,
+                        libusb_device_handle *inUSB ) {
     int i;
+    int t;
+    int p;
+    int h;
+    int r;
+    unsigned char hByte;
+    unsigned char rByte;
+    int numSent;
+    int usbResult;
+    char success = 0;
+    unsigned int b;
+    
+    int setupIndex;
+    
     for( i=0; i<numAppMappings; i++ ) {
         ApplicationMapping *m = &( appMappings[i] );
         if( m == inMapping ) {
             m->active = 1;
             /* fixme
                Need to send 94-byte setup message */
+
+            for( t=0; t < NUM_TOURBOX_TURN_WIDGETS; t++ ) {
+                /* 1 extra mapping (p <=) for turn widget with no modifier */
+                for( p=0; p <= NUM_TOURBOX_PRESS_CONTROLS; p++ ) {
+
+                    setupIndex = tourBoxSetupMap[t][p];
+
+                    h = m->hapticStrength[t][p];
+                    r = m->hapticStrength[t][p];
+                    switch( h ) {
+                        case 0:
+                            hByte = 0;
+                            break;
+                        case 1:
+                            hByte = 4;
+                            break;
+                        case 2:
+                            hByte = 8;
+                            break;
+                        }
+                    switch( r ) {
+                        case 0:
+                            rByte = 2;
+                            break;
+                        case 1:
+                            rByte = 1;
+                            break;
+                        case 2:
+                            rByte = 0;
+                            break;
+                        }
+                    tourBoxSetupMessage[ setupIndex ] = hByte | rByte;
+                    }
+                }
+        
+            usbResult =
+                libusb_bulk_transfer( inUSB,
+                                      EP_OUT,
+                                      tourBoxSetupMessage,
+                                      sizeof(tourBoxSetupMessage),
+                                      &numSent,
+                                      USB_TIMEOUT );
+            if( usbResult == 0 &&
+                numSent == sizeof( tourBoxSetupMessage ) ) {
+                success = 1;
+
+                printf( "Sent setup message:\n" );
+                for( b=0; b<sizeof(tourBoxSetupMessage ); b++ ) {
+                    printf( "0x%02X ", tourBoxSetupMessage[b] );
+                    }
+
+                printf( "\n\n" );
+                }
             }
         else {
             m->active = 0;
             }
         }
-    
+
+    return success;
     }
 
 
@@ -1911,6 +2033,7 @@ int main( int inNumArgs, const char **inArgs ) {
     int usbResult;
 
     int numTransfered;
+    char inputLoopContinue;
     
     unsigned char initMessage[] =
         { 0x55, 0x00, 0x07, 0x88, 0x94, 0x00, 0x1a, 0xfe };
@@ -1927,6 +2050,8 @@ int main( int inNumArgs, const char **inArgs ) {
 
     int lineCount = 0;
 
+    populateSetupMap();
+    
     
     /*
     Start parsing settings file
@@ -2021,7 +2146,7 @@ int main( int inNumArgs, const char **inArgs ) {
 
                 printf( "Processing mappings for \"%s\"\n", m->name );
 
-                for( h=0; h<NUM_TOURBOX_CONTROLS; h++ ) {
+                for( h=0; h<NUM_TOURBOX_TURN_WIDGETS; h++ ) {
                     for( k=0; k<NUM_TOURBOX_PRESS_CONTROLS + 1; k++ ) {
                         /* default for all unmapped controls
                            rotation slow, haptics off */
@@ -2127,7 +2252,7 @@ int main( int inNumArgs, const char **inArgs ) {
                 if( nextCodeIndexB == -1 ) {
                     /* no second code
                        map it into the "no code" index at the end */
-                    nextCodeIndexB = NUM_TOURBOX_CONTROLS;
+                    nextCodeIndexB = NUM_TOURBOX_PRESS_CONTROLS;
                     }
                 else {
                     /* a 2-code sequence
@@ -2376,20 +2501,33 @@ int main( int inNumArgs, const char **inArgs ) {
                     }
                 else {
                     int k=0;
+                    int turnWidgetIndex;
                     
-                    m->hapticStrength[ nextCodeIndexA ]
-                                     [ nextCodeIndexB ] = hapticStrength;
-                    m->rotationSpeed[ nextCodeIndexA ]
-                                    [ nextCodeIndexB ] = rotationSpeed;
-                        
+                    turnWidgetIndex =
+                        controlToTurnWidgetIndex(
+                            tourBoxControlCodes[ nextCodeIndexA ] );
+
+                    if( turnWidgetIndex != -1 ) {
+                        m->hapticStrength[ turnWidgetIndex ]
+                            [ nextCodeIndexB ] = hapticStrength;
+                        m->rotationSpeed[ turnWidgetIndex ]
+                            [ nextCodeIndexB ] = rotationSpeed;
+                        }
+                    
                     printf( "Mapping line has a sequence of %d KEY_ codes "
-                            "and > separators (H%d R%d)\n",
+                            "and > separators",
                             m->keyCodeSequenceLength[ nextCodeIndexA ]
-                                                    [ nextCodeIndexB ],
-                            m->hapticStrength[ nextCodeIndexA ]
-                                             [ nextCodeIndexB ],
-                            m->rotationSpeed[ nextCodeIndexA ]
-                                            [ nextCodeIndexB ] );
+                            [ nextCodeIndexB ] );
+                    
+                    if( turnWidgetIndex != -1 ) {
+                        printf( " (H%d, R%d)",
+                                m->hapticStrength[ turnWidgetIndex ]
+                                                 [ nextCodeIndexB ],
+                                m->rotationSpeed[ turnWidgetIndex ]
+                                                [ nextCodeIndexB ] );
+                        }
+                    printf( "\n" );
+
                     printf( "Full key code list:  " );
                     for( k=0;
                          k< m->keyCodeSequenceLength[ nextCodeIndexA ]
@@ -2466,11 +2604,15 @@ int main( int inNumArgs, const char **inArgs ) {
     
     printf( "USB IN result=%d transfered=%d\n", usbResult, numTransfered );
 
-    while( 1 ) {
+
+    inputLoopContinue = 1;
+    
+    while( inputLoopContinue ) {
         char windowBuffer[100];
         char gotWindowName;
         ApplicationMapping *match;
-
+        char switchResult = 0;
+        
 
         /* fixme:
            only check for active window name change if we timed out
@@ -2498,7 +2640,13 @@ int main( int inNumArgs, const char **inArgs ) {
                     printf( "Mapping is already active\n" );
                     }
                 else {
-                    makeMappingActive( match );
+                    switchResult = makeMappingActive( match, usbHandle );
+
+                    if( ! switchResult ) {
+                        printf( "Failed to send setup message to TourBox "
+                                "for application switch\n" );
+                        inputLoopContinue = 0;
+                        }
                     }
                 }
             
@@ -2524,7 +2672,11 @@ int main( int inNumArgs, const char **inArgs ) {
     sleep( 10 );
         }
     
-    
+    libusb_release_interface( usbHandle, IFACE);
+
+    libusb_close( usbHandle );
+
+    libusb_exit( usbContext );
     
     return 0;
     }
