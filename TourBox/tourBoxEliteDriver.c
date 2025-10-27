@@ -16,6 +16,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 
 /* the VID and PID of a TourBox Elite */
@@ -2066,6 +2067,21 @@ char makeMappingActive( ApplicationMapping *inMapping,
 
 
 
+char inputLoopContinue = 1;
+
+
+void SigIntHandler( int sig );
+
+
+void SigIntHandler( int inSig ) {
+    printf( "\nGot INT signal (%d), exiting cleanly\n\n", inSig );
+    inputLoopContinue = 0;
+    }
+
+
+
+
+
 
 int main( int inNumArgs, const char **inArgs ) {
     libusb_context *usbContext = NULL;
@@ -2073,7 +2089,6 @@ int main( int inNumArgs, const char **inArgs ) {
     int usbResult;
 
     int numTransfered;
-    char inputLoopContinue;
     ApplicationMapping *activeMapping = NULL;
     char switchResult;
     
@@ -2092,6 +2107,8 @@ int main( int inNumArgs, const char **inArgs ) {
 
     int lineCount = 0;
 
+    signal( SIGINT, SigIntHandler );
+    
     populateSetupMap();
     
     
@@ -2644,9 +2661,7 @@ int main( int inNumArgs, const char **inArgs ) {
                                       &numTransfered, USB_TIMEOUT );
     
     printf( "USB IN result=%d transfered=%d\n", usbResult, numTransfered );
-
-
-    inputLoopContinue = 1;
+    
 
     switchResult = sendDefaultSetupMessage( usbHandle );
     if( ! switchResult ) {
@@ -2740,12 +2755,17 @@ int main( int inNumArgs, const char **inArgs ) {
                 }
             }
         }
+
+    printf( "\n\nShutting down USB handle and cleaning up.\n" );
     
     libusb_release_interface( usbHandle, IFACE);
 
     libusb_close( usbHandle );
 
     libusb_exit( usbContext );
+
+    
+    printf( "Exiting.\n\n" );
     
     return 0;
     }
