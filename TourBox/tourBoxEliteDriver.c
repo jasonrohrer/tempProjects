@@ -2678,10 +2678,8 @@ int main( int inNumArgs, const char **inArgs ) {
         ApplicationMapping *match;
         char shouldCheckWindowChange = 0;
 
-        /*fixme
-          Next:
-          read single bytes from TourBox and send uinput commands based
-          on active mapping */
+        /* read single bytes from TourBox and send uinput commands based
+           on active mapping */
 
         usbResult = libusb_bulk_transfer( usbHandle, EP_IN, inputBuffer,
                                           sizeof( inputBuffer ),
