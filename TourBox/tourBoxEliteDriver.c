@@ -2118,6 +2118,10 @@ void sendUinputSequence( int inHeldPressControlIndex,
                          ApplicationMapping *inActiveMapping,
                          int inUinputFile );
 
+/* track which key presses we have sent as one combo
+   at end of combo, we need to send key releases */
+unsigned short sentPressComboBuffer[ MAX_KEY_SEQUENCE_STEPS ];
+
 
 void sendUinputSequence( int inHeldPressControlIndex,
                          int inControlIndex,
@@ -2125,8 +2129,9 @@ void sendUinputSequence( int inHeldPressControlIndex,
                          int inUinputFile ) {
     int sequenceLength;
     unsigned short *sequence;
-    int i;
+    int i, p;
     int lastWasReport = 0;
+    int sentPressComboLength = 0;
     
     if( inHeldPressControlIndex == -1 ) {
         /* extra last element in list is for bare control with nothing
@@ -2144,11 +2149,26 @@ void sendUinputSequence( int inHeldPressControlIndex,
     /* send it */
     for( i=0; i<sequenceLength; i++ ) {
         if( sequence[i] == KEY_RESERVED ) {
+            /* report the end of the press combo , to send them all */
             uinputEmit( inUinputFile, EV_SYN, SYN_REPORT, 0 );
+
+            /* now send releases for everything in our combo */
+            for( p=0; p<sentPressComboLength; p++ ) {
+                uinputEmit( inUinputFile, EV_KEY, sentPressComboBuffer[p], 0 );
+                }
+            /* report the end of the release combo */
+            uinputEmit( inUinputFile, EV_SYN, SYN_REPORT, 0 );
+
+            /* clear the buffer */
+            sentPressComboLength = 0;
+            
             lastWasReport = 1;
             }
         else {
-            uinputEmit( inUinputFile, EV_KEY, sequence[i], 0 );
+            uinputEmit( inUinputFile, EV_KEY, sequence[i], 1 );
+            sentPressComboBuffer[ sentPressComboLength ] = sequence[i];
+            sentPressComboLength++;
+            
             lastWasReport = 0;
             }
         }
@@ -2156,6 +2176,16 @@ void sendUinputSequence( int inHeldPressControlIndex,
     if( ! lastWasReport ) {
         /* final report to send the last key combo */
         uinputEmit( inUinputFile, EV_SYN, SYN_REPORT, 0 );
+
+        /* now send releases for everything in our combo */
+        for( p=0; p<sentPressComboLength; p++ ) {
+            uinputEmit( inUinputFile, EV_KEY, sentPressComboBuffer[p], 0 );
+            }
+        /* report the end of the release combo */
+        uinputEmit( inUinputFile, EV_SYN, SYN_REPORT, 0 );
+
+        /* clear the buffer */
+        sentPressComboLength = 0;
         }
     }
 
