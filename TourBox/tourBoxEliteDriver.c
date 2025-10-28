@@ -2233,10 +2233,6 @@ void handleTourBoxInput( unsigned char inByte,
     int pressIndex = -1;
     int turnWidgetIndex = -1;
     int i;
-
-    if( inActiveMapping != NULL ) {
-        printf( "Hey\n" );
-        }
     
 
     /* strip out first 6 bits to get control code */
