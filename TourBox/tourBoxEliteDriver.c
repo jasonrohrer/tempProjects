@@ -3064,6 +3064,17 @@ int main( int inNumArgs, const char **inArgs ) {
             }
         }
 
+    /* fixme
+       This all seems to be working.
+       Need a robust test for all possible key combinations
+       programatically make a settings file that maps every control
+       combo to a string that types the combo invoked, and send those
+       keys to Leafpad
+       like:
+       SIDE SHORT "SIDE SHORT"
+    */
+
+    
     printf( "\n\nShutting down USB handle and cleaning up.\n" );
     
     libusb_release_interface( usbHandle, IFACE);
