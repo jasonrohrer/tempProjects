@@ -56,6 +56,7 @@
 #define KNOB_PRESS    0x37
 #define DIAL_PRESS    0x38
 
+/* upper two bits encode press/release or turn direction for turn widgets */
 #define PRESS         0x80
 #define RELEASE       0x00
 #define CCW_DOWN      0x00
@@ -2067,6 +2068,85 @@ char makeMappingActive( ApplicationMapping *inMapping,
 
 
 
+/* processes input byte from TourBox, applying inActiveMapping and generating
+   key events to uinput
+   If inActiveMapping is NULL, we send no uinput, but we still process
+   inputs to track which buttons are held down. */
+void handleTourBoxInput( unsigned char inByte,
+                         ApplicationMapping *inActiveMapping );
+
+
+/* index into tourBoxPressControlCodes for what button is held
+   If multiple buttons are held, the oldest one wins.
+*/
+int heldPressControlIndex = -1;
+
+
+void handleTourBoxInput( unsigned char inByte,
+                         ApplicationMapping *inActiveMapping ) {
+    unsigned char controlCode;
+    unsigned char actionCode;
+    
+    int pressIndex = -1;
+    int turnWidgetIndex = -1;
+    int i;
+    
+    /* strip out first 6 bits to get control code */
+    controlCode = inByte & 0x3F;
+    /* last two bits */
+    actionCode = inByte & 0xC0;
+
+    for( i=0; i<NUM_TOURBOX_PRESS_CONTROLS; i++ ) {
+        if( tourBoxPressControlCodes[i] == controlCode ) {
+            pressIndex = i;
+            break;
+            }
+        }
+    if( pressIndex == -1 ) {
+        for( i=0; i<NUM_TOURBOX_TURN_WIDGETS; i++ ) {
+            if( tourBoxTurnWidgets[i] == controlCode ) {
+                turnWidgetIndex = i;
+                break;
+                }
+            }
+        }
+
+    if( pressIndex != -1 ) {
+        if( actionCode == PRESS ) {
+            /* fixme
+               send event for this press */
+            if( inActiveMapping != NULL ) {
+
+                }
+            
+            if( heldPressControlIndex == -1 ) {
+                heldPressControlIndex = pressIndex;
+                }
+            /* else something else already held, don't track new
+               hold */
+            }
+        else if( actionCode == RELEASE ) {
+            /* we never send events for releases */
+            
+            if( heldPressControlIndex == pressIndex ) {
+                /* a release of what we have marked as held */
+                heldPressControlIndex = -1;
+                }
+            }
+        }
+    else if( turnWidgetIndex != 1 ) {
+        /* fixme
+           send event for this turn */
+        if( inActiveMapping != NULL ) {
+
+                }
+        }
+    }
+
+
+
+
+
 char inputLoopContinue = 1;
 
 
@@ -2688,10 +2768,10 @@ int main( int inNumArgs, const char **inArgs ) {
         
         if( usbResult == 0 && numTransfered == 1 ) {
             printf( "Read 0x%02X from TourBox\n", inputBuffer[0] );
-            if( activeMapping != NULL ) {
-                /* fixme
-                   trigger uniput commands based on active mapping */
-                }
+            /* trigger uniput commands based on active mapping
+               even if mapping is NULL, call this to track button
+               presses and releases */
+            handleTourBoxInput( inputBuffer[0], activeMapping );   
             }
         else if( usbResult == LIBUSB_ERROR_TIMEOUT ) {
             shouldCheckWindowChange = 1;
