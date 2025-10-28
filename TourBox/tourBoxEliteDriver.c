@@ -1450,6 +1450,12 @@ char *getNextKeyCodeAndAdvance( char *inSourceString, int *outKeyCode );
 char isPressCode( int inTourBoxControlCodeIndex );
 
 
+/* maps an index from tourBoxPressControlCodes to an index
+   in tourBoxPressControlCodes, or -1 if inTourBoxControlCodeIndex does
+   not map to a press code */
+int getPressCodeIndex( int inTourBoxControlCodeIndex );
+
+
 /* reads next space/tab/>/end -delimited token from inSourceString
    returns pointer to spot after token in inSourceString
    fills inTokenBuffer with token, ending with \0
@@ -1882,17 +1888,32 @@ int countKeyCodeSequence( char *inString ) {
 
 
 char isPressCode( int inTourBoxControlCodeIndex ) {
+    int i = getPressCodeIndex( inTourBoxControlCodeIndex );
+
+    if( i == -1 ) {
+        return 0;
+        }
+    else {
+        return 1;
+        }
+    }
+
+
+
+
+int getPressCodeIndex( int inTourBoxControlCodeIndex ) {
     int i;
     int code = tourBoxControlCodes[ inTourBoxControlCodeIndex ];
     
     /* see if it matches a press control code */
     for( i=0; i<NUM_TOURBOX_PRESS_CONTROLS; i++ ) {
         if( tourBoxPressControlCodes[i] == code ) {
-            return 1;
+            return i;
             }
         }
-    return 0;
+    return -1;
     }
+
 
 
 /* Gets the name of the active window, filling inBuffer.
@@ -2627,6 +2648,10 @@ int main( int inNumArgs, const char **inArgs ) {
                     int nextCodeTemp = nextCodeIndexB;
                     nextCodeIndexB = nextCodeIndexA;
                     nextCodeIndexA = nextCodeTemp;
+
+                    /* B needs to be an index into tourBoxPressControlCodes
+                       It's currently indexing into tourBoxControlCodes */
+                    nextCodeIndexB = getPressCodeIndex( nextCodeIndexB );
                     }
                 
 
@@ -2909,16 +2934,6 @@ int main( int inNumArgs, const char **inArgs ) {
                         printf( "%s ", kS );
                         }
                     printf( "\n\n" );
-
-                    /* we actually parsed a valid control with outputs
-                       set haptics and rotation speed
-                       (otherwise, leave them at 0, 0 for unmapped controls */
-                    m->hapticStrength
-                        [ nextCodeIndexA ]
-                        [ nextCodeIndexB ] = hapticStrength;
-                    m->rotationSpeed
-                        [ nextCodeIndexA ]
-                        [ nextCodeIndexB ] = rotationSpeed;
                     }             
                 }
 
