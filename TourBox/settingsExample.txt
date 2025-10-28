@@ -15,7 +15,7 @@
 # these application-matching string patterns can be at most 80 characters long
 # there can be at most 64 different applications defined in one settings file
 # Additional applications beyond the limit of 64 in one settings file
-# will produce an error message at runtime and will be ignored
+# will produce an Warning message at runtime and will be ignored
 "Mozilla Firefox"
 
 

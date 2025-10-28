@@ -1,3 +1,30 @@
+/* How many application mappings are supported?
+   Each mapping is toggled when switching to a different application
+     and has a different mapping section in the settings file.
+   If your settings file contains more mappings than this, the extra onces
+     will be skipped with a warning message.
+   Increasing this number increases the RAM used by the driver. */
+#define MAX_NUM_APPS  64
+
+/* How many key sequence steps can be emitted by a single TourBox button
+     or 2-button combo?
+   Note that the ">" sends in a sequence count as steps, and a quoted
+     string implies a ">" send between each character in the string.
+   If you define a key sequence longer than this in your settings file,
+     it will be skipped with a warning message.
+   Increasing this number increases the RAM used by the driver. */
+#define MAX_KEY_SEQUENCE_STEPS  64
+
+/* How long can a quoted application name in the settings file be?
+   Quoted names longer than this are truncated internally.
+   Note that these "names" are meant to be unique patterns to match, and
+     not entire window titles.
+   Increasing this number increases the RAM used by the driver slightly. */
+#define MAX_APPLICATION_NAME_LENGTH  80
+
+
+
+
 #define inline __inline__
 #include <stdint.h>
 
@@ -389,10 +416,10 @@ void populateSetupMap( void ) {
 
 
 
-#define MAX_KEY_SEQUENCE_STEPS  64
+
 
 typedef struct ApplicationMapping {
-        char name[81];
+        char name[ MAX_APPLICATION_NAME_LENGTH + 1 ];
         
         /*
           first index is the main control being manipulated
@@ -422,7 +449,7 @@ typedef struct ApplicationMapping {
     } ApplicationMapping;
 
 
-#define MAX_NUM_APPS  64
+
 
 ApplicationMapping appMappings[MAX_NUM_APPS];
 
@@ -2408,7 +2435,7 @@ int main( int inNumArgs, const char **inArgs ) {
                     break;
                     }
                 
-                /* skip starting " */
+                /* skip starting double-quote */
                 nextCharPos++;
 
                 m = &( appMappings[ numAppMappings ] );
@@ -2417,7 +2444,11 @@ int main( int inNumArgs, const char **inArgs ) {
                        &&
                        fileLineBuffer[ nextCharPos ] != '"'
                        &&
-                       fileLineBuffer[ nextCharPos ] != '\0' ) {
+                       fileLineBuffer[ nextCharPos ] != '\0'
+                       &&
+                       fileLineBuffer[ nextCharPos ] != '\n'
+                       &&
+                       fileLineBuffer[ nextCharPos ] != '\r') {
 
                     m->name[ numCharsScanned ] =
                         fileLineBuffer[ nextCharPos ];
@@ -2427,6 +2458,16 @@ int main( int inNumArgs, const char **inArgs ) {
                     }
                 m->name[ numCharsScanned ] = '\0';
 
+                if( fileLineBuffer[ nextCharPos ] != '"' ) {
+                    printf( "\nWARNING:\n"
+                            "Quoted application name "
+                            "on line %d is longer than %d characters or "
+                            "does not end with a closing double-quote, "
+                            "truncating.\n\n",
+                            lineCount, sizeof( m->name ) - 1 );
+                    }
+                
+                
                 printf( "Processing mappings for \"%s\"\n", m->name );
 
                 for( h=0; h<NUM_TOURBOX_TURN_WIDGETS; h++ ) {
