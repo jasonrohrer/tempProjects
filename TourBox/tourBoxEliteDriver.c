@@ -407,9 +407,9 @@ typedef struct ApplicationMapping {
         /* up to 64 uinput KEY codes, separated by KEY_RESERVED to
            send batches of keys as a simultaneous combo
         */
-        int keyCodeSquence[ NUM_TOURBOX_CONTROLS ]
-                          [ NUM_TOURBOX_PRESS_CONTROLS + 1 ]
-                          [ MAX_KEY_SEQUENCE_STEPS ];
+        unsigned short keyCodeSquence[ NUM_TOURBOX_CONTROLS ]
+                                     [ NUM_TOURBOX_PRESS_CONTROLS + 1 ]
+                                     [ MAX_KEY_SEQUENCE_STEPS ];
 
         /* 0, 1, 2 for Off, Weak, Strong haptics */
         int hapticStrength[ NUM_TOURBOX_TURN_WIDGETS ]
@@ -482,7 +482,7 @@ const char *keyCodeToString( int inKeyCode );
 
 
 
-#define NUM_KEY_CODES 402
+#define NUM_KEY_CODES 399
 
 int keyCodes[NUM_KEY_CODES] = {
     KEY_ESC,
@@ -883,10 +883,7 @@ int keyCodes[NUM_KEY_CODES] = {
     KEY_ATTENDANT_OFF,
     KEY_ATTENDANT_TOGGLE,
     KEY_LIGHTS_TOGGLE,
-    KEY_ALS_TOGGLE,
-    KEY_MIN_INTERESTING,
-    KEY_MAX,
-    KEY_CNT };
+    KEY_ALS_TOGGLE };
 
 
 const char *keyCodeStrings[NUM_KEY_CODES] = {
@@ -1288,10 +1285,7 @@ const char *keyCodeStrings[NUM_KEY_CODES] = {
     "KEY_ATTENDANT_OFF",
     "KEY_ATTENDANT_TOGGLE",
     "KEY_LIGHTS_TOGGLE",
-    "KEY_ALS_TOGGLE",
-    "KEY_MIN_INTERESTING",
-    "KEY_MAX",
-    "KEY_CNT" };
+    "KEY_ALS_TOGGLE" };
 
 
 /* use KEY_RESERVED to represent a SEND (send combo of keys) in our
@@ -2067,13 +2061,88 @@ char makeMappingActive( ApplicationMapping *inMapping,
     }
 
 
+/* emit a uinput event */
+void uinputEmit( int inUinputFile, unsigned short inType,
+                 unsigned short inCode, int inVal );
+
+
+
+void uinputEmit( int inUinputFile, unsigned short inType,
+                 unsigned short inCode, int inVal ) {
+    struct input_event event;
+
+    event.type = inType;
+    event.code = inCode;
+    event.value = inVal;
+    /* timestamp values below are ignored */
+    event.time.tv_sec = 0;
+    event.time.tv_usec = 0;
+
+    write( inUinputFile, &event, sizeof(event) );
+    }
+
+
+
+/* inHeldPressControlIndex is index into tourBoxPressControlCodes or -1
+   if nothing is held.
+   inControlIndex is index into tourBoxControlCodes */
+void sendUinputSequence( int inHeldPressControlIndex,
+                         int inControlIndex,
+                         ApplicationMapping *inActiveMapping,
+                         int inUinputFile );
+
+
+void sendUinputSequence( int inHeldPressControlIndex,
+                         int inControlIndex,
+                         ApplicationMapping *inActiveMapping,
+                         int inUinputFile ) {
+    int sequenceLength;
+    unsigned short *sequence;
+    int i;
+    int lastWasReport = 0;
+    
+    if( inHeldPressControlIndex == -1 ) {
+        /* extra last element in list is for bare control with nothing
+           else held down */
+        inHeldPressControlIndex = NUM_TOURBOX_PRESS_CONTROLS;
+        }
+    
+    /* get sequence from mapping */
+    sequenceLength = inActiveMapping->
+        keyCodeSequenceLength[ inControlIndex ][ inHeldPressControlIndex ];
+
+    sequence = inActiveMapping->
+        keyCodeSquence[ inControlIndex ][ inHeldPressControlIndex ];
+
+    /* send it */
+    for( i=0; i<sequenceLength; i++ ) {
+        if( sequence[i] == KEY_RESERVED ) {
+            uinputEmit( inUinputFile, EV_SYN, SYN_REPORT, 0 );
+            lastWasReport = 1;
+            }
+        else {
+            uinputEmit( inUinputFile, EV_KEY, sequence[i], 0 );
+            lastWasReport = 0;
+            }
+        }
+    
+    if( ! lastWasReport ) {
+        /* final report to send the last key combo */
+        uinputEmit( inUinputFile, EV_SYN, SYN_REPORT, 0 );
+        }
+    }
+
+    
+
+
 
 /* processes input byte from TourBox, applying inActiveMapping and generating
    key events to uinput
    If inActiveMapping is NULL, we send no uinput, but we still process
    inputs to track which buttons are held down. */
 void handleTourBoxInput( unsigned char inByte,
-                         ApplicationMapping *inActiveMapping );
+                         ApplicationMapping *inActiveMapping,
+                         int inUinputFile );
 
 
 /* index into tourBoxPressControlCodes for what button is held
@@ -2083,19 +2152,53 @@ int heldPressControlIndex = -1;
 
 
 void handleTourBoxInput( unsigned char inByte,
-                         ApplicationMapping *inActiveMapping ) {
+                         ApplicationMapping *inActiveMapping,
+                         int inUinputFile ) {
     unsigned char controlCode;
     unsigned char actionCode;
-    
+
+    int controlIndex = -1;
     int pressIndex = -1;
     int turnWidgetIndex = -1;
     int i;
+
+    if( inActiveMapping != NULL ) {
+        printf( "Hey\n" );
+        }
     
+
     /* strip out first 6 bits to get control code */
     controlCode = inByte & 0x3F;
     /* last two bits */
     actionCode = inByte & 0xC0;
 
+    /* first, search for match for our whole byte
+       since turn controls map using the whole byte */
+    for( i=0; i<NUM_TOURBOX_CONTROLS; i++ ) {
+        if( tourBoxControlCodes[i] == inByte ) {
+            controlIndex = i;
+            break;
+            }
+        }
+    if( controlIndex == -1 ) {
+        /* no mapping for whole byte
+           this is not a turn control
+           check again using only the controlCode portion of the byte */
+        for( i=0; i<NUM_TOURBOX_CONTROLS; i++ ) {
+            if( tourBoxControlCodes[i] == controlCode ) {
+                controlIndex = i;
+                break;
+                }
+            }
+        }
+
+    if( controlIndex == -1 ) {
+        printf( "Failed to extract known control code "
+                "from TourBox input byte 0x%02X\n", inByte );
+        return;
+        }
+    
+    
     for( i=0; i<NUM_TOURBOX_PRESS_CONTROLS; i++ ) {
         if( tourBoxPressControlCodes[i] == controlCode ) {
             pressIndex = i;
@@ -2113,10 +2216,10 @@ void handleTourBoxInput( unsigned char inByte,
 
     if( pressIndex != -1 ) {
         if( actionCode == PRESS ) {
-            /* fixme
-               send event for this press */
             if( inActiveMapping != NULL ) {
-
+                /* send event for this press */
+                sendUinputSequence( heldPressControlIndex, controlIndex,
+                                    inActiveMapping, inUinputFile );
                 }
             
             if( heldPressControlIndex == -1 ) {
@@ -2135,11 +2238,11 @@ void handleTourBoxInput( unsigned char inByte,
             }
         }
     else if( turnWidgetIndex != 1 ) {
-        /* fixme
-           send event for this turn */
         if( inActiveMapping != NULL ) {
-
-                }
+            /* send event for this turn */
+            sendUinputSequence( heldPressControlIndex, controlIndex,
+                                inActiveMapping, inUinputFile );
+            }
         }
     }
 
@@ -2187,10 +2290,52 @@ int main( int inNumArgs, const char **inArgs ) {
 
     int lineCount = 0;
 
+    struct uinput_user_dev uinputUserDev;
+    int uinputFile;
+    const char *uinputDevName = "TourBox Elite";
+    int nameI = 0;
+    int kI;
+    
     signal( SIGINT, SigIntHandler );
     
     populateSetupMap();
     
+        
+    uinputFile = open( "/dev/uinput", O_WRONLY | O_NONBLOCK );
+
+    if( uinputFile == -1 ) {
+        printf( "Failed to open /dev/uinput\n" );
+        return 1;
+        }
+    
+    if( ioctl( uinputFile, UI_SET_EVBIT, EV_KEY ) < 0 ) {
+        printf( "Error setting up key events on /dev/uinput\n" );
+        close( uinputFile );
+        return 1;
+        }
+    
+    for( kI=0; kI<NUM_KEY_CODES; kI++ ) {
+        if( ioctl( uinputFile, UI_SET_KEYBIT, keyCodes[ kI ] ) < 0 ) {
+            printf( "Error enabling key code %s on /dev/uinput\n",
+                    keyCodeToString( keyCodes[ kI ] ) );
+            close( uinputFile );
+            return 1;
+            }
+        }
+    
+
+    memset( &uinputUserDev, 0, sizeof(uinputUserDev) );
+
+    while( uinputDevName[nameI] != '\0' &&
+           nameI < UINPUT_MAX_NAME_SIZE - 1 ) {
+        uinputUserDev.name[nameI] = uinputDevName[nameI];
+        nameI++;
+        }
+    uinputUserDev.name[nameI] = '\0';
+    
+    write( uinputFile, &uinputUserDev, sizeof(uinputUserDev) );
+
+    ioctl( uinputFile, UI_DEV_CREATE );
     
     /*
     Start parsing settings file
@@ -2490,7 +2635,7 @@ int main( int inNumArgs, const char **inArgs ) {
                         m->keyCodeSquence
                             [ nextCodeIndexA ]
                             [ nextCodeIndexB ]
-                            [ nextSequenceStep ] = nextKeyCode;
+                            [ nextSequenceStep ] = (unsigned short)nextKeyCode;
 
                         nextSequenceStep++;
                         
@@ -2591,14 +2736,17 @@ int main( int inNumArgs, const char **inArgs ) {
                                 m->keyCodeSquence
                                     [ nextCodeIndexA ]
                                     [ nextCodeIndexB ]
-                                    [ nextSequenceStep ] = pair.first;
+                                    [ nextSequenceStep ] =
+                                    (unsigned short)( pair.first );
+                                
                                 nextSequenceStep++;
 
                                 if( pair.second != -1 ) {
                                     m->keyCodeSquence
                                         [ nextCodeIndexA ]
                                         [ nextCodeIndexB ]
-                                        [ nextSequenceStep ] = pair.second;
+                                        [ nextSequenceStep ] =
+                                        (unsigned short)( pair.second );
                                     nextSequenceStep++;
                                     }
 
@@ -2771,7 +2919,7 @@ int main( int inNumArgs, const char **inArgs ) {
             /* trigger uniput commands based on active mapping
                even if mapping is NULL, call this to track button
                presses and releases */
-            handleTourBoxInput( inputBuffer[0], activeMapping );   
+            handleTourBoxInput( inputBuffer[0], activeMapping, uinputFile );   
             }
         else if( usbResult == LIBUSB_ERROR_TIMEOUT ) {
             shouldCheckWindowChange = 1;
@@ -2841,6 +2989,11 @@ int main( int inNumArgs, const char **inArgs ) {
     libusb_close( usbHandle );
 
     libusb_exit( usbContext );
+
+    
+    printf( "\n\nClosing /dev/uinput.\n" );
+
+    close( uinputFile );
 
     
     printf( "Exiting.\n\n" );
