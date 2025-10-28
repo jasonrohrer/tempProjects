@@ -84,8 +84,8 @@
 #define DIAL_PRESS    0x38
 
 /* upper two bits encode press/release or turn direction for turn widgets */
-#define PRESS         0x80
-#define RELEASE       0x00
+#define PRESS         0x00
+#define RELEASE       0x80
 #define CCW_DOWN      0x00
 #define CW_UP         0x40
 
@@ -2106,6 +2106,9 @@ void uinputEmit( int inUinputFile, unsigned short inType,
     event.time.tv_usec = 0;
 
     write( inUinputFile, &event, sizeof(event) );
+
+    printf( "\n\n   ****  uinput:   %s  %d\n\n",
+            keyCodeToString( inCode ), inVal );
     }
 
 
@@ -2143,6 +2146,13 @@ void sendUinputSequence( int inHeldPressControlIndex,
     sequenceLength = inActiveMapping->
         keyCodeSequenceLength[ inControlIndex ][ inHeldPressControlIndex ];
 
+
+    if( sequenceLength == 0 ) {
+        /* emtpy sequence, send nothing */
+        return;
+        }
+    
+    
     sequence = inActiveMapping->
         keyCodeSquence[ inControlIndex ][ inHeldPressControlIndex ];
 
@@ -2152,13 +2162,16 @@ void sendUinputSequence( int inHeldPressControlIndex,
             /* report the end of the press combo , to send them all */
             uinputEmit( inUinputFile, EV_SYN, SYN_REPORT, 0 );
 
-            /* now send releases for everything in our combo */
-            for( p=0; p<sentPressComboLength; p++ ) {
-                uinputEmit( inUinputFile, EV_KEY, sentPressComboBuffer[p], 0 );
+            if( sentPressComboLength > 0 ) {
+                /* now send releases for everything in our combo */
+                for( p=0; p<sentPressComboLength; p++ ) {
+                    uinputEmit( inUinputFile, EV_KEY,
+                                sentPressComboBuffer[p], 0 );
+                    }
+                /* report the end of the release combo */
+                uinputEmit( inUinputFile, EV_SYN, SYN_REPORT, 0 );
                 }
-            /* report the end of the release combo */
-            uinputEmit( inUinputFile, EV_SYN, SYN_REPORT, 0 );
-
+            
             /* clear the buffer */
             sentPressComboLength = 0;
             
@@ -2177,13 +2190,15 @@ void sendUinputSequence( int inHeldPressControlIndex,
         /* final report to send the last key combo */
         uinputEmit( inUinputFile, EV_SYN, SYN_REPORT, 0 );
 
-        /* now send releases for everything in our combo */
-        for( p=0; p<sentPressComboLength; p++ ) {
-            uinputEmit( inUinputFile, EV_KEY, sentPressComboBuffer[p], 0 );
+        if( sentPressComboLength > 0 ) {
+            /* now send releases for everything in our combo */
+            for( p=0; p<sentPressComboLength; p++ ) {
+                uinputEmit( inUinputFile, EV_KEY, sentPressComboBuffer[p], 0 );
+                }
+            /* report the end of the release combo */
+            uinputEmit( inUinputFile, EV_SYN, SYN_REPORT, 0 );
             }
-        /* report the end of the release combo */
-        uinputEmit( inUinputFile, EV_SYN, SYN_REPORT, 0 );
-
+        
         /* clear the buffer */
         sentPressComboLength = 0;
         }
