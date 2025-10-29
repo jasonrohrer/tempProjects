@@ -2158,7 +2158,6 @@ char sendDefaultSetupMessage( libusb_device_handle *inUSB ) {
     int numSent;
     int usbResult;
     char success = 0;
-    unsigned int b;
     
     int setupIndex;
     for( t=0; t < NUM_TOURBOX_TURN_WIDGETS; t++ ) {
@@ -2179,13 +2178,6 @@ char sendDefaultSetupMessage( libusb_device_handle *inUSB ) {
     if( usbResult == 0 &&
         numSent == sizeof( tourBoxSetupMessage ) ) {
         success = 1;
-
-        printf( "Sent setup message:\n" );
-        for( b=0; b<sizeof(tourBoxSetupMessage ); b++ ) {
-            printf( "0x%02X ", tourBoxSetupMessage[b] );
-            }
-
-        printf( "\n\n" );
         }
     return success;
     }
@@ -2204,7 +2196,6 @@ char makeMappingActive( ApplicationMapping *inMapping,
     int numSent;
     int usbResult;
     char success = 0;
-    unsigned int b;
     
     int setupIndex;
     
@@ -2257,13 +2248,6 @@ char makeMappingActive( ApplicationMapping *inMapping,
             if( usbResult == 0 &&
                 numSent == sizeof( tourBoxSetupMessage ) ) {
                 success = 1;
-
-                printf( "Sent setup message:\n" );
-                for( b=0; b<sizeof(tourBoxSetupMessage ); b++ ) {
-                    printf( "0x%02X ", tourBoxSetupMessage[b] );
-                    }
-
-                printf( "\n\n" );
                 }
             }
         }
@@ -2290,9 +2274,6 @@ void uinputEmit( int inUinputFile, unsigned short inType,
     event.time.tv_usec = 0;
 
     write( inUinputFile, &event, sizeof(event) );
-
-    printf( "\n\n   ****  uinput:   %s  %d\n\n",
-            keyCodeToString( inCode ), inVal );
     }
 
 
@@ -2680,7 +2661,6 @@ int main( int inNumArgs, const char **inArgs ) {
                 fileLineBuffer[nextCharPos] == '\0' ) {
                 continue;
                 }
-            /*printf( "%s", fileLineBuffer );*/
 
             if( fileLineBuffer[nextCharPos] == '"' ) {
                 /* start of a new app mapping */
@@ -2775,9 +2755,6 @@ int main( int inNumArgs, const char **inArgs ) {
                 
                 /* keep loading mappings into our most recent application */
                 m = &( appMappings[ numAppMappings - 1 ] );
-
-                printf( "Adding line for applicaiton \"%s\": %s\n",
-                        m->name, &( fileLineBuffer[ nextCharPos ] ) );
 
                 
                 /* process the line and add it to mapping */
@@ -3206,7 +3183,6 @@ int main( int inNumArgs, const char **inArgs ) {
                     continue;
                     }
                 else {
-                    int k=0;
                     int turnWidgetIndex;
                     
                     turnWidgetIndex =
@@ -3227,49 +3203,6 @@ int main( int inNumArgs, const char **inArgs ) {
                             lineCount,
                             controlIndexToString( nextCodeIndexA ) );
                         }
-                    
-                    
-                    printf( "Mapping line has a sequence of %d KEY_ codes "
-                            "and > separators",
-                            m->keyCodeSequenceLength[ nextCodeIndexA ]
-                            [ nextCodeIndexB ] );
-                    
-                    if( turnWidgetIndex != -1 ) {
-                        printf( " (H%d, R%d)",
-                                m->hapticStrength[ turnWidgetIndex ]
-                                                 [ nextCodeIndexB ],
-                                m->rotationSpeed[ turnWidgetIndex ]
-                                                [ nextCodeIndexB ] );
-                        }
-                    printf( "\n" );
-
-                    printf( "Full key code list:  " );
-                    nextSleepIndex = 0;
-                    for( k=0;
-                         k< m->keyCodeSequenceLength[ nextCodeIndexA ]
-                             [ nextCodeIndexB ];
-                         k++ ) {
-                        
-                        if( m->keyCodeSquence
-                            [ nextCodeIndexA ]
-                            [ nextCodeIndexB ][k] == SLEEP_TRIGGER ) {
-                            printf( "SLEEP(%dms) ",
-                                    m->keySequenceSleepsMS
-                                    [ nextCodeIndexA ]
-                                    [ nextCodeIndexB ]
-                                    [nextSleepIndex] );
-                            nextSleepIndex++;
-                            }
-                        else {
-                            const char *kS = keyCodeToString(
-                                m->keyCodeSquence
-                                [ nextCodeIndexA ]
-                                [ nextCodeIndexB ]
-                                [ k ] );
-                            printf( "%s ", kS );
-                            }
-                        }
-                    printf( "\n\n" );
                     }             
                 }
 
@@ -3312,19 +3245,34 @@ int main( int inNumArgs, const char **inArgs ) {
     usbResult = libusb_bulk_transfer( usbHandle, EP_OUT, initMessage,
                                       sizeof( initMessage ),
                                       &numTransfered, USB_TIMEOUT );
-    
-    printf( "USB OUT result=%d transfered=%d\n", usbResult, numTransfered );
 
-    
+    if( numTransfered != sizeof( initMessage ) ) {
+        printf( "Failed to send 8-byte setup message to TourBox\n" );
+        libusb_release_interface( usbHandle, IFACE );
+        libusb_close( usbHandle );
+        libusb_exit( usbContext );
+        close( uinputFile );
+        return 1;
+        }
+
     /* read one response, should be 26 bytes */
     usbResult = libusb_bulk_transfer( usbHandle, EP_IN, inputBuffer,
                                       sizeof( inputBuffer ),
                                       &numTransfered, USB_TIMEOUT );
-    
-    printf( "USB IN result=%d transfered=%d\n", usbResult, numTransfered );
-    
+
+    if( numTransfered != 26 ) {
+        printf( "Failed to read expected 26-byte setup message from "
+                "TourBox\n" );
+        libusb_release_interface( usbHandle, IFACE );
+        libusb_close( usbHandle );
+        libusb_exit( usbContext );
+        close( uinputFile );
+        return 1;
+        }
+
 
     switchResult = sendDefaultSetupMessage( usbHandle );
+    
     if( ! switchResult ) {
         printf( "Failed to send initial defaul setup message to TourBox "
                 "for application switch to no mapping\n" );
@@ -3347,7 +3295,6 @@ int main( int inNumArgs, const char **inArgs ) {
                                           USB_TIMEOUT );
         
         if( usbResult == 0 && numTransfered == 1 ) {
-            printf( "Read 0x%02X from TourBox\n", inputBuffer[0] );
             /* trigger uniput commands based on active mapping
                even if mapping is NULL, call this to track button
                presses and releases */
@@ -3378,12 +3325,10 @@ int main( int inNumArgs, const char **inArgs ) {
                                      sizeof( windowNameBuffer ) );
 
             if( gotWindowName ) {
-                printf( "Active window is %s\n", windowNameBuffer );
                 match = getMatchingMapping( windowNameBuffer );
 
                 if( match == NULL ) {
                     /* no mapping for active window */
-                    printf( "No mapping for active window.\n" );
 
                     if( activeMapping != NULL ) {
                         switchResult = sendDefaultSetupMessage( usbHandle );
@@ -3395,10 +3340,10 @@ int main( int inNumArgs, const char **inArgs ) {
                         }
                     }
                 else {
-                    printf( "Window matches mapping with phrase '%s'\n",
-                            match->name );
+                    /* found a matching mapping */
+                    
                     if( match == activeMapping ) {
-                        printf( "Mapping is already active\n" );
+                        /* already active */
                         }
                     else {
                         switchResult = makeMappingActive( match, usbHandle );
@@ -3414,16 +3359,6 @@ int main( int inNumArgs, const char **inArgs ) {
                 }
             }
         }
-
-    /* fixme
-       This all seems to be working.
-       Need a robust test for all possible key combinations
-       programatically make a settings file that maps every control
-       combo to a string that types the combo invoked, and send those
-       keys to Leafpad
-       like:
-       SIDE SHORT "SIDE SHORT"
-    */
 
     
     printf( "\n\nShutting down USB handle and cleaning up.\n" );
