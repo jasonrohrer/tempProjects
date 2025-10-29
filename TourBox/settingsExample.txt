@@ -7,97 +7,132 @@
    # however you want
 
 
+# Various numerical limits are described in this file 
+# (like the max number of 64 applications, etc).
+#
+# These can ALL be adjusted by tweaking the values at the
+# top of tourBoxEliteDriver.c and re-compiling it.
+#
+# Since the driver only uses static memory allocation (and not
+# dynamic heap allocation), its memory usage is fixed, and there are
+# no memory leaks possible over time.
+#
+# Thus, these numerical limits offer a trade-off in terms of RAM usage.
+# You can potentially make the driver much leaner RAM-wise if you
+# only want to map settings for a few applications instead of 64.
 
-# settings for a new application start with a phrase in quotes
+
+
+# Settings for a new application start with a phrase in quotes
 # which is a pattern that occurs in the window for that application when
-# it is brought to the foreground
-# a line starting settings for a new applicaiton must start with "
-# these application-matching string patterns can be at most 80 characters long
-# there can be at most 64 different applications defined in one settings file
+# it is brought to the foreground.
+#
+# A line starting settings for a new applicaiton must start with "
+#
+# These application-matching string patterns can be at most 80 characters long.
+#
+# There can be at most 64 different applications defined in one settings file.
+#
 # Additional applications beyond the limit of 64 in one settings file
-# will produce an Warning message at runtime and will be ignored
+# will produce an Warning message at runtime and will be ignored.
+
+# Here, we start a mapping section for Mozialla Firefox
+
 "Mozilla Firefox"
 
 
-# TourBox controls are as follows
+
+# TourBox controls are as follows:
+#
 # TALL  SHORT  SIDE  TOP  UP  DOWN  LEFT  RIGHT  C1  C2  TOUR
+#
 # KNOB_TURN_CCW  KNOB_TURN_CW  KNOB_PRESS
 # DIAL_TURN_CCW  DIAL_TURN_CW  DIAL_PRESS
 # SCROLL_TURN_DOWN  SCROLL_TURN_UP  SCROLL_PRESS
 
-# CCW and CW are counter-clockwise and clockwise for knob and dial
-# C1 and C2 are the little round buttons above Tall and Short
-# Tour is the moon-shaped button southwest of the Knob
+# CCW and CW are counter-clockwise and clockwise for knob and dial.
+# C1 and C2 are the little round buttons above Tall and Short.
+# Tour is the moon-shaped button southwest of the Knob.
 
 
-# TourBox inputs are either single inputs or 2-input combos
+# TourBox inputs are either single inputs or 2-input combos.
 
-# Note that only button PRESSES can be used in the first step of a combo
-# (scroll, knob, and dial TURNS cannot be used).
-# thus, there are 14x20 = 280 possible combos
+# Note that only button PRESSES can be used in the first step of a combo.
+# (Scroll, knob, and dial TURNS cannot be used as the first step.)
+# Thus, there are 14x20 = 280 possible combos
 
 
 # Command outputs are single keys, key combinations, or sequences of single keys
 # and key combinations.  Each output key is a KEY_ macro name.  The full list
 # of possible output key macros is in keyCodeList.txt
+#
+# Command outputs can also contain > and SLEEP_ triggers, which are described
+# below.
 
 
 
 
 
 
-# single input mapping to single key
-# when Top is pressed, output a left arrow key
+# Single input mapping to single key.
+
+# When Top is pressed, output a left arrow key.
 
 TOP  KEY_UP
 
 
 
-# single input mapping to a two-key combo
-# the combo will be issued simultaneously
-# thus, the order that the combo is listed doesn't matter
-# when Short is pressed, it will output the standard Undo key command
+
+# Single input mapping to a two-key combo.
+#
+# The combo will be issued simultaneously.
+#
+# Thus, the order that the combo is listed doesn't matter.
+
+# When Short is pressed, it will output the standard Undo key command.
 
 SHORT  KEY_LEFTCTRL KEY_Z
 
 
 
 
-# single input mapping to a sequence of combos and single keys
-# > means send one key or combo before moving on to the next
-# when C1 is pressed, access the Search History option from the History
-# menu in Firefox, which has no direct key shortcut
-# we Alt-S to open the menu, and then arrow down 3 times before pressing Enter
+# Single input mapping to a sequence of combos and single keys.
+#
+# > means send one key or combo before moving on to the next.
 
-C1   KEY_LEFTALT KEY_S  >  KEY_DOWN  >  KEY_DOWN  >  KEY_DOWN  >  KEY_ENTER
+# When C1 is pressed, access the Search History option from the History
+#   menu in Firefox, which has no direct key shortcut.
+# We Alt-S to open the menu, and then arrow down 3 times before pressing Enter.
+
+C1  KEY_LEFTALT KEY_S  >  KEY_DOWN  >  KEY_DOWN  >  KEY_DOWN  >  KEY_ENTER
 
 
 
 # Note that the above sequence might not work, if Firefox can't absorb
-# the key events that fast.  This, sleeps might be needed (to wait
-# for the menu to open before sending the DOWN keys).
+#   the key events that fast.  This, sleeps might be needed (to wait
+#   for the menu to open before sending the DOWN keys).
 # Use SLEEP_ with a number of milliseconds to insert a sleep in the sequence.
 
 # Map the Tour button to the same sequence from above, but with a 250 ms
-# sleep to wait for the menu to open AFTER we send our S-key combo.
+#   sleep to wait for the menu to open AFTER we send our S-key combo.
 
-C1   KEY_LEFTALT KEY_S  > SLEEP_250  KEY_DOWN  >  KEY_DOWN  >  KEY_DOWN  >  KEY_ENTER
-
-
+TOUR  KEY_LEFTALT KEY_S  > SLEEP_250  KEY_DOWN  >  KEY_DOWN  >  KEY_DOWN  >  KEY_ENTER
 
 
-# a sequence printable keys can also be listed as a string,
-# delimited by double quotes,
-# which will be typed one-by-one
-# Note that the string cannot contain a " character
 
-# have C2 open a new tab and go to www.google.com
+
+# A sequence printable keys can also be listed as a string,
+#   delimited by double quotes,
+#   which will be typed one-by-one.
+# Note that the string cannot contain a " character.
+
+# Have C2 open a new tab and go to www.google.com
 
 C2  KEY_LEFTCTRL KEY_T > "www.google.com" > KEY_ENTER
 
 
 
-# have SIDE plus C2 type a phrase with quotes in it
+# Have SIDE plus C2 type a phrase with quotes in it.
 
 SIDE C2  "She said, " > KEY_LEFTSHIFT KEY_APOSTROPHE > "Hello!" > KEY_LEFTSHIFT KEY_APOSTROPHE
 
@@ -114,9 +149,11 @@ SIDE TOP "Hey you #$#@*&!"
 #
 # Sequences of key outputs can be up to 64 commands long.
 # Commands can bey individual KEY_ codes, > symbols to send a combo,
-# or individual keys in a quoted printable ASCII key sequence
-# for example, the following sequence includes 10 commands:
-#   KEY_SHIFT KEY_UP > "hello" > KEY_ENTER
+# SLEEP_ triggers,
+# or individual keys in a quoted printable ASCII key sequence.
+#
+# For example, the following sequence includes 4 commands:
+#   KEY_LEFTSHIFT KEY_UP > KEY_ENTER
 #
 # Sequences of commands longer than 64 will produce an error message
 # at runtime and will be ignored
@@ -124,14 +161,25 @@ SIDE TOP "Hey you #$#@*&!"
 # Quoted strings often require multiple KEY_ codes per letter
 # since there needs to be a send (>) after each letter, and also
 # SHIFT key codes for capital letters and special symbols.
+#
+# For example, the following sequence includes 14 commands:
+#   KEY_LEFTSHIFT KEY_UP > "hello" > KEY_ENTER
+#
+# As another example, the captial H takes it up to 15 commands (for shift):
+#   KEY_LEFTSHIFT KEY_UP > "Hello" > KEY_ENTER
+#
+# Also, separate from the limit of 64 commands in a sequence, there
+#   is also a limit of 10 sleeps in a sequence.
 
 
 
 
-# Combo input mapping to a key combination
+# Combo input mapping to a key combination.
+
 # While holding down Side, if we press C1, we go back one page
 
 SIDE C1  KEY_LEFTALT KEY_LEFT
+
 
 
 
@@ -174,34 +222,51 @@ KNOB_TURN_CCW  KEY_LEFTCTRL KEY_MINUS
 
 
 # If we modify the Knob with a Side-button combo (Side held while Knob
-# turned), we might want different Haptics and Rotation speed so that
-# the modified knob feels different (so we have feedback that we have
-# changed modes)
+#   turned), we might want different Haptics and Rotation speed so that
+#   the modified knob feels different (so we have feedback that we have
+#   changed modes)
 
-# have our modified Knob use Weak haptics and Slow rotation
-# when modified with Side, the Knob switches tabs in Firefox
+# Have our modified Knob use Weak haptics and Slow rotation
+#   when modified with Side, the Knob switches tabs in Firefox
 
 SIDE KNOB_TURN_CW   H1 R0  KEY_LEFTCTRL KEY_TAB
 SIDE KNOB_TURN_CCW  H1 R0  KEY_LEFTCTRL KEY_LEFTSHIFT KEY_TAB
 
 
 
-# note that ANY button can be used to modify a Knob/Dial/Wheel and change
-# its haptcs, rotation speed, and output, even pressing the Knob/Dial/Wheel
-# itself (or pressing a Dial can modify a Knob)
-# The OEM driver from TourBox doesn't expose this functionality, but it
-# is there
+# Both directions of a turn widget, for a given combo, will have the
+#   same haptics and rotation speed (you can't have it change when you
+#   spin it in a different direction).
+#
+# These can be unique per combo (SIDE plus KNOB, TOP plus KNOB, etc.)
+#   but not per direction (SIDE plus KNOB CW will have same settings
+#   as SIDE plus KNOB CCW).
+# If you set different parameters for the different directions,
+#   the last set in the mapping will be used for both directions.
 
-# have the Knob behave differently when it is pressed and turned
-# Use Weak haptics and Medium rotation speed
-# Have Firefox jump from link to link in the page
+# Top plus Scroll pages up/down, and the second H and R settings hold.
+
+TOP SCROLL_TURN_UP    H0 R0  KEY_PAGEUP
+TOP SCROLL_TURN_DOWN  H1 R1  KEY_PAGEDOWN
+
+
+
+
+
+# Note that ANY button can be used to modify a Knob/Dial/Wheel and change
+#   its haptcs, rotation speed, and output, even pressing the Knob/Dial/Wheel
+#   itself (or pressing a Dial can modify a Knob).
+
+# Have the Knob behave differently when it is pressed and turned.
+# Use Weak haptics and Medium rotation speed.
+# Have Firefox jump from link to link in the page.
 
 KNOB_PRESS KNOB_TURN_CW   H1 R1  KEY_TAB
 KNOB_PRESS KNOB_TURN_CCW  H1 R1  KEY_LEFTSHIFT KEY_TAB
 
 
 
-# if there are multiple H or R modifiers, the last ones listed
+# If there are multiple H or R modifiers, the last ones listed
 # will override the earlier ones with no Warning message.
 
 # have Scroll wheel scroll up and down the page with strong haptics
@@ -214,9 +279,10 @@ SCROLL_TURN_UP    H2 R2              KEY_UP
 
 
 
-# only TURN actions can have haptic strength and rotation speed assigned
-# if H or R modifiers are present for a non-TURN mapping, a Warning will
-# be printed and those H or R modifiers will be ignored.
+# Only TURN actions can have haptic strength and rotation speed assigned.
+#
+# If H or R modifiers are present for a non-TURN mapping, a Warning will
+#   be printed and those H or R modifiers will be ignored.
 
 # While holding down Side, press Tall to go forward one page
 
@@ -257,17 +323,18 @@ SHORT SIDE "a very very very very long test string that will not work a very ver
 
 
 
-# now we can start a new section for a different application
-# in this case, we switch to these settings whenever the window has "emacs:"
-# in the title
+# Now we can start a new section for a different application.
+#
+# In this case, we switch to these settings whenever the window has "emacs:"
+#   in the title.
 
 # Note the first application with a string that matches is the one that is
-# used.  Application order in the settings file matters.
+#   used.  Application order in the settings file matters.
 
 # This can be a problem if emacs has a file open called "Firefox.txt", for
-# example (which is why the longer phrase "Mozilla Firefox" is used above)
+#   example (which is why the longer phrase "Mozilla Firefox" is used above).
 
-# emacs puts a : in the window title.  Use this to be as specific as possible
+# emacs puts a : in the window title.  Use this to be as specific as possible.
 
 
 
