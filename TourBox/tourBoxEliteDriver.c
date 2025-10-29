@@ -21,7 +21,7 @@
    If you define a key sequence longer than this in your settings file,
      it will be skipped with a warning message.
    Increasing this number increases the RAM used by the driver. */
-#define MAX_KEY_SEQUENCE_STEPS  64
+#define MAX_KEY_SEQUENCE_STEPS  100
 
 /* How many sleeps can occur in each key sequence?
    If your define a key sequence with more sleeps than this in your settings
@@ -1559,7 +1559,7 @@ const char *keyCodeToString( int inKeyCode ) {
    map it to an index in tourBoxControlCodes, or -1 on failure
    and return a pointer to the next advanced spot in the string (beyond
    the parsed control code string)
-   if no valid tourBoxControlCodeName is found, along with -1,
+   if no valid tourBoxControlName is found, along with -1,
    the return position in inSourceString is not advanced */
 char *getNextTourboxCodeIndexAndAdvance( char *inSourceString,
                                          int *outCodeIndex );
@@ -1592,10 +1592,15 @@ char *getNextKeyCodeAndAdvance( char *inSourceString, int *outKeyCode );
 char isPressCode( int inTourBoxControlCodeIndex );
 
 
-/* maps an index from tourBoxPressControlCodes to an index
+/* maps an index from tourBoxControlCodes to an index
    in tourBoxPressControlCodes, or -1 if inTourBoxControlCodeIndex does
    not map to a press code */
 int getPressCodeIndex( int inTourBoxControlCodeIndex );
+
+
+/* maps and index from tourBoxPressControlCodes to an index
+   in tourBoxControlCodes, or -1 on error */
+int getControlCodeIndex( int inTourBoxPressControlCodeIndex );
 
 
 /* reads next space/tab/>/end -delimited token from inSourceString
@@ -2055,6 +2060,22 @@ int getPressCodeIndex( int inTourBoxControlCodeIndex ) {
         }
     return -1;
     }
+
+
+
+int getControlCodeIndex( int inTourBoxPressControlCodeIndex ) {
+    int i;
+    int code = tourBoxPressControlCodes[ inTourBoxPressControlCodeIndex ];
+    
+    /* see if it matches a control code */
+    for( i=0; i<NUM_TOURBOX_CONTROLS; i++ ) {
+        if( tourBoxControlCodes[i] == code ) {
+            return i;
+            }
+        }
+    return -1;
+    }
+
 
 
 
@@ -2518,6 +2539,11 @@ void SigIntHandler( int inSig ) {
     }
 
 
+/* Generates a test settings file that comprehensively tests
+   every combination of control inputs */
+void generateTestSettingsFile( const char *inOutputFileName );
+
+
 
 /* some windows have long names, like firefox windo name for a long google
    search string */
@@ -2554,6 +2580,11 @@ int main( int inNumArgs, const char **inArgs ) {
     const char *uinputDevName = "TourBox Elite";
     int nameI = 0;
     int kI;
+
+    /*
+    generateTestSettingsFile( "testSettings.txt" );
+    */
+    
     
     signal( SIGINT, SigIntHandler );
     
@@ -3412,4 +3443,61 @@ int main( int inNumArgs, const char **inArgs ) {
     printf( "Exiting.\n\n" );
     
     return 0;
+    }
+
+
+
+
+
+
+
+void generateTestSettingsFile( const char *inOutputFileName ) {
+    FILE *f = fopen( inOutputFileName, "w" );
+    int p, c;
+    
+    if( f == NULL ) {
+        printf( "Failed to open settings file %s for writing\n",
+                inOutputFileName );
+        return;
+        }
+
+
+    fprintf( f, "# Replace with a string that matches the window title\n"
+             "#    of your text editor.\n\n" );
+
+    fprintf( f, "\"emacs:\"\n\n" );
+    
+    for( p=-1; p<NUM_TOURBOX_PRESS_CONTROLS; p++ ) {
+        const char *pName = "";
+        if( p != -1 &&
+            getControlCodeIndex(p) != -1 ) {
+            
+            pName = tourBoxControlNames[ getControlCodeIndex(p) ];
+            }
+        
+        for( c=0; c<NUM_TOURBOX_CONTROLS; c++ ) {
+            const char *cName = tourBoxControlNames[ c ];
+
+            if( p != -1 ) {
+                fprintf( f, "%s ", pName );
+                }
+            fprintf( f, "%s ", cName );
+            
+            if( ! isPressCode( c ) ) {
+                /* a turn widget, turn on weak/slow haptics */
+                fprintf( f, "H1 R1 " );
+                }
+            /* have it type a string */
+            fprintf( f, "\"" );
+            
+            if( p != -1 ) {
+                fprintf( f, "%s ", pName );
+                }
+            fprintf( f, "%s\" > KEY_ENTER\n\n", cName );
+            }
+        }
+    
+
+    
+    fclose( f );
     }
