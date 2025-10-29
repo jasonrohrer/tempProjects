@@ -111,7 +111,11 @@ C1  KEY_LEFTALT KEY_S  >  KEY_DOWN  >  KEY_DOWN  >  KEY_DOWN  >  KEY_ENTER
 # Note that the above sequence might not work, if Firefox can't absorb
 #   the key events that fast.  This, sleeps might be needed (to wait
 #   for the menu to open before sending the DOWN keys).
+#
 # Use SLEEP_ with a number of milliseconds to insert a sleep in the sequence.
+#
+# The number can be at most 9 digits long (which is long enough to sleep
+#   for 11 days).
 
 # Map the Tour button to the same sequence from above, but with a 250 ms
 #   sleep to wait for the menu to open AFTER we send our S-key combo.
@@ -306,7 +310,7 @@ SIDE TOP SHORT KNOB_TURN_CW  KEY_LEFT
 BLAH  KEY_LEFT
 
 # a missing TourBox control
-KEY_LEFT_SHIFT KEY_LEFT
+KEY_LEFTSHIFT KEY_LEFT
 
 # a mapping with an incomplete quoted string
 SHORT "bad test string
@@ -319,6 +323,18 @@ SHORT TALL "a very very very very long test string that will not work"
 # string input buffer and gets cut off
 
 SHORT SIDE "a very very very very long test string that will not work a very very very very long test string that will not work a very very very very long test string that will not work"
+
+
+# a mapping with mal-formed SLEEP_ trigger
+SHORT SIDE KEY_LEFT > SLEEP_ KEY_LEFT
+
+# a mapping with too many digits in the SLEEP_ trigger
+SHORT SIDE KEY_LEFT > SLEEP_1234567890 KEY_LEFT
+
+# a mapping with too many SLEEP_ triggers
+SHORT SIDE KEY_A > SLEEP_500 KEY_A > SLEEP_500 KEY_A > SLEEP_500 KEY_A > SLEEP_500 KEY_A > SLEEP_500 KEY_A > SLEEP_500 KEY_A > SLEEP_500 KEY_A > SLEEP_500 KEY_A > SLEEP_500 KEY_A > SLEEP_500 KEY_A > SLEEP_500
+
+
 
 
 
