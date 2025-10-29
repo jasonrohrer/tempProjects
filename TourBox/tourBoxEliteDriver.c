@@ -204,6 +204,9 @@ char contains( const char *inLookIn, const char *inLookFor );
    returns -1 on no match */
 int stringToControlIndex( const char *inString );
 
+/* returns string representation of an index in tourBoxControlCodes */
+const char *controlIndexToString( int inControlCodeIndex );
+
 
 /* returns index into more limited tourBoxPressControlCodes
    returns -1 on no match
@@ -227,6 +230,14 @@ int stringToControlIndex( const char *inString ) {
         }
     return -1;
     }
+
+
+
+const char *controlIndexToString( int inControlCodeIndex ) {
+    return tourBoxControlNames[ inControlCodeIndex ];
+    }
+
+
 
 
 
@@ -1480,7 +1491,7 @@ char *getNextTokenAndAdvance( char *inSourceString,
 char *getNextTourboxCodeIndexAndAdvance( char *inSourceString,
                                          int *outCodeIndex ) {
     char *nextSpot;
-    char token[16];
+    char token[20];
     
     nextSpot = getNextTokenAndAdvance( inSourceString,
                                        token,
@@ -2326,7 +2337,7 @@ void handleTourBoxInput( unsigned char inByte,
                 }
             }
         }
-    else if( turnWidgetIndex != 1 ) {
+    else if( turnWidgetIndex != -1 ) {
         if( inActiveMapping != NULL ) {
             /* send event for this turn */
             sendUinputSequence( heldPressControlIndex, controlIndex,
@@ -2352,6 +2363,9 @@ void SigIntHandler( int inSig ) {
 
 
 
+/* some windows have long names, like firefox windo name for a long google
+   search string */
+char windowNameBuffer[1024];
 
 
 
@@ -2906,6 +2920,15 @@ int main( int inNumArgs, const char **inArgs ) {
                         m->rotationSpeed[ turnWidgetIndex ]
                             [ nextCodeIndexB ] = rotationSpeed;
                         }
+                    else if( hapticFound || rotationFound ) {
+                        printf(
+                            "\nWARNING:\n"
+                            "Line %d that has H or R modifiers "
+                            "for non-TURN control [%s], ignoring.\n\n",
+                            lineCount,
+                            controlIndexToString( nextCodeIndexA ) );
+                        }
+                    
                     
                     printf( "Mapping line has a sequence of %d KEY_ codes "
                             "and > separators",
@@ -2998,7 +3021,6 @@ int main( int inNumArgs, const char **inArgs ) {
 
     
     while( inputLoopContinue ) {
-        char windowBuffer[100];
         char gotWindowName;
         ApplicationMapping *match;
         char shouldCheckWindowChange = 0;
@@ -3039,11 +3061,12 @@ int main( int inNumArgs, const char **inArgs ) {
         if( shouldCheckWindowChange ) {
             
             gotWindowName =
-                getActiveWindowName( windowBuffer, sizeof( windowBuffer ) );
+                getActiveWindowName( windowNameBuffer,
+                                     sizeof( windowNameBuffer ) );
 
             if( gotWindowName ) {
-                printf( "Active window is %s\n", windowBuffer );
-                match = getMatchingMapping( windowBuffer );
+                printf( "Active window is %s\n", windowNameBuffer );
+                match = getMatchingMapping( windowNameBuffer );
 
                 if( match == NULL ) {
                     /* no mapping for active window */

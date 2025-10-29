@@ -183,8 +183,31 @@ SIDE KNOB_TURN_CCW  H1 R0  KEY_LEFTCTRL KEY_LEFTSHIFT KEY_TAB
 # Use Weak haptics and Medium rotation speed
 # Have Firefox jump from link to link in the page
 
-KNOB_PRESS KNOB_TURN_CW  H1 R1  KEY_TAB
+KNOB_PRESS KNOB_TURN_CW   H1 R1  KEY_TAB
 KNOB_PRESS KNOB_TURN_CCW  H1 R1  KEY_LEFTSHIFT KEY_TAB
+
+
+
+# if there are multiple H or R modifiers, the last ones listed
+# will override the earlier ones with no Warning message.
+
+# have Scroll wheel scroll up and down the page with strong haptics
+# and fast rotation
+SCROLL_TURN_DOWN  H1 H0 R1 R0 R2 H2  KEY_DOWN
+SCROLL_TURN_UP    H2 R2              KEY_UP
+
+
+
+
+
+
+# only TURN actions can have haptic strength and rotation speed assigned
+# if H or R modifiers are present for a non-TURN mapping, a Warning will
+# be printed and those H or R modifiers will be ignored.
+
+# While holding down Side, press Tall to go forward one page
+
+SIDE TALL  H2 R1  KEY_LEFTALT KEY_RIGHT
 
 
 
@@ -203,7 +226,7 @@ SIDE TOP SHORT KNOB_TURN_CW  KEY_LEFT
 # an invalid control 
 BLAH  KEY_LEFT
 
-# an missing TourBox control
+# a missing TourBox control
 KEY_LEFT_SHIFT KEY_LEFT
 
 
