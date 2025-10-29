@@ -73,6 +73,19 @@ C1   KEY_LEFTALT KEY_S  >  KEY_DOWN  >  KEY_DOWN  >  KEY_DOWN  >  KEY_ENTER
 
 
 
+# Note that the above sequence might not work, if Firefox can't absorb
+# the key events that fast.  This, sleeps might be needed (to wait
+# for the menu to open before sending the DOWN keys).
+# Use SLEEP_ with a number of milliseconds to insert a sleep in the sequence.
+
+# Map the Tour button to the same sequence from above, but with a 250 ms
+# sleep to wait for the menu to open AFTER we send our S-key combo.
+
+C1   KEY_LEFTALT KEY_S  > SLEEP_250  KEY_DOWN  >  KEY_DOWN  >  KEY_DOWN  >  KEY_ENTER
+
+
+
+
 # a sequence printable keys can also be listed as a string,
 # delimited by double quotes,
 # which will be typed one-by-one
@@ -229,7 +242,17 @@ BLAH  KEY_LEFT
 # a missing TourBox control
 KEY_LEFT_SHIFT KEY_LEFT
 
+# a mapping with an incomplete quoted string
+SHORT "bad test string
 
+# a mapping with a quoted string that is way too long
+SHORT TALL "a very very very very long test string that will not work"
+
+
+# a mapping with a quoted string that is so long that it overflows our quoted
+# string input buffer and gets cut off
+
+SHORT SIDE "a very very very very long test string that will not work a very very very very long test string that will not work a very very very very long test string that will not work"
 
 
 

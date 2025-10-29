@@ -15,6 +15,12 @@
    Increasing this number increases the RAM used by the driver. */
 #define MAX_KEY_SEQUENCE_STEPS  64
 
+/* How many sleeps can occur in each key sequence?
+   If your define a key sequence with more sleeps than this in your settings
+     file, it will be skipped with a warning message.
+   Increasing this number increases the RAM used by the driver. */
+#define MAX_KEY_SEQUENCE_SLEEPS  10
+
 /* How long can a quoted application name in the settings file be?
    Quoted names longer than this are truncated internally.
    Note that these "names" are meant to be unique patterns to match, and
@@ -199,6 +205,8 @@ char equal( const char *inStringA, const char *inStringB );
 /* returns 1 if string inLookIn contains inLookFor */
 char contains( const char *inLookIn, const char *inLookFor );
 
+/* returns 1 if string inLookIn starts with inLookFor */
+char startsWith( const char *inLookIn, const char *inLookFor );
 
 /* returns index into tourBoxControlCodes
    returns -1 on no match */
@@ -442,13 +450,21 @@ typedef struct ApplicationMapping {
         int keyCodeSequenceLength[ NUM_TOURBOX_CONTROLS ]
                                  [ NUM_TOURBOX_PRESS_CONTROLS + 1 ];
 
-        /* up to 64 uinput KEY codes, separated by KEY_RESERVED to
-           send batches of keys as a simultaneous combo
+        /* Up to 64 uinput KEY codes, separated by KEY_RESERVED to
+             send batches of keys as a simultaneous combo.
+           If SLEEP_TRIGGER is present, the next sleep in keySequenceSleepsMS
+             is used.
         */
         unsigned short keyCodeSquence[ NUM_TOURBOX_CONTROLS ]
                                      [ NUM_TOURBOX_PRESS_CONTROLS + 1 ]
                                      [ MAX_KEY_SEQUENCE_STEPS ];
 
+        /* Sleep times used by any SLEEP_TRIGGER that occurs in
+           keyCodeSquence */
+        unsigned short keySequenceSleepsMS[ NUM_TOURBOX_CONTROLS ]
+                                          [ NUM_TOURBOX_PRESS_CONTROLS + 1 ]
+                                          [ MAX_KEY_SEQUENCE_SLEEPS ];
+        
         /* 0, 1, 2 for Off, Weak, Strong haptics */
         int hapticStrength[ NUM_TOURBOX_TURN_WIDGETS ]
                           [ NUM_TOURBOX_PRESS_CONTROLS + 1 ];
@@ -518,6 +534,11 @@ int stringToKeyCode( char *inString );
 /* maps key codes to their string name, or NULL on no match */
 const char *keyCodeToString( int inKeyCode );
 
+
+
+/* special key code that occurs in an ApplicationMapping to indicate
+   a sleep in the sequence */
+#define SLEEP_TRIGGER  ( KEY_MAX + 1 )
 
 
 #define NUM_KEY_CODES 399
@@ -1385,6 +1406,32 @@ char contains( const char *inLookIn, const char *inLookFor ) {
         }
     }
 
+
+
+char startsWith( const char *inLookIn, const char *inLookFor ) {
+    int i = 0;
+    int f = 0;
+    while( inLookIn[i] != '\0' && inLookFor[f] != '\0' ) {
+
+        if( inLookIn[i] != inLookFor[f] ) {
+            /* mismatch, failed */
+            return 0;
+            }
+        else {
+            /* match.  keep advancing in inLookFor */
+            f++;
+            }
+        i++;
+        }
+
+    if( inLookFor[f] == '\0' ) {
+        /* got to end of string we're looking for, meaning we matched it */
+        return 1;
+        }
+    else {
+        return 0;
+        }
+    }
 
 
 
@@ -2765,11 +2812,23 @@ int main( int inNumArgs, const char **inArgs ) {
                             [ nextCodeIndexB ] = nextSequenceStep;
                         gotKeyCode = 1;
                         }
-                    else {
-                        /* not a straight-up KEY_ code
-                           re-parse and see if it's a quoted string */
+                    else if( startsWith( nextParsePos, "SLEEP_" ) ) {
+                        /* a SLEEP_ trigger */
+                        char sleepToken[20];
                         
-                        char nextToken[128];
+                        nextParsePos =
+                            getNextTokenAndAdvance( nextParsePos,
+                                                    sleepToken,
+                                                    sizeof( sleepToken ) );
+                        }
+                    else {
+                        /* not a straight-up KEY_ code or a SLEEP_ trigger
+                           re-parse and see if it's a quoted string */
+
+                        /* room for the longest quoted string that we
+                           might support, since each character requires
+                           at lest two key codes */
+                        char nextToken[ MAX_KEY_SEQUENCE_STEPS * 2 ];
                         
                         nextParsePos =
                             getNextTokenAndAdvance( nextParsePos,
@@ -2811,7 +2870,8 @@ int main( int inNumArgs, const char **inArgs ) {
                                     "Skipping mapping line %d that has more "
                                     "than %d sequence steps (due to quoted "
                                     "string [%s] "
-                                    "that itself requires %d sequence steps):"
+                                    "that itself requires %d sequence steps "
+                                    "to press and send each key):"
                                     "\n\n    %s\n",
                                     lineCount, MAX_KEY_SEQUENCE_STEPS,
                                     nextToken, keyCodeCount,
@@ -2878,6 +2938,23 @@ int main( int inNumArgs, const char **inArgs ) {
                                 tokenPos++;
                                 }
                             gotKeyCode = 1;
+                            }
+                        if( nextToken[0] == '"' &&
+                            getLastChar( nextToken ) != '"' ) {
+                            /* an incomplete quoted string */
+                            printf(
+                                "\nWARNING:\n"
+                                "Skipping mapping line %d that has incomplete "
+                                "(or too long) quoted string."
+                                "\n\n    %s\n",
+                                lineCount,
+                                &( fileLineBuffer[ nextCharPos ] ) );
+                        
+                            m->keyCodeSequenceLength
+                                [ nextCodeIndexA ]
+                                [ nextCodeIndexB ] = 0;
+                            parseError = 1;
+                            break;
                             }
                         else if( ! equal( nextToken, "" ) ) {
                             /* NOT a quoted string, and still an invalid
