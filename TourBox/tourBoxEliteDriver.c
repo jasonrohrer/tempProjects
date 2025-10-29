@@ -29,6 +29,9 @@
 #define MAX_APPLICATION_NAME_LENGTH  80
 
 
+/* for popen and pclose */
+/* and for nanosleep */
+#define _POSIX_C_SOURCE 199309L
 
 
 #define inline __inline__
@@ -39,8 +42,10 @@
 #include <linux/uinput.h>
 
 /* for popen and pclose */
-#define __USE_POSIX2
 #include <stdio.h>
+
+/* for nanosleep */
+#include <time.h>
 
 
 #include <stdlib.h>
@@ -207,6 +212,16 @@ char contains( const char *inLookIn, const char *inLookFor );
 
 /* returns 1 if string inLookIn starts with inLookFor */
 char startsWith( const char *inLookIn, const char *inLookFor );
+
+/* returns pointer into string beyond space or tab characters */
+char *skipWhitespace( char *inString );
+
+
+/* converts string to unsigned base-10 number.  String must start
+   with the number.
+   Returns -1 on error.*/
+int parseNumber( const char *inString );
+
 
 /* returns index into tourBoxControlCodes
    returns -1 on no match */
@@ -461,9 +476,9 @@ typedef struct ApplicationMapping {
 
         /* Sleep times used by any SLEEP_TRIGGER that occurs in
            keyCodeSquence */
-        unsigned short keySequenceSleepsMS[ NUM_TOURBOX_CONTROLS ]
-                                          [ NUM_TOURBOX_PRESS_CONTROLS + 1 ]
-                                          [ MAX_KEY_SEQUENCE_SLEEPS ];
+        int keySequenceSleepsMS[ NUM_TOURBOX_CONTROLS ]
+                               [ NUM_TOURBOX_PRESS_CONTROLS + 1 ]
+                               [ MAX_KEY_SEQUENCE_SLEEPS ];
         
         /* 0, 1, 2 for Off, Weak, Strong haptics */
         int hapticStrength[ NUM_TOURBOX_TURN_WIDGETS ]
@@ -1411,16 +1426,16 @@ char contains( const char *inLookIn, const char *inLookFor ) {
 char startsWith( const char *inLookIn, const char *inLookFor ) {
     int i = 0;
     int f = 0;
+    
     while( inLookIn[i] != '\0' && inLookFor[f] != '\0' ) {
 
         if( inLookIn[i] != inLookFor[f] ) {
             /* mismatch, failed */
             return 0;
             }
-        else {
-            /* match.  keep advancing in inLookFor */
-            f++;
-            }
+
+        /* match.  keep advancing in both strings */
+        f++;
         i++;
         }
 
@@ -1432,6 +1447,63 @@ char startsWith( const char *inLookIn, const char *inLookFor ) {
         return 0;
         }
     }
+
+
+char *skipWhitespace( char *inString ) {
+    int i = 0;
+    while( inString[i] == ' ' ||
+           inString[i] == '\t' ) {
+        i++;
+        }
+    return &( inString[i] );
+    }
+
+
+
+/* by sticking to 9 digits, we don't need to worry about overflow
+   condition above 4 billion-and-something for 32-bit ints*/
+#define MAX_PARSE_DIGITS  9
+
+int parseNumber( const char *inString ) {
+    int digits[ MAX_PARSE_DIGITS ];
+
+    int numDigits = 0;
+    int i;
+    int parsedInt = 0;
+    int digitPowerOfTen = 1;
+
+    if( inString[ 0 ] < '0' ||
+        inString[ 0 ] > '9' ) {
+        /* starts with non-int */
+        return -1;
+        }
+    
+    while( numDigits < MAX_PARSE_DIGITS &&
+           inString[ numDigits ] >= '0' &&
+           inString[ numDigits ] <= '9' ) {
+        digits[ numDigits ] = inString[ numDigits ] - '0';
+        numDigits++;
+        }
+
+    if( numDigits >= MAX_PARSE_DIGITS &&
+        inString[ numDigits ] >= '0' &&
+        inString[ numDigits ] <= '9' ) {
+        
+        /* more digits left, too long */
+        return -1;
+        }
+
+    for( i = numDigits - 1; i >= 0; i-- ) {
+        parsedInt += digits[i] * digitPowerOfTen;
+        digitPowerOfTen *= 10;
+        }
+    
+    return parsedInt;
+    }
+
+    
+           
+    
 
 
 
@@ -2200,6 +2272,11 @@ void sendUinputSequence( int inHeldPressControlIndex,
                          ApplicationMapping *inActiveMapping,
                          int inUinputFile );
 
+
+/* sleeps for a number of milliseconds */
+void msSleep( int inNumMilliseconds );
+
+
 /* track which key presses we have sent as one combo
    at end of combo, we need to send key releases */
 unsigned short sentPressComboBuffer[ MAX_KEY_SEQUENCE_STEPS ];
@@ -2211,9 +2288,11 @@ void sendUinputSequence( int inHeldPressControlIndex,
                          int inUinputFile ) {
     int sequenceLength;
     unsigned short *sequence;
+    int *sleepSequence;
     int i, p;
     int lastWasReport = 0;
     int sentPressComboLength = 0;
+    int nextSleepIndex = 0;
     
     if( inHeldPressControlIndex == -1 ) {
         /* extra last element in list is for bare control with nothing
@@ -2234,7 +2313,10 @@ void sendUinputSequence( int inHeldPressControlIndex,
     
     sequence = inActiveMapping->
         keyCodeSquence[ inControlIndex ][ inHeldPressControlIndex ];
-
+    
+    sleepSequence = inActiveMapping->
+        keySequenceSleepsMS[ inControlIndex ][ inHeldPressControlIndex ];
+    
     /* send it */
     for( i=0; i<sequenceLength; i++ ) {
         if( sequence[i] == KEY_RESERVED ) {
@@ -2255,6 +2337,12 @@ void sendUinputSequence( int inHeldPressControlIndex,
             sentPressComboLength = 0;
             
             lastWasReport = 1;
+            }
+        else if( sequence[i] == SLEEP_TRIGGER &&
+                 nextSleepIndex < MAX_KEY_SEQUENCE_SLEEPS ) {
+            
+            msSleep( sleepSequence[ nextSleepIndex ] );
+            nextSleepIndex++;
             }
         else {
             uinputEmit( inUinputFile, EV_KEY, sequence[i], 1 );
@@ -2281,6 +2369,15 @@ void sendUinputSequence( int inHeldPressControlIndex,
         /* clear the buffer */
         sentPressComboLength = 0;
         }
+    }
+
+
+void msSleep( int inNumMilliseconds ) {
+    struct timespec ts;
+    ts.tv_sec = inNumMilliseconds / 1000;
+    ts.tv_nsec = ( inNumMilliseconds % 1000 ) * 1000000;
+
+    nanosleep( &ts, NULL );
     }
 
     
@@ -2622,6 +2719,7 @@ int main( int inNumArgs, const char **inArgs ) {
                 char hapticFound = 0;
                 char rotationFound = 0;
                 int nextModifier = -1;
+                int nextSleepIndex = 0;
                 
                 if( numAppMappings == 0 ) {
                     printf( "\nWARNING:\n"
@@ -2812,14 +2910,95 @@ int main( int inNumArgs, const char **inArgs ) {
                             [ nextCodeIndexB ] = nextSequenceStep;
                         gotKeyCode = 1;
                         }
-                    else if( startsWith( nextParsePos, "SLEEP_" ) ) {
+                    else if( startsWith( skipWhitespace( nextParsePos ),
+                                         "SLEEP_" ) ) {
                         /* a SLEEP_ trigger */
                         char sleepToken[20];
+                        int c = 0;
+                        int parsedMS = -1;
+
+                        /* first, make sure we have room for this sleep */
+                        if( nextSequenceStep >= MAX_KEY_SEQUENCE_STEPS ) {
+                            printf(
+                                "\nWARNING:\n"
+                                "Skipping mapping line %d that has more than "
+                                "%d sequence steps:"
+                                "\n\n    %s\n",
+                                lineCount, MAX_KEY_SEQUENCE_STEPS,
+                                &( fileLineBuffer[ nextCharPos ] ) );
+                            m->keyCodeSequenceLength
+                                [ nextCodeIndexA ]
+                                [ nextCodeIndexB ] = 0;
+                            parseError = 1;
+                            break;
+                            }
+                        if( nextSleepIndex >= MAX_KEY_SEQUENCE_SLEEPS ) {
+                            printf(
+                                "\nWARNING:\n"
+                                "Skipping mapping line %d that has more than "
+                                "%d sleeps:"
+                                "\n\n    %s\n",
+                                lineCount, MAX_KEY_SEQUENCE_SLEEPS,
+                                &( fileLineBuffer[ nextCharPos ] ) );
+                            m->keyCodeSequenceLength
+                                [ nextCodeIndexA ]
+                                [ nextCodeIndexB ] = 0;
+                            parseError = 1;
+                            break;
+                            }
+
                         
                         nextParsePos =
                             getNextTokenAndAdvance( nextParsePos,
                                                     sleepToken,
                                                     sizeof( sleepToken ) );
+                        
+                        while( sleepToken[c] != '_' &&
+                               sleepToken[c] != '\0' ) {
+                            c++;
+                            }
+                        
+                        if( sleepToken[c] == '_' ) {
+                            c++;
+                            parsedMS = parseNumber( &( sleepToken[c] ) );
+                            }
+                        
+                        if( parsedMS == -1 ) {
+                            printf(
+                                "\nWARNING:\n"
+                                "Skipping mapping line %d that has "
+                                "badly formatted sleep trigger [%s]."
+                                "\n\n    %s\n",
+                                lineCount, sleepToken,
+                                &( fileLineBuffer[ nextCharPos ] ) );
+                            parseError = 1;
+                                
+                            m->keyCodeSequenceLength
+                                [ nextCodeIndexA ]
+                                [ nextCodeIndexB ] = 0;
+                            break;
+                            }
+                        
+                        m->keyCodeSquence
+                            [ nextCodeIndexA ]
+                            [ nextCodeIndexB ]
+                            [ nextSequenceStep ] =
+                            (unsigned short)SLEEP_TRIGGER;
+
+                        nextSequenceStep++;
+                        
+                        m->keyCodeSequenceLength
+                            [ nextCodeIndexA ]
+                            [ nextCodeIndexB ] = nextSequenceStep;
+
+                        m->keySequenceSleepsMS
+                            [ nextCodeIndexA ]
+                            [ nextCodeIndexB ]
+                            [ nextSleepIndex ] = parsedMS;
+
+                        nextSleepIndex++;
+                        
+                        gotKeyCode = 1;
                         }
                     else {
                         /* not a straight-up KEY_ code or a SLEEP_ trigger
@@ -2939,7 +3118,7 @@ int main( int inNumArgs, const char **inArgs ) {
                                 }
                             gotKeyCode = 1;
                             }
-                        if( nextToken[0] == '"' &&
+                        else if( nextToken[0] == '"' &&
                             getLastChar( nextToken ) != '"' ) {
                             /* an incomplete quoted string */
                             printf(
@@ -3022,16 +3201,30 @@ int main( int inNumArgs, const char **inArgs ) {
                     printf( "\n" );
 
                     printf( "Full key code list:  " );
+                    nextSleepIndex = 0;
                     for( k=0;
                          k< m->keyCodeSequenceLength[ nextCodeIndexA ]
                              [ nextCodeIndexB ];
                          k++ ) {
-                        const char *kS = keyCodeToString(
-                            m->keyCodeSquence
+                        
+                        if( m->keyCodeSquence
                             [ nextCodeIndexA ]
-                            [ nextCodeIndexB ]
-                            [ k ] );
-                        printf( "%s ", kS );
+                            [ nextCodeIndexB ][k] == SLEEP_TRIGGER ) {
+                            printf( "SLEEP(%dms) ",
+                                    m->keySequenceSleepsMS
+                                    [ nextCodeIndexA ]
+                                    [ nextCodeIndexB ]
+                                    [nextSleepIndex] );
+                            nextSleepIndex++;
+                            }
+                        else {
+                            const char *kS = keyCodeToString(
+                                m->keyCodeSquence
+                                [ nextCodeIndexA ]
+                                [ nextCodeIndexB ]
+                                [ k ] );
+                            printf( "%s ", kS );
+                            }
                         }
                     printf( "\n\n" );
                     }             
