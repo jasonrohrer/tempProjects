@@ -1,3 +1,11 @@
+/*
+  compile with:
+  
+  gcc -o tourBoxEliteDriver tourBoxEliteDriver.c -lusb-1.0
+  
+*/
+
+
 /* How many application mappings are supported?
    Each mapping is toggled when switching to a different application
      and has a different mapping section in the settings file.
